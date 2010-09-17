@@ -3,8 +3,13 @@ package org.rascalmpl.ast;
 import org.eclipse.imp.pdb.facts.IConstructor;
 import org.eclipse.imp.pdb.facts.INode;
 import org.eclipse.imp.pdb.facts.ISourceLocation;
+import org.eclipse.imp.pdb.facts.IValue;
 import org.eclipse.imp.pdb.facts.type.Type;
+import org.rascalmpl.interpreter.IEvaluatorContext;
 import org.rascalmpl.interpreter.asserts.ImplementationError;
+import org.rascalmpl.interpreter.matching.IBooleanResult;
+import org.rascalmpl.interpreter.matching.IMatchingResult;
+import org.rascalmpl.interpreter.result.Result;
 import org.rascalmpl.values.uptr.TreeAdapter;
 
 public abstract class AbstractAST implements IVisitable {
@@ -71,4 +76,27 @@ public abstract class AbstractAST implements IVisitable {
 	public String toString() {
 		return TreeAdapter.yield((IConstructor) node);
 	}
+	
+	// NOTE: Should be abstract, but this breaks everything, so, for
+	// now, provide a default implementation, but...
+	// TODO: Make this abstract again!
+//	public abstract Result<IValue> eval(IEvaluatorContext ctx);
+	public Result<IValue> eval(IEvaluatorContext ctx) { return null; }
+	
+	// TODO: Same for this
+//	public abstract Result<IValue> debugEval(IEvaluatorContext ctx);
+	public Result<IValue> debugEval(IEvaluatorContext ctx) { return null; }
+	
+	// TODO: Same for this
+//	public abstract <T> T debugDecorator(IEvaluatorContext ctx);
+	public <T> T debugDecorator(IEvaluatorContext ctx) { return null; }
+	
+	// TODO: Same for this
+//	public abstract IBooleanResult booleanEval(IEvaluatorContext ctx);
+	public IBooleanResult booleanEval(IEvaluatorContext ctx) { return null; }
+	
+	// TODO: Same for this
+//	public abstract IMatchingResult patternEval(IEvaluatorContext ctx);
+	public IMatchingResult patternEval(IEvaluatorContext ctx) { return null; }
+	
 }

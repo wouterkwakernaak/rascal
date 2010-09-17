@@ -369,6 +369,8 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 				result.add(new File("/Users/paulklint/software/source/roll/rascal/src/org/rascalmpl/library").getAbsolutePath());
 				result.add(Configuration.getSdfLibraryPathProperty());
 				result.add(new File(System.getProperty("user.dir"), "src/org/rascalmpl/test/data").getAbsolutePath());
+				// adds folders for Rascal grammar
+				result.add(new File("/ufs/hills/project/rascal/build/rascal-grammar/spec").getAbsolutePath());
 				return result;
 			}
 		});
