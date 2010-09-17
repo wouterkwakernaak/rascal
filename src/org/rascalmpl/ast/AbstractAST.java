@@ -5,8 +5,12 @@ import org.eclipse.imp.pdb.facts.INode;
 import org.eclipse.imp.pdb.facts.ISourceLocation;
 import org.eclipse.imp.pdb.facts.IValue;
 import org.eclipse.imp.pdb.facts.type.Type;
-import org.rascalmpl.interpreter.IEvaluatorContext;
+import org.rascalmpl.interpreter.BooleanEvaluator;
+import org.rascalmpl.interpreter.Evaluator;
+import org.rascalmpl.interpreter.PatternEvaluator;
 import org.rascalmpl.interpreter.asserts.ImplementationError;
+import org.rascalmpl.interpreter.debug.DebuggableEvaluator;
+import org.rascalmpl.interpreter.debug.DebuggingDecorator;
 import org.rascalmpl.interpreter.matching.IBooleanResult;
 import org.rascalmpl.interpreter.matching.IMatchingResult;
 import org.rascalmpl.interpreter.result.Result;
@@ -80,23 +84,23 @@ public abstract class AbstractAST implements IVisitable {
 	// NOTE: Should be abstract, but this breaks everything, so, for
 	// now, provide a default implementation, but...
 	// TODO: Make this abstract again!
-//	public abstract Result<IValue> eval(IEvaluatorContext ctx);
-	public Result<IValue> eval(IEvaluatorContext ctx) { return null; }
+//	public abstract Result<IValue> eval(Evaluator eval);
+	public Result<IValue> eval(Evaluator eval) { return null; }
 	
 	// TODO: Same for this
-//	public abstract Result<IValue> debugEval(IEvaluatorContext ctx);
-	public Result<IValue> debugEval(IEvaluatorContext ctx) { return null; }
+//	public abstract Result<IValue> debugEval(DebuggableEvaluator eval);
+	public Result<IValue> debugEval(DebuggableEvaluator eval) { return null; }
 	
 	// TODO: Same for this
-//	public abstract <T> T debugDecorator(IEvaluatorContext ctx);
-	public <T> T debugDecorator(IEvaluatorContext ctx) { return null; }
+//	public abstract <T> T debugDecorator(DebuggingDecorator<T> ddec);
+	public <T> T debugDecorator(DebuggingDecorator<T> ddec) { return null; }
 	
 	// TODO: Same for this
-//	public abstract IBooleanResult booleanEval(IEvaluatorContext ctx);
-	public IBooleanResult booleanEval(IEvaluatorContext ctx) { return null; }
+//	public abstract IBooleanResult booleanEval(BooleanEvaluator eval);
+	public IBooleanResult booleanEval(BooleanEvaluator eval) { return null; }
 	
 	// TODO: Same for this
-//	public abstract IMatchingResult patternEval(IEvaluatorContext ctx);
-	public IMatchingResult patternEval(IEvaluatorContext ctx) { return null; }
+//	public abstract IMatchingResult patternEval(PatternEvaluator eval);
+	public IMatchingResult patternEval(PatternEvaluator eval) { return null; }
 	
 }
