@@ -85,22 +85,22 @@ public abstract class AbstractAST implements IVisitable {
 	// now, provide a default implementation, but...
 	// TODO: Make this abstract again!
 //	public abstract Result<IValue> eval(Evaluator eval);
-	public Result<IValue> eval(Evaluator eval) { return null; }
+	public Result<IValue> evaluator(Evaluator eval) { return null; }
 	
 	// TODO: Same for this
 //	public abstract Result<IValue> debugEval(DebuggableEvaluator eval);
-	public Result<IValue> debugEval(DebuggableEvaluator eval) { return null; }
+	public Result<IValue> evaluator(DebuggableEvaluator eval) { return null; }
 	
 	// TODO: Same for this
 //	public abstract <T> T debugDecorator(DebuggingDecorator<T> ddec);
-	public <T> T debugDecorator(DebuggingDecorator<T> ddec) { return null; }
+	public <T> T evaluator(DebuggingDecorator<T> ddec) { return null; }
 	
 	// TODO: Same for this
 //	public abstract IBooleanResult booleanEval(BooleanEvaluator eval);
-	public IBooleanResult booleanEval(BooleanEvaluator eval) { return null; }
+	public IBooleanResult evaluator(BooleanEvaluator eval) { return null; }
 	
 	// TODO: Same for this
 //	public abstract IMatchingResult patternEval(PatternEvaluator eval);
-	public IMatchingResult patternEval(PatternEvaluator eval) { return null; }
+	public IMatchingResult evaluator(PatternEvaluator eval) { return null; }
 	
 }

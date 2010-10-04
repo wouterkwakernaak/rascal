@@ -1,4 +1,4 @@
-package org.rascalmpl.semantics.concrete;
+package org.rascalmpl.semantics.dynamic;
 
 import org.eclipse.imp.pdb.facts.INode;
 import org.eclipse.imp.pdb.facts.IValue;
@@ -24,44 +24,44 @@ public class Expression extends org.rascalmpl.ast.Expression {
 
 		
 		@Override
-		public IBooleanResult booleanEval(BooleanEvaluator eval) {
+		public IBooleanResult evaluator(BooleanEvaluator __eval) {
 			// NOTE: Here we also have private fields from the evaluator: tf
 //			throw new UnexpectedTypeError(tf.boolType(), x.accept(
 //					ctx.getEvaluator()).getType(), x);
-			return super.booleanEval(eval);
+			return super.evaluator(__eval);
 		}
 
 
 		@Override
-		public <T> T debugDecorator(DebuggingDecorator<T> ddec) {
+		public <T> T evaluator(DebuggingDecorator<T> ddec) {
 			// TODO: The following two lines are from DebuggingDecorator, but 
 			// depend on private information
 //			suspend(x);
 //			return evaluator.visitExpressionAddition(x);
 			// TODO Auto-generated method stub
-			return super.debugDecorator(ddec);
+			return super.evaluator(ddec);
 		}
 
 
 		@Override
-		public Result<IValue> debugEval(DebuggableEvaluator eval) {
+		public Result<IValue> evaluator(DebuggableEvaluator eval) {
 			// NOTE: suspend is a private method of the debug evaluator, will need 
 			// to make it public before we can implement
 			//suspend(this);
 			//return this.eval(eval);
-			return super.debugEval(eval);
+			return super.evaluator(eval);
 		}
 
 
 		@Override
-		public Result<IValue> eval(Evaluator eval) {
-			Result<IValue> left = getLhs().eval(eval);
-			Result<IValue> right = getRhs().eval(eval);
+		public Result<IValue> evaluator(Evaluator eval) {
+			Result<IValue> left = getLhs().evaluator(eval);
+			Result<IValue> right = getRhs().evaluator(eval);
 			return left.add(right);			}
 
 
 		@Override
-		public IMatchingResult patternEval(PatternEvaluator eval) {
+		public IMatchingResult evaluator(PatternEvaluator eval) {
 			throw new UnsupportedPatternError(this.toString(), this);
 		}
 	}
