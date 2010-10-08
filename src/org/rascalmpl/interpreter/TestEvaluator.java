@@ -16,116 +16,94 @@ import org.rascalmpl.interpreter.result.ResultFactory;
 import org.rascalmpl.interpreter.staticErrors.StaticError;
 
 public class TestEvaluator {
-	private final Evaluator eval;
-	private final ITestResultListener testResultListener;
+	private final org.rascalmpl.interpreter.Evaluator eval;
+	private final org.rascalmpl.interpreter.ITestResultListener testResultListener;
 	
-	public TestEvaluator(Evaluator eval, ITestResultListener testResultListener){
+	public TestEvaluator(org.rascalmpl.interpreter.Evaluator eval, org.rascalmpl.interpreter.ITestResultListener testResultListener){
 		super();
 		
 		this.eval = eval;
 		this.testResultListener = testResultListener;
 	}
 
-	public void test(String moduleName) {
-		Environment old = eval.getCurrentEnvt();
+	public org.rascalmpl.interpreter.Evaluator __getEval() {
+		return eval;
+	}
+
+	public org.rascalmpl.interpreter.ITestResultListener __getTestResultListener() {
+		return testResultListener;
+	}
+
+	public void test(java.lang.String moduleName) {
+		org.rascalmpl.interpreter.env.Environment old = this.__getEval().getCurrentEnvt();
 		
-		ModuleEnvironment module = eval.getHeap().getModule(moduleName);
+		org.rascalmpl.interpreter.env.ModuleEnvironment module = this.__getEval().getHeap().getModule(moduleName);
 		if (module == null) {
-			throw new IllegalArgumentException();
+			throw new java.lang.IllegalArgumentException();
 		}
 		
 		try {
-			eval.setCurrentEnvt(module);
-			eval.pushEnv();
-			test();
+			this.__getEval().setCurrentEnvt(module);
+			this.__getEval().pushEnv();
+			this.test();
 		}
 		finally {
-			eval.unwind(module);
+			this.__getEval().unwind(module);
 			if (old != null) {
-				eval.setCurrentEnvt(old);
+				this.__getEval().setCurrentEnvt(old);
 			}
 		}
 	}
 	
 	public void test() {
-		ModuleEnvironment topModule = (ModuleEnvironment) eval.getCurrentEnvt().getRoot();
+		org.rascalmpl.interpreter.env.ModuleEnvironment topModule = (org.rascalmpl.interpreter.env.ModuleEnvironment) this.__getEval().getCurrentEnvt().getRoot();
 		
-		runTests(topModule, topModule.getTests());
+		this.runTests(topModule, topModule.getTests());
 		
-		for (String i : topModule.getImports()) {
-			ModuleEnvironment mod = topModule.getImport(i);
-			runTests(mod, mod.getTests());
+		for (java.lang.String i : topModule.getImports()) {
+			org.rascalmpl.interpreter.env.ModuleEnvironment mod = topModule.getImport(i);
+			this.runTests(mod, mod.getTests());
 		}
 	}
 	
-	private void runTests(ModuleEnvironment env, List<Test> tests){
-		Environment old = eval.getCurrentEnvt();
+	private void runTests(org.rascalmpl.interpreter.env.ModuleEnvironment env, java.util.List<org.rascalmpl.ast.Test> tests){
+		org.rascalmpl.interpreter.env.Environment old = this.__getEval().getCurrentEnvt();
 		try {
-			eval.setCurrentEnvt(env);
+			this.__getEval().setCurrentEnvt(env);
 			
-			Visitor visitor = new Visitor();
-			testResultListener.start(tests.size());
+			org.rascalmpl.interpreter.TestEvaluator.Visitor visitor = new org.rascalmpl.interpreter.TestEvaluator.Visitor();
+			this.__getTestResultListener().start(tests.size());
 			for(int i = tests.size() - 1; i >= 0; i--){
 				try {
-					eval.pushEnv();
+					this.__getEval().pushEnv();
 					tests.get(i).accept(visitor);
 				}
 				finally {
-					eval.unwind(env);
+					this.__getEval().unwind(env);
 				}
 			}
 		}
 		finally {
 			if (old != null) {
-				eval.setCurrentEnvt(old);
+				this.__getEval().setCurrentEnvt(old);
 			}
 		}
 		
-		testResultListener.done();
+		this.__getTestResultListener().done();
 	}
 	
-	private class Visitor extends NullASTVisitor<Result<IBool>>{
+	public class Visitor extends org.rascalmpl.ast.NullASTVisitor<org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IBool>>{
 		
 		public Visitor(){
 			super();
 		}
 		
-		public Result<IBool> visitTestLabeled(Labeled x){
-			Result<IValue> result = ResultFactory.bool(true, eval);
-//			System.err.println("visitTestLabeled: " + x);
-			
-			try{
-				result = x.getExpression().accept(eval);
-			}catch(Throw e){
-				testResultListener.report(false, x.toString(), x.getLocation(), e);
-			}catch(Throwable e){
-				testResultListener.report(false, x.toString(), x.getLocation(), e);
-			}
-			
-			testResultListener.report(result.isTrue(), x.toString(), x.getLocation());
-			
-			return ResultFactory.bool(result.isTrue(), eval);
+		public org.rascalmpl.interpreter.Evaluator __getEval() {
+			return eval;
 		}
-		
-		public Result<IBool> visitTestUnlabeled(Unlabeled x){
-			Result<IValue> result = ResultFactory.bool(true, eval);
-//			System.err.println("visitTestUnlabeled: " + x);
-			
-			try{
-				result = x.getExpression().accept(eval);
-			}
-			catch(StaticError e) {
-				testResultListener.report(false, x.toString(), x.getLocation(), e);
-			}
-			catch(Throw e){
-				testResultListener.report(false, x.toString(), x.getLocation(), e);
-			}catch(Throwable e){
-				testResultListener.report(false, x.toString(), x.getLocation(), e);
-			}
-			
-			testResultListener.report(result.isTrue(), x.toString(), x.getLocation());
-			
-			return ResultFactory.bool(result.isTrue(), eval);
+
+		public org.rascalmpl.interpreter.ITestResultListener __getTestResultListener() {
+			return testResultListener;
 		}
 	}
 }

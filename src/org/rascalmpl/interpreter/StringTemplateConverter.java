@@ -31,194 +31,63 @@ import org.rascalmpl.ast.StringTemplate.While;
 public class StringTemplateConverter {
 	private static int labelCounter = 0;
 	
-	private static Statement surroundWithSingleIterForLoop(INode src, Name label, Statement body) {
-		Name dummy = new Name.Lexical(src, "_");
-		Expression var = new Expression.QualifiedName(src, new QualifiedName.Default(src, Arrays.asList(dummy)));
-		Expression truth = new Expression.Literal(src, new org.rascalmpl.ast.Literal.Boolean(src, new BooleanLiteral.Lexical(src, "true")));
-		Expression list = new Expression.List(src, Arrays.asList(truth));
-		Expression enumerator = new Expression.Enumerator(src, var, list);
-		Statement stat = new Statement.For(src, new Label.Default(src, label), Arrays.asList(enumerator), body);
+	private static org.rascalmpl.ast.Statement surroundWithSingleIterForLoop(org.eclipse.imp.pdb.facts.INode src, org.rascalmpl.ast.Name label, org.rascalmpl.ast.Statement body) {
+		org.rascalmpl.ast.Name dummy = new org.rascalmpl.ast.Name.Lexical(src, "_");
+		org.rascalmpl.ast.Expression var = new org.rascalmpl.ast.Expression.QualifiedName(src, new org.rascalmpl.ast.QualifiedName.Default(src, java.util.Arrays.asList(dummy)));
+		org.rascalmpl.ast.Expression truth = new org.rascalmpl.ast.Expression.Literal(src, new org.rascalmpl.ast.Literal.Boolean(src, new org.rascalmpl.ast.BooleanLiteral.Lexical(src, "true")));
+		org.rascalmpl.ast.Expression list = new org.rascalmpl.ast.Expression.List(src, java.util.Arrays.asList(truth));
+		org.rascalmpl.ast.Expression enumerator = new org.rascalmpl.ast.Expression.Enumerator(src, var, list);
+		org.rascalmpl.ast.Statement stat = new org.rascalmpl.ast.Statement.For(src, new org.rascalmpl.ast.Label.Default(src, label), java.util.Arrays.asList(enumerator), body);
 		return stat;
 	}
 
 
-	public static Statement convert(org.rascalmpl.ast.StringLiteral str) {
-		final Name label= new Name.Lexical(null, "#" + labelCounter);
-		labelCounter++;
-		return surroundWithSingleIterForLoop(str.getTree(), label, str.accept(new Visitor(label)));
+	public static org.rascalmpl.ast.Statement convert(org.rascalmpl.ast.StringLiteral str) {
+		final org.rascalmpl.ast.Name label= new org.rascalmpl.ast.Name.Lexical(null, "#" + StringTemplateConverter.labelCounter);
+		StringTemplateConverter.labelCounter++;
+		return org.rascalmpl.interpreter.StringTemplateConverter.surroundWithSingleIterForLoop(str.getTree(), label, str.accept(new org.rascalmpl.interpreter.StringTemplateConverter.Visitor(label)));
 	}
 	
-	private static class Visitor extends NullASTVisitor<Statement> {
+	public static class Visitor extends org.rascalmpl.ast.NullASTVisitor<org.rascalmpl.ast.Statement> {
 		
-		private final Name label;
+		private final org.rascalmpl.ast.Name label;
 
-		public Visitor(Name label) {
+		public Visitor(org.rascalmpl.ast.Name label) {
 			this.label = label;
 		}
 
-		private static Statement makeBlock(INode src, Statement ...stats) {
-			return makeBlock(src, Arrays.asList(stats));
+		public static org.rascalmpl.ast.Statement makeBlock(org.eclipse.imp.pdb.facts.INode src, org.rascalmpl.ast.Statement ...stats) {
+			return org.rascalmpl.interpreter.StringTemplateConverter.Visitor.makeBlock(src, java.util.Arrays.asList(stats));
 		}
 		
-		private static Statement makeBlock(INode src, List<Statement> stats) {
-			return new Statement.NonEmptyBlock(src, new Label.Empty(src),
+		private static org.rascalmpl.ast.Statement makeBlock(org.eclipse.imp.pdb.facts.INode src, java.util.List<org.rascalmpl.ast.Statement> stats) {
+			return new org.rascalmpl.ast.Statement.NonEmptyBlock(src, new org.rascalmpl.ast.Label.Empty(src),
 					stats);
 		}
 
 		
-		private Statement makeAppend(Expression exp) {
-			return new Statement.Append(exp.getTree(), new DataTarget.Labeled(null, label),
-					new Statement.Expression(exp.getTree(), exp)); 
+		public org.rascalmpl.ast.Statement makeAppend(org.rascalmpl.ast.Expression exp) {
+			return new org.rascalmpl.ast.Statement.Append(exp.getTree(), new org.rascalmpl.ast.DataTarget.Labeled(null, this.label),
+					new org.rascalmpl.ast.Statement.Expression(exp.getTree(), exp)); 
 		}
 		
-		private static Statement combinePreBodyPost(INode src, List<Statement> pre, Statement body, List<Statement> post) {
-			List<Statement> stats = new ArrayList<Statement>();
+		public static org.rascalmpl.ast.Statement combinePreBodyPost(org.eclipse.imp.pdb.facts.INode src, java.util.List<org.rascalmpl.ast.Statement> pre, org.rascalmpl.ast.Statement body, java.util.List<org.rascalmpl.ast.Statement> post) {
+			java.util.List<org.rascalmpl.ast.Statement> stats = new java.util.ArrayList<org.rascalmpl.ast.Statement>();
 			stats.addAll(pre);
 			stats.add(body);
 			stats.addAll(post);
-			return makeBlock(src, stats);
+			return org.rascalmpl.interpreter.StringTemplateConverter.Visitor.makeBlock(src, stats);
 		}
 		
 		
-		private static Expression makeLit(INode src, String str) {
+		public static org.rascalmpl.ast.Expression makeLit(org.eclipse.imp.pdb.facts.INode src, java.lang.String str) {
 			// Note: we don't unescape here this happens
 			// in the main evaluator; also, we pretend 
 			// "...< etc. to be "..." stringliterals...
-			return new Expression.Literal(src, 
+			return new org.rascalmpl.ast.Expression.Literal(src, 
 					new org.rascalmpl.ast.Literal.String(src, 
-							new StringLiteral.NonInterpolated(src, 
-									new StringConstant.Lexical(src, str))));
-		}
-		
-		
-		@Override
-		public Statement visitStringLiteralInterpolated(
-				org.rascalmpl.ast.StringLiteral.Interpolated x) {
-			Statement pre = x.getPre().accept(this);
-			Statement exp = makeAppend(x.getExpression());
-			Statement tail = x.getTail().accept(this);
-			return makeBlock(x.getTree(), pre, exp, tail);
-		}
-		
-		@Override
-		public Statement visitStringLiteralNonInterpolated(NonInterpolated x) {
-			return makeAppend(makeLit(x.getTree(), ((StringConstant.Lexical)x.getConstant()).getString()));
-		}
-		
-		@Override
-		public Statement visitStringLiteralTemplate(
-				org.rascalmpl.ast.StringLiteral.Template x) {
-			Statement pre = x.getPre().accept(this);
-			Statement template = x.getTemplate().accept(this);
-			Statement tail = x.getTail().accept(this);
-			return makeBlock(x.getTree(), pre, template, tail);
-		}
-		
-	
-		@Override
-		public Statement visitStringTemplateDoWhile(DoWhile x) {
-			Statement body = x.getBody().accept(this);
-			return new Statement.DoWhile(x.getTree(), new Label.Empty(x.getTree()), 
-					combinePreBodyPost(x.getTree(), x.getPreStats(), body, x.getPostStats()) , x.getCondition());
-		}
-
-
-		@Override
-		public Statement visitStringTemplateFor(For x) {
-			Statement body = x.getBody().accept(this);
-			return new Statement.For(x.getTree(), new Label.Empty(x.getTree()), x.getGenerators(), 
-					combinePreBodyPost(x.getTree(), x.getPreStats(), body, x.getPostStats()));
-		}
-
-		@Override
-		public Statement visitStringTemplateIfThen(IfThen x) {
-			Statement body = x.getBody().accept(this);
-			return new Statement.IfThen(x.getTree(), new Label.Empty(x.getTree()), x.getConditions(), 
-					combinePreBodyPost(x.getTree(), x.getPreStats(), body, x.getPostStats()), null);
-		}
-
-		@Override
-		public Statement visitStringTemplateIfThenElse(IfThenElse x) {
-			Statement t = x.getThenString().accept(this);
-			Statement e = x.getElseString().accept(this);
-			return new Statement.IfThenElse(x.getTree(), new Label.Empty(x.getTree()), 
-					x.getConditions(), 
-						combinePreBodyPost(x.getTree(), x.getPreStatsThen(), t, x.getPostStatsThen()),
-						combinePreBodyPost(x.getTree(), x.getPreStatsElse(), e, x.getPostStatsElse()));
-		}
-
-		@Override
-		public Statement visitStringTemplateWhile(While x) {
-			Statement body = x.getBody().accept(this);
-			return new Statement.While(x.getTree(), new Label.Empty(x.getTree()), Collections.singletonList(x.getCondition()), 
-					combinePreBodyPost(x.getTree(), x.getPreStats(), body, x.getPostStats()));
-		}
-
-		@Override
-		public Statement visitStringMiddleInterpolated(Interpolated x) {
-			Statement mid = x.getMid().accept(this);
-			Statement exp = makeAppend(x.getExpression());
-			Statement tail = x.getTail().accept(this);
-			return makeBlock(x.getTree(), mid, exp, tail);
-		}
-
-		@Override
-		public Statement visitStringMiddleTemplate(Template x) {
-			Statement mid = x.getMid().accept(this);
-			Statement tmp = x.getTemplate().accept(this);
-			Statement tail = x.getTail().accept(this);
-			return makeBlock(x.getTree(), mid, tmp, tail);
-		}
-		
-		@Override
-		public Statement visitStringMiddleMid(Mid x) {
-			return x.getMid().accept(this);
-		}
-
-		@Override
-		public Statement visitMidStringCharsLexical(Lexical x) {
-			return makeAppend(makeLit(x.getTree(), x.getString()));
-		}
-
-		@Override
-		public Statement visitPreStringCharsLexical(
-				org.rascalmpl.ast.PreStringChars.Lexical x) {
-			return makeAppend(makeLit(x.getTree(), x.getString()));
-		}
-		
-		@Override
-		public Statement visitPostStringCharsLexical(
-				org.rascalmpl.ast.PostStringChars.Lexical x) {
-			return makeAppend(makeLit(x.getTree(), x.getString()));
-		}
-
-		@Override
-		public Statement visitStringTailMidInterpolated(
-				org.rascalmpl.ast.StringTail.MidInterpolated x) {
-			Statement mid = x.getMid().accept(this);
-			Statement exp = makeAppend(x.getExpression());
-			Statement tail = x.getTail().accept(this);
-			return makeBlock(x.getTree(), mid, exp, tail);
-		}
-
-		@Override
-		public Statement visitStringConstantLexical(
-				org.rascalmpl.ast.StringConstant.Lexical x) {
-			return makeAppend(makeLit(x.getTree(), x.getString()));
-		}
-		
-		@Override
-		public Statement visitStringTailMidTemplate(
-				org.rascalmpl.ast.StringTail.MidTemplate x) {
-			Statement mid = x.getMid().accept(this);
-			Statement template = x.getTemplate().accept(this);
-			Statement tail = x.getTail().accept(this);
-			return makeBlock(x.getTree(), mid, template, tail);
-		}
-		
-		@Override
-		public Statement visitStringTailPost(Post x) {
-			return x.getPost().accept(this);
+							new org.rascalmpl.ast.StringLiteral.NonInterpolated(src, 
+									new org.rascalmpl.ast.StringConstant.Lexical(src, str))));
 		}
 		
 	
