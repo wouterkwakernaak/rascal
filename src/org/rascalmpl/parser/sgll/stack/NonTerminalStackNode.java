@@ -1,36 +1,25 @@
 package org.rascalmpl.parser.sgll.stack;
 
 import org.rascalmpl.parser.sgll.result.AbstractNode;
-import org.rascalmpl.parser.sgll.result.AbstractContainerNode;
-import org.rascalmpl.parser.sgll.result.struct.Link;
-import org.rascalmpl.parser.sgll.util.ArrayList;
 import org.rascalmpl.parser.sgll.util.specific.PositionStore;
 
 public final class NonTerminalStackNode extends AbstractStackNode{
 	private final String expectIdentifier;
 	
-	private AbstractContainerNode result;
-	
-	public NonTerminalStackNode(int id, String expectIdentifier){
-		super(id);
+	public NonTerminalStackNode(int id, int dot, String expectIdentifier){
+		super(id, dot);
 		
 		this.expectIdentifier = expectIdentifier;
 	}
 	
-	public NonTerminalStackNode(int id, IMatchableStackNode[] followRestrictions, String expectIdentifier){
-		super(id, followRestrictions);
+	public NonTerminalStackNode(int id, int dot, IMatchableStackNode[] followRestrictions, String expectIdentifier){
+		super(id, dot, followRestrictions);
 		
 		this.expectIdentifier = expectIdentifier;
 	}
 	
 	private NonTerminalStackNode(NonTerminalStackNode original){
 		super(original);
-		
-		expectIdentifier = original.expectIdentifier;
-	}
-	
-	private NonTerminalStackNode(NonTerminalStackNode original, ArrayList<Link>[] prefixes){
-		super(original, prefixes);
 		
 		expectIdentifier = original.expectIdentifier;
 	}
@@ -47,24 +36,8 @@ public final class NonTerminalStackNode extends AbstractStackNode{
 		throw new UnsupportedOperationException();
 	}
 	
-	public boolean isClean(){
-		return (result == null);
-	}
-	
 	public AbstractStackNode getCleanCopy(){
 		return new NonTerminalStackNode(this);
-	}
-
-	public AbstractStackNode getCleanCopyWithPrefix(){
-		return new NonTerminalStackNode(this, prefixesMap);
-	}
-	
-	public void setResultStore(AbstractContainerNode resultStore){
-		result = resultStore;
-	}
-	
-	public AbstractContainerNode getResultStore(){
-		return result;
 	}
 	
 	public int getLength(){
@@ -76,7 +49,7 @@ public final class NonTerminalStackNode extends AbstractStackNode{
 	}
 	
 	public AbstractNode getResult(){
-		return result;
+		throw new UnsupportedOperationException();
 	}
 
 	public String toString(){

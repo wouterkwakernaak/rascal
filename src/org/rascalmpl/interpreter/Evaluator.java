@@ -371,6 +371,7 @@ public class Evaluator extends org.rascalmpl.ast.NullASTVisitor<org.rascalmpl.in
 				result.add(new java.io.File("/Users/jurgenv/Sources/Rascal/rascal/src/org/rascalmpl/library").getAbsolutePath());
 				result.add(new java.io.File("/Users/mhills/Projects/rascal/build/rascal/src/org/rascalmpl/library").getAbsolutePath());
 				result.add(new java.io.File("/Users/paulklint/software/source/roll/rascal/src/org/rascalmpl/library").getAbsolutePath());
+				result.add(new File("/ufs/lankamp/drowzee/RascalEclipse/rascal/src/org/rascalmpl/library").getAbsolutePath());
 				result.add(org.rascalmpl.interpreter.Configuration.getSdfLibraryPathProperty());
 				result.add(new java.io.File(java.lang.System.getProperty("user.dir"), "src/org/rascalmpl/test/data").getAbsolutePath());
 				// adds folders for Rascal grammar

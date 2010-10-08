@@ -2,10 +2,7 @@ package org.rascalmpl.parser.sgll.stack;
 
 import org.eclipse.imp.pdb.facts.IConstructor;
 import org.rascalmpl.parser.sgll.result.AbstractNode;
-import org.rascalmpl.parser.sgll.result.AbstractContainerNode;
 import org.rascalmpl.parser.sgll.result.LiteralNode;
-import org.rascalmpl.parser.sgll.result.struct.Link;
-import org.rascalmpl.parser.sgll.util.ArrayList;
 import org.rascalmpl.parser.sgll.util.specific.PositionStore;
 
 public final class CaseInsensitiveLiteralStackNode extends AbstractStackNode implements IMatchableStackNode{
@@ -14,16 +11,16 @@ public final class CaseInsensitiveLiteralStackNode extends AbstractStackNode imp
 	
 	private LiteralNode result;
 	
-	public CaseInsensitiveLiteralStackNode(int id, IConstructor production, char[] ciLiteral){
-		super(id);
+	public CaseInsensitiveLiteralStackNode(int id, int dot, IConstructor production, char[] ciLiteral){
+		super(id, dot);
 		
 		this.production = production;
 		
 		this.ciLiteral = fill(ciLiteral);
 	}
 	
-	public CaseInsensitiveLiteralStackNode(int id, IConstructor production, IMatchableStackNode[] followRestrictions, char[] ciLiteral){
-		super(id, followRestrictions);
+	public CaseInsensitiveLiteralStackNode(int id, int dot, IConstructor production, IMatchableStackNode[] followRestrictions, char[] ciLiteral){
+		super(id, dot, followRestrictions);
 		
 		this.production = production;
 		
@@ -49,13 +46,6 @@ public final class CaseInsensitiveLiteralStackNode extends AbstractStackNode imp
 	
 	private CaseInsensitiveLiteralStackNode(CaseInsensitiveLiteralStackNode original){
 		super(original);
-		
-		production = original.production;
-		ciLiteral = original.ciLiteral;
-	}
-	
-	private CaseInsensitiveLiteralStackNode(CaseInsensitiveLiteralStackNode original, ArrayList<Link>[] prefixes){
-		super(original, prefixes);
 		
 		production = original.production;
 		ciLiteral = original.ciLiteral;
@@ -109,18 +99,6 @@ public final class CaseInsensitiveLiteralStackNode extends AbstractStackNode imp
 	
 	public AbstractStackNode getCleanCopy(){
 		return new CaseInsensitiveLiteralStackNode(this);
-	}
-
-	public AbstractStackNode getCleanCopyWithPrefix(){
-		return new CaseInsensitiveLiteralStackNode(this, prefixesMap);
-	}
-	
-	public void setResultStore(AbstractContainerNode resultStore){
-		throw new UnsupportedOperationException();
-	}
-	
-	public AbstractContainerNode getResultStore(){
-		throw new UnsupportedOperationException();
 	}
 	
 	public int getLength(){

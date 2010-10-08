@@ -2,42 +2,34 @@ package org.rascalmpl.parser.sgll.stack;
 
 import org.eclipse.imp.pdb.facts.IConstructor;
 import org.rascalmpl.parser.sgll.result.AbstractNode;
-import org.rascalmpl.parser.sgll.result.AbstractContainerNode;
-import org.rascalmpl.parser.sgll.result.struct.Link;
-import org.rascalmpl.parser.sgll.util.ArrayList;
 import org.rascalmpl.parser.sgll.util.specific.PositionStore;
 import org.rascalmpl.values.uptr.ProductionAdapter;
 import org.rascalmpl.values.uptr.SymbolAdapter;
 
 public final class ListStackNode extends AbstractStackNode implements IListStackNode{
-	private final static EpsilonStackNode EMPTY = new EpsilonStackNode(DEFAULT_LIST_EPSILON_ID);
+	private final static EpsilonStackNode EMPTY = new EpsilonStackNode(DEFAULT_LIST_EPSILON_ID, 0);
 	
 	private final IConstructor production;
 	private final String name;
 
-	private final AbstractStackNode child;
-	private final boolean isPlusList;
+	private final AbstractStackNode[] children;
 	
-	private AbstractContainerNode result;
-	
-	public ListStackNode(int id, IConstructor production, AbstractStackNode child, boolean isPlusList){
-		super(id);
+	public ListStackNode(int id, int dot, IConstructor production, AbstractStackNode child, boolean isPlusList){
+		super(id, dot);
 		
 		this.production = production;
 		this.name = SymbolAdapter.toString(ProductionAdapter.getRhs(production))+id; // Add the id to make it unique.
 		
-		this.child = child;
-		this.isPlusList = isPlusList;
+		this.children = generateChildren(child, isPlusList);
 	}
 	
-	public ListStackNode(int id, IConstructor production, IMatchableStackNode[] followRestrictions, AbstractStackNode child, boolean isPlusList){
-		super(id, followRestrictions);
+	public ListStackNode(int id, int dot, IConstructor production, IMatchableStackNode[] followRestrictions, AbstractStackNode child, boolean isPlusList){
+		super(id, dot, followRestrictions);
 		
 		this.production = production;
 		this.name = SymbolAdapter.toString(ProductionAdapter.getRhs(production))+id; // Add the id to make it unique.
 		
-		this.child = child;
-		this.isPlusList = isPlusList;
+		this.children = generateChildren(child, isPlusList);
 	}
 	
 	private ListStackNode(ListStackNode original){
@@ -46,18 +38,24 @@ public final class ListStackNode extends AbstractStackNode implements IListStack
 		production = original.production;
 		name = original.name;
 
-		child = original.child;
-		isPlusList = original.isPlusList;
+		children = original.children;
 	}
 	
-	private ListStackNode(ListStackNode original, ArrayList<Link>[] prefixes){
-		super(original, prefixes);
+	private AbstractStackNode[] generateChildren(AbstractStackNode child, boolean isPlusList){
+		AbstractStackNode listNode = child.getCleanCopy();
+		listNode.markAsEndNode();
+		listNode.setParentProduction(production);
+		listNode.setNext(new AbstractStackNode[]{listNode, listNode});
 		
-		production = original.production;
-		name = original.name;
-
-		child = original.child;
-		isPlusList = original.isPlusList;
+		if(isPlusList){
+			return new AbstractStackNode[]{listNode};
+		}
+		
+		AbstractStackNode empty = EMPTY.getCleanCopy();
+		empty.markAsEndNode();
+		empty.setParentProduction(production);
+		
+		return new AbstractStackNode[]{listNode, empty};
 	}
 	
 	public String getName(){
@@ -72,24 +70,8 @@ public final class ListStackNode extends AbstractStackNode implements IListStack
 		throw new UnsupportedOperationException();
 	}
 	
-	public boolean isClean(){
-		return (result == null);
-	}
-	
 	public AbstractStackNode getCleanCopy(){
 		return new ListStackNode(this);
-	}
-
-	public AbstractStackNode getCleanCopyWithPrefix(){
-		return new ListStackNode(this, prefixesMap);
-	}
-	
-	public void setResultStore(AbstractContainerNode resultStore){
-		result = resultStore;
-	}
-	
-	public AbstractContainerNode getResultStore(){
-		return result;
 	}
 	
 	public int getLength(){
@@ -97,36 +79,16 @@ public final class ListStackNode extends AbstractStackNode implements IListStack
 	}
 	
 	public AbstractStackNode[] getChildren(){
-		AbstractStackNode listNode = child.getCleanCopy();
-		listNode.markAsEndNode();
-		listNode.setStartLocation(startLocation);
-		listNode.setParentProduction(production);
-		listNode.setNext(listNode);
-		listNode.initEdges();
-		listNode.addEdgeWithPrefix(this, null, startLocation);
-		
-		if(isPlusList){
-			return new AbstractStackNode[]{listNode};
-		}
-		
-		AbstractStackNode empty = EMPTY.getCleanCopy();
-		empty.markAsEndNode();
-		empty.setStartLocation(startLocation);
-		empty.setParentProduction(production);
-		empty.initEdges();
-		empty.addEdge(this);
-		
-		return new AbstractStackNode[]{listNode, empty};
+		return children;
 	}
 	
 	public AbstractNode getResult(){
-		return result;
+		throw new UnsupportedOperationException();
 	}
 
 	public String toString(){
 		StringBuilder sb = new StringBuilder();
 		sb.append(name);
-		sb.append(getId());
 		sb.append('(');
 		sb.append(startLocation);
 		sb.append(',');

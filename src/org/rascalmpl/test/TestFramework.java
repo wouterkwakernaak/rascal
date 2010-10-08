@@ -67,7 +67,7 @@ public class TestFramework {
 		public String scheme() {
 			return "test-modules";
 		}
-
+		
 		public boolean isDirectory(URI uri) {
 			// TODO Auto-generated method stub
 			return false;

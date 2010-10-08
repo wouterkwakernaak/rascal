@@ -2,45 +2,34 @@ package org.rascalmpl.parser.sgll.stack;
 
 import org.eclipse.imp.pdb.facts.IConstructor;
 import org.rascalmpl.parser.sgll.result.AbstractNode;
-import org.rascalmpl.parser.sgll.result.AbstractContainerNode;
-import org.rascalmpl.parser.sgll.result.struct.Link;
-import org.rascalmpl.parser.sgll.util.ArrayList;
 import org.rascalmpl.parser.sgll.util.specific.PositionStore;
 import org.rascalmpl.values.uptr.ProductionAdapter;
 import org.rascalmpl.values.uptr.SymbolAdapter;
 
 public final class SeparatedListStackNode extends AbstractStackNode implements IListStackNode{
-	private final static EpsilonStackNode EMPTY = new EpsilonStackNode(DEFAULT_LIST_EPSILON_ID);
+	private final static EpsilonStackNode EMPTY = new EpsilonStackNode(DEFAULT_LIST_EPSILON_ID, 0);
 	
 	private final IConstructor production;
 	private final String name;
 
-	private final AbstractStackNode child;
-	private final AbstractStackNode[] separators;
-	private final boolean isPlusList;
+	private final AbstractStackNode[] children;
 	
-	private AbstractContainerNode result;
-	
-	public SeparatedListStackNode(int id, IConstructor production, AbstractStackNode child, AbstractStackNode[] separators, boolean isPlusList){
-		super(id);
+	public SeparatedListStackNode(int id, int dot, IConstructor production, AbstractStackNode child, AbstractStackNode[] separators, boolean isPlusList){
+		super(id, dot);
 		
 		this.production = production;
 		this.name = SymbolAdapter.toString(ProductionAdapter.getRhs(production))+id; // Add the id to make it unique.
 		
-		this.child = child;
-		this.separators = separators;
-		this.isPlusList = isPlusList;
+		this.children = generateChildren(child, separators, isPlusList);
 	}
 	
-	public SeparatedListStackNode(int id, IConstructor production, IMatchableStackNode[] followRestrictions, AbstractStackNode child, AbstractStackNode[] separators, boolean isPlusList){
-		super(id, followRestrictions);
+	public SeparatedListStackNode(int id, int dot, IConstructor production, IMatchableStackNode[] followRestrictions, AbstractStackNode child, AbstractStackNode[] separators, boolean isPlusList){
+		super(id, dot, followRestrictions);
 		
 		this.production = production;
 		this.name = SymbolAdapter.toString(ProductionAdapter.getRhs(production))+id; // Add the id to make it unique.
 		
-		this.child = child;
-		this.separators = separators;
-		this.isPlusList = isPlusList;
+		this.children = generateChildren(child, separators, isPlusList);
 	}
 	
 	private SeparatedListStackNode(SeparatedListStackNode original){
@@ -48,21 +37,37 @@ public final class SeparatedListStackNode extends AbstractStackNode implements I
 		
 		production = original.production;
 		name = original.name;
-
-		child = original.child;
-		separators = original.separators;
-		isPlusList = original.isPlusList;
+		
+		children = original.children;
 	}
 	
-	private SeparatedListStackNode(SeparatedListStackNode original, ArrayList<Link>[] prefixes){
-		super(original, prefixes);
+	private AbstractStackNode[] generateChildren(AbstractStackNode child,  AbstractStackNode[] separators, boolean isPlusList){
+		AbstractStackNode listNode = child.getCleanCopy();
+		listNode.markAsEndNode();
+		listNode.setParentProduction(production);
 		
-		production = original.production;
-		name = original.name;
+		int numberOfSeparators = separators.length;
+		AbstractStackNode[] prod = new AbstractStackNode[numberOfSeparators + 2];
+		
+		listNode.setNext(prod);
+		prod[0] = listNode; // Start
+		for(int i = numberOfSeparators - 1; i >= 0; --i){
+			AbstractStackNode separator = separators[i];
+			separator.setNext(prod);
+			separator.markAsSeparator();
+			prod[i + 1] = separator;
+		}
+		prod[numberOfSeparators + 1] = listNode; // End
+		
+		if(isPlusList){
+			return new AbstractStackNode[]{listNode};
+		}
 
-		child = original.child;
-		separators = original.separators;
-		isPlusList = original.isPlusList;
+		AbstractStackNode empty = EMPTY.getCleanCopy();
+		empty.markAsEndNode();
+		empty.setParentProduction(production);
+		
+		return new AbstractStackNode[]{listNode, empty};
 	}
 	
 	public String getName(){
@@ -77,24 +82,8 @@ public final class SeparatedListStackNode extends AbstractStackNode implements I
 		throw new UnsupportedOperationException();
 	}
 	
-	public boolean isClean(){
-		return (result == null);
-	}
-	
 	public AbstractStackNode getCleanCopy(){
 		return new SeparatedListStackNode(this);
-	}
-
-	public AbstractStackNode getCleanCopyWithPrefix(){
-		return new SeparatedListStackNode(this, prefixesMap);
-	}
-	
-	public void setResultStore(AbstractContainerNode resultStore){
-		result = resultStore;
-	}
-	
-	public AbstractContainerNode getResultStore(){
-		return result;
 	}
 	
 	public int getLength(){
@@ -102,48 +91,16 @@ public final class SeparatedListStackNode extends AbstractStackNode implements I
 	}
 	
 	public AbstractStackNode[] getChildren(){
-		AbstractStackNode listNode = child.getCleanCopy();
-		listNode.markAsEndNode();
-		listNode.setStartLocation(startLocation);
-		listNode.setParentProduction(production);
-		listNode.initEdges();
-		listNode.addEdgeWithPrefix(this, null, startLocation);
-		
-		AbstractStackNode from = listNode;
-		AbstractStackNode to = separators[0].getCleanCopy();
-		to.markAsSeparator();
-		from.setNext(to);
-		from = to;
-		for(int i = 1; i < separators.length; ++i){
-			to = separators[i].getCleanCopy();
-			to.markAsSeparator();
-			from.setNext(to);
-			from = to;
-		}
-		from.setNext(listNode);
-		
-		if(isPlusList){
-			return new AbstractStackNode[]{listNode};
-		}
-
-		AbstractStackNode empty = EMPTY.getCleanCopy();
-		empty.markAsEndNode();
-		empty.setStartLocation(startLocation);
-		empty.setParentProduction(production);
-		empty.initEdges();
-		empty.addEdge(this);
-		
-		return new AbstractStackNode[]{listNode, empty};
+		return children;
 	}
 	
 	public AbstractNode getResult(){
-		return result;
+		throw new UnsupportedOperationException();
 	}
 
 	public String toString(){
 		StringBuilder sb = new StringBuilder();
 		sb.append(name);
-		sb.append(getId());
 		sb.append('(');
 		sb.append(startLocation);
 		sb.append(',');
