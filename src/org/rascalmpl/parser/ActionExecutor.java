@@ -191,12 +191,14 @@ public class ActionExecutor {
 			if (action.isBuild()) {
 				// TODO add type checking
 				eval.setCurrentAST(action.getExpression());
-				return (IConstructor) action.getExpression().accept(eval).getValue();
+//				return (IConstructor) action.getExpression().accept(eval).getValue();
+				return (IConstructor) action.getExpression().__evaluate(eval).getValue();
 			}
 			else {
 				for (Statement s : action.getStatements()) {
 					eval.setCurrentAST(s);
-					s.accept(eval);
+//					s.accept(eval);
+					s.__evaluate(eval);
 				}
 			}
 			

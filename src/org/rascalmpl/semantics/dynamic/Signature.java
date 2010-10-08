@@ -24,8 +24,8 @@ public abstract class Signature extends org.rascalmpl.ast.Signature {
 				org.rascalmpl.interpreter.TypeEvaluator.Visitor __eval) {
 
 			return org.rascalmpl.interpreter.types.RascalTypeFactory
-					.getInstance().functionType(this.getType().accept(__eval),
-							this.getParameters().accept(__eval));
+					.getInstance().functionType(this.getType().__evaluate(__eval),
+							this.getParameters().__evaluate(__eval));
 
 		}
 
@@ -51,8 +51,8 @@ public abstract class Signature extends org.rascalmpl.ast.Signature {
 				org.rascalmpl.interpreter.TypeEvaluator.Visitor __eval) {
 
 			return org.rascalmpl.interpreter.types.RascalTypeFactory
-					.getInstance().functionType(this.getType().accept(__eval),
-							this.getParameters().accept(__eval));
+					.getInstance().functionType(this.getType().__evaluate(__eval),
+							this.getParameters().__evaluate(__eval));
 
 		}
 

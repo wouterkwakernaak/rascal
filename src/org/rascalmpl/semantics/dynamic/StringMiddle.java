@@ -36,9 +36,9 @@ public abstract class StringMiddle extends org.rascalmpl.ast.StringMiddle {
 		public org.rascalmpl.ast.Statement __evaluate(
 				org.rascalmpl.interpreter.StringTemplateConverter.Visitor __eval) {
 
-			org.rascalmpl.ast.Statement mid = this.getMid().accept(__eval);
-			org.rascalmpl.ast.Statement tmp = this.getTemplate().accept(__eval);
-			org.rascalmpl.ast.Statement tail = this.getTail().accept(__eval);
+			org.rascalmpl.ast.Statement mid = this.getMid().__evaluate(__eval);
+			org.rascalmpl.ast.Statement tmp = this.getTemplate().__evaluate(__eval);
+			org.rascalmpl.ast.Statement tail = this.getTail().__evaluate(__eval);
 			return org.rascalmpl.interpreter.StringTemplateConverter.Visitor
 					.makeBlock(this.getTree(), mid, tmp, tail);
 
@@ -57,7 +57,7 @@ public abstract class StringMiddle extends org.rascalmpl.ast.StringMiddle {
 		public org.rascalmpl.ast.Statement __evaluate(
 				org.rascalmpl.interpreter.StringTemplateConverter.Visitor __eval) {
 
-			return this.getMid().accept(__eval);
+			return this.getMid().__evaluate(__eval);
 
 		}
 
@@ -87,10 +87,10 @@ public abstract class StringMiddle extends org.rascalmpl.ast.StringMiddle {
 		public org.rascalmpl.ast.Statement __evaluate(
 				org.rascalmpl.interpreter.StringTemplateConverter.Visitor __eval) {
 
-			org.rascalmpl.ast.Statement mid = this.getMid().accept(__eval);
+			org.rascalmpl.ast.Statement mid = this.getMid().__evaluate(__eval);
 			org.rascalmpl.ast.Statement exp = __eval.makeAppend(this
 					.getExpression());
-			org.rascalmpl.ast.Statement tail = this.getTail().accept(__eval);
+			org.rascalmpl.ast.Statement tail = this.getTail().__evaluate(__eval);
 			return org.rascalmpl.interpreter.StringTemplateConverter.Visitor
 					.makeBlock(this.getTree(), mid, exp, tail);
 

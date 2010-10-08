@@ -10,6 +10,7 @@ import org.rascalmpl.interpreter.AssignableEvaluator;
 import org.rascalmpl.interpreter.BasicTypeEvaluator;
 import org.rascalmpl.interpreter.BooleanEvaluator;
 import org.rascalmpl.interpreter.Evaluator;
+import org.rascalmpl.interpreter.IEvaluator;
 import org.rascalmpl.interpreter.PatternEvaluator;
 import org.rascalmpl.interpreter.TypeDeclarationEvaluator.DeclarationCollector;
 import org.rascalmpl.interpreter.TypeEvaluator.Visitor;
@@ -133,6 +134,17 @@ public abstract class AbstractAST implements IVisitable {
 	public Result<IBool> __evaluate(
 			org.rascalmpl.interpreter.TestEvaluator.Visitor eval) {
 		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	public Result<IValue> __evaluate(IEvaluator<Result<IValue>> eval) {
+		if (eval instanceof Evaluator) return __evaluate((Evaluator)eval);
+		if (eval instanceof AssignableEvaluator) return __evaluate((AssignableEvaluator)eval);
+		return null;
+	}
+
+	public IMatchingResult __evaluate(IEvaluator<IMatchingResult> eval) {
+		if (eval instanceof PatternEvaluator) return __evaluate((PatternEvaluator)eval);
 		return null;
 	}
 }

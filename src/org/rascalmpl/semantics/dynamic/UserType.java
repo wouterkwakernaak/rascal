@@ -103,7 +103,7 @@ public abstract class UserType extends org.rascalmpl.ast.UserType {
 
 				int i = 0;
 				for (org.rascalmpl.ast.Type param : this.getParameters()) {
-					params[i++] = param.accept(__eval);
+					params[i++] = param.__evaluate(__eval);
 				}
 
 				// __eval has side-effects that we might need?

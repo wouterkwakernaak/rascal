@@ -25,7 +25,7 @@ public abstract class Visit extends org.rascalmpl.ast.Visit {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> subject = this
-					.getSubject().accept(__eval);
+					.getSubject().__evaluate(__eval);
 			java.util.List<org.rascalmpl.ast.Case> cases = this.getCases();
 			org.rascalmpl.interpreter.TraversalEvaluator te = new org.rascalmpl.interpreter.TraversalEvaluator(
 					__eval);
@@ -59,7 +59,7 @@ public abstract class Visit extends org.rascalmpl.ast.Visit {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> subject = this
-					.getSubject().accept(__eval);
+					.getSubject().__evaluate(__eval);
 
 			// TODO: warning switched to static type here, but not sure if
 			// that's correct...

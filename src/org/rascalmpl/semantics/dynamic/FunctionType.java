@@ -36,7 +36,7 @@ public abstract class FunctionType extends org.rascalmpl.ast.FunctionType {
 				org.rascalmpl.interpreter.TypeEvaluator.Visitor __eval) {
 
 			org.eclipse.imp.pdb.facts.type.Type returnType = this.getType()
-					.accept(__eval);
+					.__evaluate(__eval);
 			org.eclipse.imp.pdb.facts.type.Type argTypes = __eval
 					.getArgumentTypes(this.getArguments());
 			return org.rascalmpl.interpreter.types.RascalTypeFactory

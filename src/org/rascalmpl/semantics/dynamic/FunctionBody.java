@@ -23,7 +23,7 @@ public abstract class FunctionBody extends org.rascalmpl.ast.FunctionBody {
 
 			for (org.rascalmpl.ast.Statement statement : this.getStatements()) {
 				__eval.setCurrentAST(statement);
-				result = statement.accept(__eval);
+				result = statement.__evaluate(__eval);
 			}
 
 			return result;

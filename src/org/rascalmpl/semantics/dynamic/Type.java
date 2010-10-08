@@ -18,7 +18,7 @@ public abstract class Type extends org.rascalmpl.ast.Type {
 		public org.eclipse.imp.pdb.facts.type.Type __evaluate(
 				org.rascalmpl.interpreter.TypeEvaluator.Visitor __eval) {
 
-			return this.getStructured().accept(__eval);
+			return this.getStructured().__evaluate(__eval);
 
 		}
 
@@ -35,7 +35,7 @@ public abstract class Type extends org.rascalmpl.ast.Type {
 		public org.eclipse.imp.pdb.facts.type.Type __evaluate(
 				org.rascalmpl.interpreter.TypeEvaluator.Visitor __eval) {
 
-			return this.getSelector().accept(__eval);
+			return this.getSelector().__evaluate(__eval);
 
 		}
 
@@ -62,7 +62,7 @@ public abstract class Type extends org.rascalmpl.ast.Type {
 		public org.eclipse.imp.pdb.facts.type.Type __evaluate(
 				org.rascalmpl.interpreter.TypeEvaluator.Visitor __eval) {
 
-			return this.getBasic().accept(__eval);
+			return this.getBasic().__evaluate(__eval);
 
 		}
 
@@ -110,7 +110,7 @@ public abstract class Type extends org.rascalmpl.ast.Type {
 						.parameterType(
 								org.rascalmpl.interpreter.utils.Names.name(var
 										.getName()),
-								var.getBound().accept(__eval));
+								var.getBound().__evaluate(__eval));
 			} else {
 				param = org.rascalmpl.interpreter.TypeEvaluator.__getTf()
 						.parameterType(
@@ -147,7 +147,7 @@ public abstract class Type extends org.rascalmpl.ast.Type {
 		public org.eclipse.imp.pdb.facts.type.Type __evaluate(
 				org.rascalmpl.interpreter.TypeEvaluator.Visitor __eval) {
 
-			return this.getUser().accept(__eval);
+			return this.getUser().__evaluate(__eval);
 
 		}
 
@@ -169,7 +169,7 @@ public abstract class Type extends org.rascalmpl.ast.Type {
 		public org.eclipse.imp.pdb.facts.type.Type __evaluate(
 				org.rascalmpl.interpreter.TypeEvaluator.Visitor __eval) {
 
-			return this.getType().accept(__eval);
+			return this.getType().__evaluate(__eval);
 
 		}
 
@@ -191,7 +191,7 @@ public abstract class Type extends org.rascalmpl.ast.Type {
 		public org.eclipse.imp.pdb.facts.type.Type __evaluate(
 				org.rascalmpl.interpreter.TypeEvaluator.Visitor __eval) {
 
-			return this.getFunction().accept(__eval);
+			return this.getFunction().__evaluate(__eval);
 
 		}
 

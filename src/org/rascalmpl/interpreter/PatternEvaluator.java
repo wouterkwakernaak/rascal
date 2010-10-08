@@ -221,7 +221,8 @@ public class PatternEvaluator extends org.rascalmpl.ast.NullASTVisitor<org.rasca
 
 		for (int i = 0; i < n; i += 2) { // skip layout elements
 			org.rascalmpl.ast.Expression e = elements.get(i);
-			args.add(e.accept(this));
+//			args.add(e.accept(this));
+			args.add(e.__evaluate(this));
 		}
 		return args;
 	}
@@ -232,7 +233,8 @@ public class PatternEvaluator extends org.rascalmpl.ast.NullASTVisitor<org.rasca
 
 		int i = 0;
 		for(org.rascalmpl.ast.Expression e : elements){
-			args.add(i++, e.accept(this));
+//			args.add(i++, e.accept(this));
+			args.add(i++, e.__evaluate(this));
 		}
 		return args;
 	}

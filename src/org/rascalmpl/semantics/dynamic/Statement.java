@@ -49,7 +49,7 @@ public abstract class Statement extends org.rascalmpl.ast.Statement {
 				org.rascalmpl.ast.Bound bound = this.getBound();
 				if (bound.isDefault()) {
 					org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> res = bound
-							.getExpression().accept(__eval);
+							.getExpression().__evaluate(__eval);
 					if (!res.getType().isIntegerType()) {
 						throw new org.rascalmpl.interpreter.staticErrors.UnexpectedTypeError(
 								org.rascalmpl.interpreter.Evaluator.__getTf()
@@ -78,7 +78,7 @@ public abstract class Statement extends org.rascalmpl.ast.Statement {
 					if (__eval.__getInterrupt())
 						throw new org.rascalmpl.interpreter.control_exceptions.InterruptException(
 								__eval.getStackTrace());
-					bodyResult = body.accept(__eval);
+					bodyResult = body.__evaluate(__eval);
 					for (int i = 0; i < size; i++) {
 						org.rascalmpl.ast.QualifiedName var = vars[i];
 						org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> v = __eval
@@ -144,7 +144,7 @@ public abstract class Statement extends org.rascalmpl.ast.Statement {
 		public org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> __evaluate(
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
-			return this.getDeclaration().accept(__eval);
+			return this.getDeclaration().__evaluate(__eval);
 
 		}
 
@@ -190,7 +190,7 @@ public abstract class Statement extends org.rascalmpl.ast.Statement {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			throw new org.rascalmpl.interpreter.control_exceptions.Insert(this
-					.getStatement().accept(__eval));
+					.getStatement().__evaluate(__eval));
 
 		}
 
@@ -223,7 +223,7 @@ public abstract class Statement extends org.rascalmpl.ast.Statement {
 
 			try {
 				__eval.pushEnv();
-				return this.getExpression().accept(__eval);
+				return this.getExpression().__evaluate(__eval);
 			} finally {
 				__eval.unwind(old);
 			}
@@ -275,7 +275,7 @@ public abstract class Statement extends org.rascalmpl.ast.Statement {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> r = this
-					.getExpression().accept(__eval);
+					.getExpression().__evaluate(__eval);
 			if (!r.getType().equals(
 					org.rascalmpl.interpreter.Evaluator.__getTf().boolType())) {
 				throw new org.rascalmpl.interpreter.staticErrors.UnexpectedTypeError(
@@ -284,7 +284,7 @@ public abstract class Statement extends org.rascalmpl.ast.Statement {
 			}
 			if (r.getValue().isEqual(__eval.__getVf().bool(false))) {
 				org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> msgValue = this
-						.getMessage().accept(__eval);
+						.getMessage().__evaluate(__eval);
 				org.eclipse.imp.pdb.facts.IString msg = __eval.__getVf()
 						.string(
 								org.rascalmpl.interpreter.utils.Utils.unescape(
@@ -340,7 +340,7 @@ public abstract class Statement extends org.rascalmpl.ast.Statement {
 				target = __eval.__getAccumulators().peek();
 			}
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> result = this
-					.getStatement().accept(__eval);
+					.getStatement().__evaluate(__eval);
 			target.append(result);
 			return result;
 
@@ -390,7 +390,7 @@ public abstract class Statement extends org.rascalmpl.ast.Statement {
 					if (gens[i].hasNext() && gens[i].next()) {
 						if (i == size - 1) {
 							__eval.setCurrentAST(body);
-							return body.accept(__eval);
+							return body.__evaluate(__eval);
 						}
 
 						i++;
@@ -432,13 +432,13 @@ public abstract class Statement extends org.rascalmpl.ast.Statement {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> subject = this
-					.getExpression().accept(__eval);
+					.getExpression().__evaluate(__eval);
 
 			for (org.rascalmpl.ast.Case cs : this.getCases()) {
 				if (cs.isDefault()) {
 					// TODO: what if the default statement uses a fail
 					// statement?
-					return cs.getStatement().accept(__eval);
+					return cs.getStatement().__evaluate(__eval);
 				}
 				org.rascalmpl.ast.PatternWithAction rule = cs
 						.getPatternWithAction();
@@ -524,7 +524,7 @@ public abstract class Statement extends org.rascalmpl.ast.Statement {
 									__eval.getStackTrace());
 						if (gens[i].hasNext() && gens[i].next()) {
 							if (i == size - 1) {
-								body.accept(__eval);
+								body.__evaluate(__eval);
 								continue loop;
 							}
 
@@ -570,7 +570,7 @@ public abstract class Statement extends org.rascalmpl.ast.Statement {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			throw new org.rascalmpl.interpreter.control_exceptions.Return(this
-					.getStatement().accept(__eval), this.getStatement()
+					.getStatement().__evaluate(__eval), this.getStatement()
 					.getLocation());
 
 		}
@@ -619,7 +619,7 @@ public abstract class Statement extends org.rascalmpl.ast.Statement {
 					if (gens[i].hasNext() && gens[i].next()) {
 						if (i == size - 1) {
 							__eval.setCurrentAST(body);
-							return body.accept(__eval);
+							return body.__evaluate(__eval);
 						}
 
 						i++;
@@ -639,7 +639,7 @@ public abstract class Statement extends org.rascalmpl.ast.Statement {
 
 			org.rascalmpl.ast.Statement elsePart = this.getElseStatement();
 			__eval.setCurrentAST(elsePart);
-			return elsePart.accept(__eval);
+			return elsePart.__evaluate(__eval);
 
 		}
 
@@ -665,8 +665,8 @@ public abstract class Statement extends org.rascalmpl.ast.Statement {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> right = this
-					.getStatement().accept(__eval);
-			return this.getAssignable().accept(
+					.getStatement().__evaluate(__eval);
+			return this.getAssignable().__evaluate(
 					new org.rascalmpl.interpreter.AssignableEvaluator(__eval
 							.getCurrentEnvt(), this.getOperator(), right,
 							__eval));
@@ -725,7 +725,7 @@ public abstract class Statement extends org.rascalmpl.ast.Statement {
 			try {
 				for (org.rascalmpl.ast.Statement stat : this.getStatements()) {
 					__eval.setCurrentAST(stat);
-					r = stat.accept(__eval);
+					r = stat.__evaluate(__eval);
 				}
 			} finally {
 				__eval.unwind(old);
@@ -819,7 +819,7 @@ public abstract class Statement extends org.rascalmpl.ast.Statement {
 					if (gens[i].hasNext() && gens[i].next()) {
 						if (i == size - 1) {
 							// NB: no result handling here.
-							body.accept(__eval);
+							body.__evaluate(__eval);
 						} else {
 							i++;
 							gens[i] = __eval.makeBooleanResult(generators
@@ -895,7 +895,7 @@ public abstract class Statement extends org.rascalmpl.ast.Statement {
 		public org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> __evaluate(
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
-			return this.getVisit().accept(__eval);
+			return this.getVisit().__evaluate(__eval);
 
 		}
 
@@ -941,7 +941,7 @@ public abstract class Statement extends org.rascalmpl.ast.Statement {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			throw new org.rascalmpl.interpreter.control_exceptions.Throw(this
-					.getStatement().accept(__eval).getValue(), __eval
+					.getStatement().__evaluate(__eval).getValue(), __eval
 					.getCurrentAST(), __eval.getStackTrace());
 
 		}
@@ -982,7 +982,7 @@ public abstract class Statement extends org.rascalmpl.ast.Statement {
 
 			while (true) {
 				try {
-					body.accept(__eval);
+					body.__evaluate(__eval);
 
 					gen = __eval.makeBooleanResult(generator);
 					gen.init();
@@ -1021,7 +1021,7 @@ public abstract class Statement extends org.rascalmpl.ast.Statement {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> r = this
-					.getExpression().accept(__eval);
+					.getExpression().__evaluate(__eval);
 			if (!r.getType().equals(
 					org.rascalmpl.interpreter.Evaluator.__getTf().boolType())) {
 				throw new org.rascalmpl.interpreter.staticErrors.UnexpectedTypeError(
@@ -1078,7 +1078,7 @@ public abstract class Statement extends org.rascalmpl.ast.Statement {
 		public org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> __evaluate(
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
-			return this.getFunctionDeclaration().accept(__eval);
+			return this.getFunctionDeclaration().__evaluate(__eval);
 
 		}
 

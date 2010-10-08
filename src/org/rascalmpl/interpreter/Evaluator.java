@@ -49,6 +49,7 @@ import org.eclipse.imp.pdb.facts.type.TypeStore;
 import org.joda.time.DateTime;
 import org.joda.time.format.ISODateTimeFormat;
 import org.rascalmpl.ast.ASTFactory;
+import org.rascalmpl.ast.ASTFactoryFactory;
 import org.rascalmpl.ast.AbstractAST;
 import org.rascalmpl.ast.BasicType;
 import org.rascalmpl.ast.Bound;
@@ -329,7 +330,7 @@ public class Evaluator extends org.rascalmpl.ast.NullASTVisitor<org.rascalmpl.in
 		this.parser = parser;
 		this.stderr = stderr;
 		this.__setStdout(stdout);
-		this.builder = new org.rascalmpl.parser.ASTBuilder(new org.rascalmpl.ast.ASTFactory());
+		this.builder = new org.rascalmpl.parser.ASTBuilder(ASTFactoryFactory.getASTFactory());
 		this.resolverRegistry = new org.rascalmpl.uri.URIResolverRegistry();
 
 		this.updateProperties();
@@ -766,7 +767,8 @@ public class Evaluator extends org.rascalmpl.ast.NullASTVisitor<org.rascalmpl.in
 			}
 			this.currentAST = stat;
 			try {
-				return stat.accept(this);
+//				return stat.accept(this);
+				return stat.__evaluate(this);
 			}
 			finally {
 				if(Evaluator.doProfiling) {
@@ -802,7 +804,8 @@ public class Evaluator extends org.rascalmpl.ast.NullASTVisitor<org.rascalmpl.in
 
 		}
 		try {
-			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> r = expr.accept(this);
+//			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> r = expr.accept(this);
+			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> r = expr.__evaluate(this);
 			if(r != null){
 				return r;
 			}
@@ -886,7 +889,8 @@ public class Evaluator extends org.rascalmpl.ast.NullASTVisitor<org.rascalmpl.in
 
 		}
 		try {
-			return command.accept(this);
+//			return command.accept(this);
+			return command.__evaluate(this);
 		}
 		finally {
 			if(Evaluator.doProfiling){
@@ -929,7 +933,8 @@ public class Evaluator extends org.rascalmpl.ast.NullASTVisitor<org.rascalmpl.in
 	public org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> eval(org.rascalmpl.ast.Declaration declaration) {
 		this.__setInterrupt(false);
 		this.currentAST = declaration;
-		org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> r = declaration.accept(this);
+//		org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> r = declaration.accept(this);
+		org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> r = declaration.__evaluate(this);
 		if(r != null){
 			return r;
 		}
@@ -945,7 +950,8 @@ public class Evaluator extends org.rascalmpl.ast.NullASTVisitor<org.rascalmpl.in
 	public org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> eval(org.rascalmpl.ast.Import imp) {
 		this.__setInterrupt(false);
 		this.currentAST = imp;
-		org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> r = imp.accept(this);
+//		org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> r = imp.accept(this);
+		org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> r = imp.__evaluate(this);
 		if(r != null){
 			return r;
 		}
@@ -972,7 +978,8 @@ public class Evaluator extends org.rascalmpl.ast.NullASTVisitor<org.rascalmpl.in
 				if (!this.getModuleName(module).equals(name)) {
 					throw new org.rascalmpl.interpreter.staticErrors.ModuleNameMismatchError(this.getModuleName(module), name, this.getCurrentAST());
 				}
-				module.accept(this);
+//				module.accept(this);
+				module.__evaluate(this);
 			}
 		}
 		catch (java.io.IOException e) {
@@ -1375,7 +1382,7 @@ public class Evaluator extends org.rascalmpl.ast.NullASTVisitor<org.rascalmpl.in
 				this.writeBinary(name, tree);
 			}
 			
-			org.rascalmpl.parser.ASTBuilder astBuilder = new org.rascalmpl.parser.ASTBuilder(new org.rascalmpl.ast.ASTFactory());
+			org.rascalmpl.parser.ASTBuilder astBuilder = new org.rascalmpl.parser.ASTBuilder(ASTFactoryFactory.getASTFactory());
 			org.rascalmpl.ast.Module moduleAst = astBuilder.buildModule(tree);
 			
 			if (moduleAst == null) {
@@ -1402,7 +1409,8 @@ public class Evaluator extends org.rascalmpl.ast.NullASTVisitor<org.rascalmpl.in
 					throw new org.rascalmpl.interpreter.staticErrors.ModuleNameMismatchError(this.getModuleName(module), name, x);
 				}
 				this.__getHeap().setModuleURI(name, module.getLocation().getURI());
-				module.accept(this);
+//				module.accept(this);
+				module.__evaluate(this);
 				return module;
 			}
 		}
@@ -1432,7 +1440,8 @@ public class Evaluator extends org.rascalmpl.ast.NullASTVisitor<org.rascalmpl.in
 
 	public void visitImports(java.util.List<org.rascalmpl.ast.Import> imports) {
 		for (org.rascalmpl.ast.Import i : imports) {
-			i.accept(this);
+//			i.accept(this);
+			i.__evaluate(this);
 		}
 	}
 
@@ -1459,13 +1468,15 @@ public class Evaluator extends org.rascalmpl.ast.NullASTVisitor<org.rascalmpl.in
 		org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> res = org.rascalmpl.interpreter.result.ResultFactory.nothing();
 
 		try {
-			res = body.accept(this);
+//			res = body.accept(this);
+			res = body.__evaluate(this);
 		} catch (org.rascalmpl.interpreter.control_exceptions.Throw e){
 			org.eclipse.imp.pdb.facts.IValue eValue = e.getException();
 
 			for (org.rascalmpl.ast.Catch c : handlers){
 				if(c.isDefault()){
-					res = c.getBody().accept(this);
+//					res = c.getBody().accept(this);
+					res = c.getBody().__evaluate(this);
 					break;
 				} 
 
@@ -1477,7 +1488,8 @@ public class Evaluator extends org.rascalmpl.ast.NullASTVisitor<org.rascalmpl.in
 		}
 		finally {
 			if (finallyBody != null) {
-				finallyBody.accept(this);
+//				finallyBody.accept(this);
+				finallyBody.__evaluate(this);
 			}
 		}
 		return res;
@@ -1490,7 +1502,8 @@ public class Evaluator extends org.rascalmpl.ast.NullASTVisitor<org.rascalmpl.in
 		}
 
 		org.rascalmpl.interpreter.BooleanEvaluator pe = new org.rascalmpl.interpreter.BooleanEvaluator(this);
-		return pat.accept(pe);
+//		return pat.accept(pe);
+		return pat.__evaluate(pe);
 	}
 
 	// Expressions -----------------------------------------------------------
@@ -1577,7 +1590,8 @@ public class Evaluator extends org.rascalmpl.ast.NullASTVisitor<org.rascalmpl.in
 		this.pushEnv();
 
 		try {
-			org.rascalmpl.interpreter.matching.IMatchingResult mp = pat.accept(this.__getPatternEvaluator());
+//			org.rascalmpl.interpreter.matching.IMatchingResult mp = pat.accept(this.__getPatternEvaluator());
+			org.rascalmpl.interpreter.matching.IMatchingResult mp = pat.__evaluate(this.__getPatternEvaluator());
 			mp.initMatch(subject);
 			if(debug)System.err.println("matchAndEval: subject=" + subject + ", pat=" + pat);
 			while(mp.hasNext()){
@@ -1590,7 +1604,8 @@ public class Evaluator extends org.rascalmpl.ast.NullASTVisitor<org.rascalmpl.in
 						this.checkPoint(this.getCurrentEnvt());
 						if(debug)System.err.println(stat.toString());
 						try {
-							stat.accept(this);
+//							stat.accept(this);
+							stat.__evaluate(this);
 						} catch (org.rascalmpl.interpreter.control_exceptions.Insert e){
 							// Make sure that the match pattern is set
 							if(e.getMatchPattern() == null) {
@@ -1620,7 +1635,8 @@ public class Evaluator extends org.rascalmpl.ast.NullASTVisitor<org.rascalmpl.in
 			org.rascalmpl.ast.Expression replacementExpr){
 		org.rascalmpl.interpreter.env.Environment old = this.getCurrentEnvt();
 		try {
-			org.rascalmpl.interpreter.matching.IMatchingResult mp = pat.accept(this.__getPatternEvaluator());
+//			org.rascalmpl.interpreter.matching.IMatchingResult mp = pat.accept(this.__getPatternEvaluator());
+			org.rascalmpl.interpreter.matching.IMatchingResult mp = pat.__evaluate(this.__getPatternEvaluator());
 			mp.initMatch(subject);
 
 			while (mp.hasNext()){
@@ -1629,13 +1645,15 @@ public class Evaluator extends org.rascalmpl.ast.NullASTVisitor<org.rascalmpl.in
 					try {
 						boolean trueConditions = true;
 						for(org.rascalmpl.ast.Expression cond : conditions){
-							if(!cond.accept(this).isTrue()){
+//							if(!cond.accept(this).isTrue()){
+							if(!cond.__evaluate(this).isTrue()){
 								trueConditions = false;
 								break;
 							}
 						}
 						if(trueConditions){
-							throw new org.rascalmpl.interpreter.control_exceptions.Insert(replacementExpr.accept(this), mp);		
+//							throw new org.rascalmpl.interpreter.control_exceptions.Insert(replacementExpr.accept(this), mp);		
+							throw new org.rascalmpl.interpreter.control_exceptions.Insert(replacementExpr.__evaluate(this), mp);		
 						}
 					} catch (org.rascalmpl.interpreter.control_exceptions.Failure e){
 						System.err.println("failure occurred");
@@ -1706,7 +1724,8 @@ public class Evaluator extends org.rascalmpl.ast.NullASTVisitor<org.rascalmpl.in
 				this.elementType1 = org.rascalmpl.interpreter.Evaluator.__getTf().voidType();
 				
 				for(org.rascalmpl.ast.Expression resExpr : this.resultExprs){
-					this.rawElements[k] = resExpr.accept(this.ev);
+					//this.rawElements[k] = resExpr.accept(this.ev);
+					this.rawElements[k] = resExpr.__evaluate(this.ev);
 					org.eclipse.imp.pdb.facts.type.Type elementType = this.rawElements[k].getType();
 					
 					if (elementType.isListType() && !resExpr.isList()){
@@ -1727,7 +1746,8 @@ public class Evaluator extends org.rascalmpl.ast.NullASTVisitor<org.rascalmpl.in
 			else {
 				int k = 0;
 				for (org.rascalmpl.ast.Expression resExpr : this.resultExprs) {
-					this.rawElements[k++] = resExpr.accept(this.ev);
+//					this.rawElements[k++] = resExpr.accept(this.ev);
+					this.rawElements[k++] = resExpr.__evaluate(this.ev);
 				}
 			}
 			
@@ -1783,7 +1803,8 @@ public class Evaluator extends org.rascalmpl.ast.NullASTVisitor<org.rascalmpl.in
 				this.elementType1 = org.rascalmpl.interpreter.Evaluator.__getTf().voidType();
 				
 				for(org.rascalmpl.ast.Expression resExpr : this.resultExprs){
-					this.rawElements[k] = resExpr.accept(this.ev);
+//					this.rawElements[k] = resExpr.accept(this.ev);
+					this.rawElements[k] = resExpr.__evaluate(this.ev);
 					org.eclipse.imp.pdb.facts.type.Type elementType = this.rawElements[k].getType();
 				
 					if (elementType.isSetType() && !resExpr.isSet()){
@@ -1804,7 +1825,8 @@ public class Evaluator extends org.rascalmpl.ast.NullASTVisitor<org.rascalmpl.in
 			else {
 				int k = 0;
 				for (org.rascalmpl.ast.Expression resExpr : this.resultExprs) {
-					this.rawElements[k++] = resExpr.accept(this.ev);
+//					this.rawElements[k++] = resExpr.accept(this.ev);
+					this.rawElements[k++] = resExpr.__evaluate(this.ev);
 				}
 			}
 			
@@ -1850,8 +1872,10 @@ public class Evaluator extends org.rascalmpl.ast.NullASTVisitor<org.rascalmpl.in
 
 		@Override
 		public void append() {
-			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> r1 = this.resultExprs.get(0).accept(this.ev);
-			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> r2 = this.resultExprs.get(1).accept(this.ev);
+//			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> r1 = this.resultExprs.get(0).accept(this.ev);
+//			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> r2 = this.resultExprs.get(1).accept(this.ev);
+			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> r1 = this.resultExprs.get(0).__evaluate(this.ev);
+			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> r2 = this.resultExprs.get(1).__evaluate(this.ev);
 			if (this.writer == null) {
 				this.elementType1 = r1.getType();
 				this.elementType2 = r2.getType();
@@ -1882,7 +1906,8 @@ public class Evaluator extends org.rascalmpl.ast.NullASTVisitor<org.rascalmpl.in
 		org.rascalmpl.interpreter.env.Environment old = this.getCurrentEnvt();
 		int i = 0;
 		
-		org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> it = init.accept(this);
+//		org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> it = init.accept(this);
+		org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> it = init.__evaluate(this);
 
 		try {
 			gens[0] = this.makeBooleanResult(generators.get(0));
@@ -1895,7 +1920,8 @@ public class Evaluator extends org.rascalmpl.ast.NullASTVisitor<org.rascalmpl.in
 				if (gens[i].hasNext() && gens[i].next()) {
 					if(i == size - 1){
 						this.getCurrentEnvt().storeVariable(Evaluator.IT, it);
-						it = result.accept(this);
+//						it = result.accept(this);
+						it = result.__evaluate(this);
 						this.unwind(olds[i]);
 						this.pushEnv();
 					} 

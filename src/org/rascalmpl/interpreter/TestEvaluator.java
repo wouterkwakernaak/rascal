@@ -76,7 +76,8 @@ public class TestEvaluator {
 			for(int i = tests.size() - 1; i >= 0; i--){
 				try {
 					this.__getEval().pushEnv();
-					tests.get(i).accept(visitor);
+					//tests.get(i).accept(visitor);
+					tests.get(i).__evaluate(visitor);
 				}
 				finally {
 					this.__getEval().unwind(env);

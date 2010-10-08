@@ -171,7 +171,8 @@ public class AssignableEvaluator extends org.rascalmpl.ast.NullASTVisitor<org.ra
 	}
 	
 	public org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> recur(org.rascalmpl.ast.Assignable x, org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> result) {
-		return x.getReceiver().accept(new org.rascalmpl.interpreter.AssignableEvaluator(this.__getEnv(), null, result, this.__getEval()));
+//		return x.getReceiver().accept(new org.rascalmpl.interpreter.AssignableEvaluator(this.__getEnv(), null, result, this.__getEval()));
+		return x.getReceiver().__evaluate(new org.rascalmpl.interpreter.AssignableEvaluator(this.__getEnv(), null, result, this.__getEval()));
 	}
 	
 	public org.rascalmpl.ast.AbstractAST getCurrentAST() {

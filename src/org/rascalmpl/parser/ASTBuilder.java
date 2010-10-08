@@ -285,8 +285,11 @@ public class ASTBuilder {
 				if (actuals[i] == null) { // filtered
 					return null;
 				}
-				formals[i] = actuals[i].getClass().getSuperclass();
-
+				if (actuals[i].getClass().getPackage().getName().contains(".ast")) {
+					formals[i] = actuals[i].getClass().getSuperclass();
+				} else {
+					formals[i] = actuals[i].getClass().getSuperclass().getSuperclass();
+				}
 
 				ASTStatistics stats = ((AbstractAST) actuals[i]).getStats();
 				total.add(stats);
@@ -830,7 +833,7 @@ public class ASTBuilder {
 
 
 	private org.rascalmpl.ast.Expression makeQualifiedName(IConstructor node, String name) {
-		Name simple = new Name.Lexical(node, name);
+		Name simple = factory.makeNameLexical(node, name);
 		List<Name> list = new ArrayList<Name>(1);
 		list.add(simple);
 		return new Expression.QualifiedName(node, new QualifiedName.Default(node, list));

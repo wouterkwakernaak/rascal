@@ -21,11 +21,11 @@ public abstract class PathTail extends org.rascalmpl.ast.PathTail {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> mid = this
-					.getMid().accept(__eval);
+					.getMid().__evaluate(__eval);
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> expr = this
-					.getExpression().accept(__eval);
+					.getExpression().__evaluate(__eval);
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> tail = this
-					.getTail().accept(__eval);
+					.getTail().__evaluate(__eval);
 			java.lang.StringBuilder result = new java.lang.StringBuilder();
 
 			result.append(((org.eclipse.imp.pdb.facts.IString) mid.getValue())
@@ -72,7 +72,7 @@ public abstract class PathTail extends org.rascalmpl.ast.PathTail {
 		public org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> __evaluate(
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
-			return this.getPost().accept(__eval);
+			return this.getPost().__evaluate(__eval);
 
 		}
 

@@ -21,7 +21,7 @@ public abstract class LocalVariableDeclaration extends
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			// TODO deal with dynamic variables
-			return this.getDeclarator().accept(__eval);
+			return this.getDeclarator().__evaluate(__eval);
 
 		}
 

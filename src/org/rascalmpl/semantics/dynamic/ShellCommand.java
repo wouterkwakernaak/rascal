@@ -35,7 +35,7 @@ public abstract class ShellCommand extends org.rascalmpl.ast.ShellCommand {
 
 			java.lang.String name = "rascal.config."
 					+ this.getName().toString();
-			java.lang.String value = this.getExpression().accept(__eval)
+			java.lang.String value = this.getExpression().__evaluate(__eval)
 					.getValue().toString();
 
 			java.lang.System.setProperty(name, value);

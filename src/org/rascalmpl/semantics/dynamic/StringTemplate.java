@@ -17,7 +17,7 @@ public abstract class StringTemplate extends org.rascalmpl.ast.StringTemplate {
 		public org.rascalmpl.ast.Statement __evaluate(
 				org.rascalmpl.interpreter.StringTemplateConverter.Visitor __eval) {
 
-			org.rascalmpl.ast.Statement body = this.getBody().accept(__eval);
+			org.rascalmpl.ast.Statement body = this.getBody().__evaluate(__eval);
 			return new org.rascalmpl.ast.Statement.DoWhile(this.getTree(),
 					new org.rascalmpl.ast.Label.Empty(this.getTree()),
 					org.rascalmpl.interpreter.StringTemplateConverter.Visitor
@@ -53,7 +53,7 @@ public abstract class StringTemplate extends org.rascalmpl.ast.StringTemplate {
 		public org.rascalmpl.ast.Statement __evaluate(
 				org.rascalmpl.interpreter.StringTemplateConverter.Visitor __eval) {
 
-			org.rascalmpl.ast.Statement body = this.getBody().accept(__eval);
+			org.rascalmpl.ast.Statement body = this.getBody().__evaluate(__eval);
 			return new org.rascalmpl.ast.Statement.While(this.getTree(),
 					new org.rascalmpl.ast.Label.Empty(this.getTree()),
 					java.util.Collections.singletonList(this.getCondition()),
@@ -89,8 +89,8 @@ public abstract class StringTemplate extends org.rascalmpl.ast.StringTemplate {
 		public org.rascalmpl.ast.Statement __evaluate(
 				org.rascalmpl.interpreter.StringTemplateConverter.Visitor __eval) {
 
-			org.rascalmpl.ast.Statement t = this.getThenString().accept(__eval);
-			org.rascalmpl.ast.Statement e = this.getElseString().accept(__eval);
+			org.rascalmpl.ast.Statement t = this.getThenString().__evaluate(__eval);
+			org.rascalmpl.ast.Statement e = this.getElseString().__evaluate(__eval);
 			return new org.rascalmpl.ast.Statement.IfThenElse(this.getTree(),
 					new org.rascalmpl.ast.Label.Empty(this.getTree()), this
 							.getConditions(),
@@ -136,7 +136,7 @@ public abstract class StringTemplate extends org.rascalmpl.ast.StringTemplate {
 		public org.rascalmpl.ast.Statement __evaluate(
 				org.rascalmpl.interpreter.StringTemplateConverter.Visitor __eval) {
 
-			org.rascalmpl.ast.Statement body = this.getBody().accept(__eval);
+			org.rascalmpl.ast.Statement body = this.getBody().__evaluate(__eval);
 			return new org.rascalmpl.ast.Statement.For(this.getTree(),
 					new org.rascalmpl.ast.Label.Empty(this.getTree()), this
 							.getGenerators(),
@@ -172,7 +172,7 @@ public abstract class StringTemplate extends org.rascalmpl.ast.StringTemplate {
 		public org.rascalmpl.ast.Statement __evaluate(
 				org.rascalmpl.interpreter.StringTemplateConverter.Visitor __eval) {
 
-			org.rascalmpl.ast.Statement body = this.getBody().accept(__eval);
+			org.rascalmpl.ast.Statement body = this.getBody().__evaluate(__eval);
 			return new org.rascalmpl.ast.Statement.IfThen(this.getTree(),
 					new org.rascalmpl.ast.Label.Empty(this.getTree()), this
 							.getConditions(),

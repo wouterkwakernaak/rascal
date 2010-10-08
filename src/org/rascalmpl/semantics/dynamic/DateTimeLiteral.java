@@ -14,7 +14,7 @@ public abstract class DateTimeLiteral extends org.rascalmpl.ast.DateTimeLiteral 
 		public org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> __evaluate(
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
-			return this.getDateAndTime().accept(__eval);
+			return this.getDateAndTime().__evaluate(__eval);
 
 		}
 
@@ -57,7 +57,7 @@ public abstract class DateTimeLiteral extends org.rascalmpl.ast.DateTimeLiteral 
 		public org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> __evaluate(
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
-			return this.getTime().accept(__eval);
+			return this.getTime().__evaluate(__eval);
 
 		}
 
@@ -80,7 +80,7 @@ public abstract class DateTimeLiteral extends org.rascalmpl.ast.DateTimeLiteral 
 		public org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> __evaluate(
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
-			return this.getDate().accept(__eval);
+			return this.getDate().__evaluate(__eval);
 
 		}
 

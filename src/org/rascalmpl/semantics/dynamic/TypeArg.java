@@ -18,7 +18,7 @@ public abstract class TypeArg extends org.rascalmpl.ast.TypeArg {
 		public org.eclipse.imp.pdb.facts.type.Type __evaluate(
 				org.rascalmpl.interpreter.TypeEvaluator.Visitor __eval) {
 
-			return this.getType().accept(__eval);
+			return this.getType().__evaluate(__eval);
 
 		}
 
@@ -54,7 +54,7 @@ public abstract class TypeArg extends org.rascalmpl.ast.TypeArg {
 		public org.eclipse.imp.pdb.facts.type.Type __evaluate(
 				org.rascalmpl.interpreter.TypeEvaluator.Visitor __eval) {
 
-			return this.getType().accept(__eval);
+			return this.getType().__evaluate(__eval);
 
 		}
 

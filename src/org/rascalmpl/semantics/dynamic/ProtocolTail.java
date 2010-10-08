@@ -18,7 +18,7 @@ public abstract class ProtocolTail extends org.rascalmpl.ast.ProtocolTail {
 		public org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> __evaluate(
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
-			return this.getPost().accept(__eval);
+			return this.getPost().__evaluate(__eval);
 
 		}
 
@@ -43,11 +43,11 @@ public abstract class ProtocolTail extends org.rascalmpl.ast.ProtocolTail {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> pre = this
-					.getMid().accept(__eval);
+					.getMid().__evaluate(__eval);
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> expr = this
-					.getExpression().accept(__eval);
+					.getExpression().__evaluate(__eval);
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> tail = this
-					.getTail().accept(__eval);
+					.getTail().__evaluate(__eval);
 			java.lang.StringBuilder result = new java.lang.StringBuilder();
 
 			result.append(((org.eclipse.imp.pdb.facts.IString) pre.getValue())

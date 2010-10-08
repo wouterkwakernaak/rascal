@@ -236,7 +236,8 @@ public class TypeDeclarationEvaluator {
 				abstractDataTypes, constructorDecls, aliasDecls);
 
 		for (org.rascalmpl.ast.Toplevel t : decls) {
-			t.accept(collector);
+//			t.accept(collector);
+			t.__evaluate(collector);
 		}
 	}
 

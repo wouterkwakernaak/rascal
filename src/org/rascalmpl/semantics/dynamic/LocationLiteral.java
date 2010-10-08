@@ -16,9 +16,9 @@ public abstract class LocationLiteral extends org.rascalmpl.ast.LocationLiteral 
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> protocolPart = this
-					.getProtocolPart().accept(__eval);
+					.getProtocolPart().__evaluate(__eval);
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> pathPart = this
-					.getPathPart().accept(__eval);
+					.getPathPart().__evaluate(__eval);
 
 			java.lang.String uri = ((org.eclipse.imp.pdb.facts.IString) protocolPart
 					.getValue()).getValue()

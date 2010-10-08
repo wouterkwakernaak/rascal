@@ -19,7 +19,7 @@ public abstract class Command extends org.rascalmpl.ast.Command {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			__eval.setCurrentAST(this);
-			return this.getImported().accept(__eval);
+			return this.getImported().__evaluate(__eval);
 
 		}
 
@@ -37,7 +37,7 @@ public abstract class Command extends org.rascalmpl.ast.Command {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			__eval.setCurrentAST(this);
-			return this.getCommand().accept(__eval);
+			return this.getCommand().__evaluate(__eval);
 
 		}
 
@@ -116,7 +116,7 @@ public abstract class Command extends org.rascalmpl.ast.Command {
 			try {
 				__eval.pushEnv();
 				__eval.setCurrentAST(this.getExpression());
-				return this.getExpression().accept(__eval);
+				return this.getExpression().__evaluate(__eval);
 			} finally {
 				__eval.unwind(old);
 			}
@@ -143,7 +143,7 @@ public abstract class Command extends org.rascalmpl.ast.Command {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			__eval.setCurrentAST(this);
-			return this.getDeclaration().accept(__eval);
+			return this.getDeclaration().__evaluate(__eval);
 
 		}
 

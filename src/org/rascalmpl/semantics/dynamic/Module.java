@@ -44,7 +44,7 @@ public abstract class Module extends org.rascalmpl.ast.Module {
 				__eval.setCurrentEnvt(env); // such that declarations end up in
 											// the module scope
 				try {
-					this.getHeader().accept(__eval);
+					this.getHeader().__evaluate(__eval);
 
 					java.util.List<org.rascalmpl.ast.Toplevel> decls = this
 							.getBody().getToplevels();
@@ -55,7 +55,7 @@ public abstract class Module extends org.rascalmpl.ast.Module {
 							__eval.getCurrentEnvt());
 
 					for (org.rascalmpl.ast.Toplevel l : decls) {
-						l.accept(__eval);
+						l.__evaluate(__eval);
 					}
 
 					// only after everything was successful mark the module

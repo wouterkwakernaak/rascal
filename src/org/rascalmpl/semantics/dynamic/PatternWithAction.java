@@ -39,7 +39,7 @@ public abstract class PatternWithAction extends
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			org.rascalmpl.interpreter.matching.IMatchingResult pv = this
-					.getPattern().accept(__eval.__getPatternEvaluator());
+					.getPattern().__evaluate(__eval.__getPatternEvaluator());
 
 			org.eclipse.imp.pdb.facts.type.Type pt = pv.getType(__eval
 					.getCurrentEnvt());
@@ -89,7 +89,7 @@ public abstract class PatternWithAction extends
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			org.rascalmpl.interpreter.matching.IMatchingResult pv = this
-					.getPattern().accept(__eval.__getPatternEvaluator());
+					.getPattern().__evaluate(__eval.__getPatternEvaluator());
 			org.eclipse.imp.pdb.facts.type.Type pt = pv.getType(__eval
 					.getCurrentEnvt());
 

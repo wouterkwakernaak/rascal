@@ -25,11 +25,11 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> from = this
-					.getFirst().accept(__eval);
+					.getFirst().__evaluate(__eval);
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> to = this
-					.getLast().accept(__eval);
+					.getLast().__evaluate(__eval);
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> second = this
-					.getSecond().accept(__eval);
+					.getSecond().__evaluate(__eval);
 			return from.makeStepRange(to, second);
 
 		}
@@ -39,7 +39,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.BooleanEvaluator __eval) {
 
 			throw new org.rascalmpl.interpreter.staticErrors.UnexpectedTypeError(
-					__eval.__getTf().boolType(), this.accept(
+					__eval.__getTf().boolType(), this.__evaluate(
 							__eval.__getCtx().getEvaluator()).getType(), this);
 
 		}
@@ -81,8 +81,8 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.BooleanEvaluator __eval) {
 
 			return new org.rascalmpl.interpreter.matching.AndResult(__eval
-					.__getCtx(), this.getLhs().accept(__eval), this.getRhs()
-					.accept(__eval));
+					.__getCtx(), this.getLhs().__evaluate(__eval), this.getRhs()
+					.__evaluate(__eval));
 
 		}
 
@@ -115,7 +115,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.BooleanEvaluator __eval) {
 
 			throw new org.rascalmpl.interpreter.staticErrors.UnexpectedTypeError(
-					__eval.__getTf().boolType(), this.accept(
+					__eval.__getTf().boolType(), this.__evaluate(
 							__eval.__getCtx().getEvaluator()).getType(), this);
 		}
 
@@ -123,7 +123,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 		public org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> __evaluate(
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
-			return this.getArgument().accept(__eval).transitiveClosure();
+			return this.getArgument().__evaluate(__eval).transitiveClosure();
 
 		}
 
@@ -220,9 +220,9 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> left = this
-					.getLhs().accept(__eval);
+					.getLhs().__evaluate(__eval);
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> right = this
-					.getRhs().accept(__eval);
+					.getRhs().__evaluate(__eval);
 			return right.notIn(left);
 
 		}
@@ -263,7 +263,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 			__eval.setCurrentAST(this);
 
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> function = this
-					.getExpression().accept(__eval);
+					.getExpression().__evaluate(__eval);
 
 			java.util.List<org.rascalmpl.ast.Expression> args = this
 					.getArguments();
@@ -275,7 +275,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 
 			for (int i = 0; i < args.size(); i++) {
 				org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> resultElem = args
-						.get(i).accept(__eval);
+						.get(i).__evaluate(__eval);
 				types[i] = resultElem.getType();
 				actuals[i] = resultElem.getValue();
 			}
@@ -376,7 +376,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 			}
 
 			return new org.rascalmpl.interpreter.matching.NodePattern(__eval
-					.__getCtx(), this, nameExpr.accept(__eval), null, __eval
+					.__getCtx(), this, nameExpr.__evaluate(__eval), null, __eval
 					.visitArguments(this));
 
 		}
@@ -400,7 +400,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.BooleanEvaluator __eval) {
 
 			throw new org.rascalmpl.interpreter.staticErrors.UnexpectedTypeError(
-					__eval.__getTf().boolType(), this.accept(
+					__eval.__getTf().boolType(), this.__evaluate(
 							__eval.__getCtx().getEvaluator()).getType(), this);
 
 		}
@@ -424,7 +424,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 
 			for (org.rascalmpl.ast.Expression expr : elements) {
 				org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> resultElem = expr
-						.accept(__eval);
+						.__evaluate(__eval);
 
 				if (resultElem.getType().isVoidType())
 					throw new org.rascalmpl.interpreter.staticErrors.NonVoidTypeRequired(
@@ -583,9 +583,9 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 
 			for (org.rascalmpl.ast.Mapping mapping : mappings) {
 				org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> keyResult = mapping
-						.getFrom().accept(__eval);
+						.getFrom().__evaluate(__eval);
 				org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> valueResult = mapping
-						.getTo().accept(__eval);
+						.getTo().__evaluate(__eval);
 
 				if (keyResult.getType().isVoidType())
 					throw new org.rascalmpl.interpreter.staticErrors.NonVoidTypeRequired(
@@ -625,7 +625,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.BooleanEvaluator __eval) {
 
 			throw new org.rascalmpl.interpreter.staticErrors.UnexpectedTypeError(
-					__eval.__getTf().boolType(), this.accept(
+					__eval.__getTf().boolType(), this.__evaluate(
 							__eval.__getCtx().getEvaluator()).getType(), this);
 
 		}
@@ -827,7 +827,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 		public org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> __evaluate(
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
-			return this.getVisit().accept(__eval);
+			return this.getVisit().__evaluate(__eval);
 
 		}
 
@@ -870,9 +870,9 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> left = this
-					.getLhs().accept(__eval);
+					.getLhs().__evaluate(__eval);
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> right = this
-					.getRhs().accept(__eval);
+					.getRhs().__evaluate(__eval);
 			return left.greaterThanOrEqual(right);
 
 		}
@@ -893,9 +893,9 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> left = this
-					.getLhs().accept(__eval);
+					.getLhs().__evaluate(__eval);
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> right = this
-					.getRhs().accept(__eval);
+					.getRhs().__evaluate(__eval);
 			return left.intersect(right);
 
 		}
@@ -910,7 +910,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.BooleanEvaluator __eval) {
 
 			throw new org.rascalmpl.interpreter.staticErrors.UnexpectedTypeError(
-					__eval.__getTf().boolType(), this.accept(
+					__eval.__getTf().boolType(), this.__evaluate(
 							__eval.__getCtx().getEvaluator()).getType(), this);
 
 		}
@@ -943,7 +943,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.BooleanEvaluator __eval) {
 
 			throw new org.rascalmpl.interpreter.staticErrors.UnexpectedTypeError(
-					__eval.__getTf().boolType(), this.accept(
+					__eval.__getTf().boolType(), this.__evaluate(
 							__eval.__getCtx().getEvaluator()).getType(), this);
 
 		}
@@ -971,7 +971,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 
 			for (int i = 0; i < elements.size(); i++) {
 				org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> resultElem = elements
-						.get(i).accept(__eval);
+						.get(i).__evaluate(__eval);
 				types[i] = resultElem.getType();
 				values[i] = resultElem.getValue();
 			}
@@ -1031,11 +1031,11 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> base = this
-					.getExpression().accept(__eval);
+					.getExpression().__evaluate(__eval);
 			java.lang.String annoName = org.rascalmpl.interpreter.utils.Names
 					.name(this.getName());
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> anno = this
-					.getValue().accept(__eval);
+					.getValue().__evaluate(__eval);
 			return base.setAnnotation(annoName, anno, __eval.getCurrentEnvt());
 
 		}
@@ -1045,7 +1045,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.BooleanEvaluator __eval) {
 
 			throw new org.rascalmpl.interpreter.staticErrors.UnexpectedTypeError(
-					__eval.__getTf().boolType(), this.accept(
+					__eval.__getTf().boolType(), this.__evaluate(
 							__eval.__getCtx().getEvaluator()).getType(), this);
 
 		}
@@ -1079,7 +1079,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.BooleanEvaluator __eval) {
 
 			throw new org.rascalmpl.interpreter.staticErrors.UnexpectedTypeError(
-					__eval.__getTf().boolType(), this.accept(
+					__eval.__getTf().boolType(), this.__evaluate(
 							__eval.__getCtx().getEvaluator()).getType(), this);
 
 		}
@@ -1089,9 +1089,9 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> left = this
-					.getLhs().accept(__eval);
+					.getLhs().__evaluate(__eval);
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> right = this
-					.getRhs().accept(__eval);
+					.getRhs().__evaluate(__eval);
 			return left.modulo(right);
 
 		}
@@ -1145,7 +1145,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.BooleanEvaluator __eval) {
 
 			throw new org.rascalmpl.interpreter.staticErrors.UnexpectedTypeError(
-					__eval.__getTf().boolType(), this.accept(
+					__eval.__getTf().boolType(), this.__evaluate(
 							__eval.__getCtx().getEvaluator()).getType(), this);
 
 		}
@@ -1189,9 +1189,9 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> left = this
-					.getLhs().accept(__eval);
+					.getLhs().__evaluate(__eval);
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> right = this
-					.getRhs().accept(__eval);
+					.getRhs().__evaluate(__eval);
 			return left.greaterThan(right);
 
 		}
@@ -1226,9 +1226,9 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 
 			// IListWriter w = vf.listWriter(tf.integerType());
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> from = this
-					.getFirst().accept(__eval);
+					.getFirst().__evaluate(__eval);
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> to = this
-					.getLast().accept(__eval);
+					.getLast().__evaluate(__eval);
 			return from.makeRange(to);
 
 		}
@@ -1238,7 +1238,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.BooleanEvaluator __eval) {
 
 			throw new org.rascalmpl.interpreter.staticErrors.UnexpectedTypeError(
-					__eval.__getTf().boolType(), this.accept(
+					__eval.__getTf().boolType(), this.__evaluate(
 							__eval.__getCtx().getEvaluator()).getType(), this);
 
 		}
@@ -1281,7 +1281,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.PatternEvaluator __eval) {
 
 			org.rascalmpl.interpreter.matching.IMatchingResult absPat = this
-					.getPattern().accept(__eval);
+					.getPattern().__evaluate(__eval);
 			return new org.rascalmpl.interpreter.matching.DescendantPattern(
 					__eval.__getCtx(), this, absPat);
 
@@ -1316,9 +1316,9 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> left = this
-					.getLhs().accept(__eval);
+					.getLhs().__evaluate(__eval);
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> right = this
-					.getRhs().accept(__eval);
+					.getRhs().__evaluate(__eval);
 			return left.add(right);
 
 		}
@@ -1328,7 +1328,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.BooleanEvaluator __eval) {
 
 			throw new org.rascalmpl.interpreter.staticErrors.UnexpectedTypeError(
-					__eval.__getTf().boolType(), this.accept(
+					__eval.__getTf().boolType(), this.__evaluate(
 							__eval.__getCtx().getEvaluator()).getType(), this);
 
 		}
@@ -1370,8 +1370,8 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.BooleanEvaluator __eval) {
 
 			return new org.rascalmpl.interpreter.matching.OrResult(__eval
-					.__getCtx(), this.getLhs().accept(__eval), this.getRhs()
-					.accept(__eval));
+					.__getCtx(), this.getLhs().__evaluate(__eval), this.getRhs()
+					.__evaluate(__eval));
 
 		}
 
@@ -1403,7 +1403,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.PatternEvaluator __eval) {
 
 			org.rascalmpl.interpreter.matching.IMatchingResult absPat = this
-					.getPattern().accept(__eval);
+					.getPattern().__evaluate(__eval);
 			return new org.rascalmpl.interpreter.matching.AntiPattern(__eval
 					.__getCtx(), this, absPat);
 
@@ -1532,7 +1532,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> base = this
-					.getExpression().accept(__eval);
+					.getExpression().__evaluate(__eval);
 			java.lang.String annoName = org.rascalmpl.interpreter.utils.Names
 					.name(this.getName());
 			return base.getAnnotation(annoName, __eval.getCurrentEnvt());
@@ -1589,7 +1589,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.BooleanEvaluator __eval) {
 
 			return new org.rascalmpl.interpreter.matching.NotResult(__eval
-					.__getCtx(), this.getArgument().accept(__eval));
+					.__getCtx(), this.getArgument().__evaluate(__eval));
 
 		}
 
@@ -1598,7 +1598,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.PatternEvaluator __eval) {
 
 			return new org.rascalmpl.interpreter.matching.NotPattern(__eval
-					.__getCtx(), this, this.getArgument().accept(__eval));
+					.__getCtx(), this, this.getArgument().__evaluate(__eval));
 
 		}
 
@@ -1623,9 +1623,9 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> left = this
-					.getLhs().accept(__eval);
+					.getLhs().__evaluate(__eval);
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> right = this
-					.getRhs().accept(__eval);
+					.getRhs().__evaluate(__eval);
 			return left.compose(right);
 
 		}
@@ -1635,7 +1635,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.BooleanEvaluator __eval) {
 
 			throw new org.rascalmpl.interpreter.staticErrors.UnexpectedTypeError(
-					__eval.__getTf().boolType(), this.accept(
+					__eval.__getTf().boolType(), this.__evaluate(
 							__eval.__getCtx().getEvaluator()).getType(), this);
 
 		}
@@ -1670,9 +1670,9 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> left = this
-					.getLhs().accept(__eval);
+					.getLhs().__evaluate(__eval);
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> right = this
-					.getRhs().accept(__eval);
+					.getRhs().__evaluate(__eval);
 			return left.lessThanOrEqual(right);
 
 		}
@@ -1713,7 +1713,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 		public org.rascalmpl.interpreter.matching.IMatchingResult __evaluate(
 				org.rascalmpl.interpreter.PatternEvaluator __eval) {
 
-			return this.getExpression().accept(__eval);
+			return this.getExpression().__evaluate(__eval);
 
 		}
 
@@ -1721,7 +1721,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 		public org.rascalmpl.interpreter.matching.IBooleanResult __evaluate(
 				org.rascalmpl.interpreter.BooleanEvaluator __eval) {
 
-			return this.getExpression().accept(__eval);
+			return this.getExpression().__evaluate(__eval);
 
 		}
 
@@ -1729,7 +1729,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 		public org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> __evaluate(
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
-			return this.getExpression().accept(__eval);
+			return this.getExpression().__evaluate(__eval);
 
 		}
 
@@ -1754,13 +1754,13 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			try {
-				return this.getLhs().accept(__eval);
+				return this.getLhs().__evaluate(__eval);
 			} catch (org.rascalmpl.interpreter.staticErrors.UninitializedVariableError e) {
-				return this.getRhs().accept(__eval);
+				return this.getRhs().__evaluate(__eval);
 			} catch (org.rascalmpl.interpreter.control_exceptions.Throw e) {
 				// TODO For now we accept any Throw here, restrict to NoSuchKey
 				// and NoSuchAnno?
-				return this.getRhs().accept(__eval);
+				return this.getRhs().__evaluate(__eval);
 			}
 
 		}
@@ -1778,7 +1778,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 		public org.rascalmpl.interpreter.matching.IMatchingResult __evaluate(
 				org.rascalmpl.interpreter.PatternEvaluator __eval) {
 
-			return this.getLiteral().accept(__eval);
+			return this.getLiteral().__evaluate(__eval);
 
 		}
 
@@ -1796,7 +1796,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 						__eval.__getCtx(), this);
 			}
 			throw new org.rascalmpl.interpreter.staticErrors.UnexpectedTypeError(
-					__eval.__getTf().boolType(), this.accept(
+					__eval.__getTf().boolType(), this.__evaluate(
 							__eval.__getCtx().getEvaluator()).getType(), this);
 
 		}
@@ -1805,7 +1805,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 		public org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> __evaluate(
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
-			return this.getLiteral().accept(__eval);
+			return this.getLiteral().__evaluate(__eval);
 
 		}
 
@@ -1838,8 +1838,8 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.BooleanEvaluator __eval) {
 
 			return new org.rascalmpl.interpreter.matching.EquivalenceResult(
-					__eval.__getCtx(), this.getLhs().accept(__eval), this
-							.getRhs().accept(__eval));
+					__eval.__getCtx(), this.getLhs().__evaluate(__eval), this
+							.getRhs().__evaluate(__eval));
 
 		}
 
@@ -1879,7 +1879,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 			boolean valued = false;
 			for (org.rascalmpl.ast.Expression a : args) {
 				org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> argResult = a
-						.accept(__eval);
+						.__evaluate(__eval);
 				org.eclipse.imp.pdb.facts.type.Type argType = argResult
 						.getType();
 
@@ -1894,7 +1894,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 			}
 
 			org.eclipse.imp.pdb.facts.type.Type type = basic
-					.accept(new org.rascalmpl.interpreter.BasicTypeEvaluator(
+					.__evaluate(new org.rascalmpl.interpreter.BasicTypeEvaluator(
 							__eval.getCurrentEnvt(), valued ? null
 									: org.rascalmpl.interpreter.Evaluator
 											.__getTf().tupleType(fieldTypes),
@@ -1938,9 +1938,9 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> left = this
-					.getLhs().accept(__eval);
+					.getLhs().__evaluate(__eval);
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> right = this
-					.getRhs().accept(__eval);
+					.getRhs().__evaluate(__eval);
 			return left.lessThan(right);
 
 		}
@@ -1989,7 +1989,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.BooleanEvaluator __eval) {
 
 			throw new org.rascalmpl.interpreter.staticErrors.UnexpectedTypeError(
-					__eval.__getTf().boolType(), this.accept(
+					__eval.__getTf().boolType(), this.__evaluate(
 							__eval.__getCtx().getEvaluator()).getType(), this);
 
 		}
@@ -2105,7 +2105,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> result = this
-					.getPattern().accept(__eval);
+					.getPattern().__evaluate(__eval);
 			org.eclipse.imp.pdb.facts.type.Type expected = new org.rascalmpl.interpreter.TypeEvaluator(
 					__eval.getCurrentEnvt(), __eval.__getHeap()).eval(this
 					.getType());
@@ -2175,7 +2175,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 					__eval.__getCtx().getCurrentEnvt(), __eval.__getCtx()
 							.getHeap()).eval(this.getType());
 			org.rascalmpl.interpreter.matching.IMatchingResult absPat = this
-					.getPattern().accept(__eval);
+					.getPattern().__evaluate(__eval);
 			return new org.rascalmpl.interpreter.matching.GuardedPattern(__eval
 					.__getCtx(), this, type, absPat);
 
@@ -2250,7 +2250,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 		public org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> __evaluate(
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
-			return this.getComprehension().accept(__eval);
+			return this.getComprehension().__evaluate(__eval);
 
 		}
 
@@ -2259,7 +2259,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.BooleanEvaluator __eval) {
 
 			throw new org.rascalmpl.interpreter.staticErrors.UnexpectedTypeError(
-					__eval.__getTf().boolType(), this.accept(
+					__eval.__getTf().boolType(), this.__evaluate(
 							__eval.__getCtx().getEvaluator()).getType(), this);
 
 		}
@@ -2294,7 +2294,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.BooleanEvaluator __eval) {
 
 			return new org.rascalmpl.interpreter.matching.EnumeratorResult(
-					__eval.__getCtx(), this.getPattern().accept(
+					__eval.__getCtx(), this.getPattern().__evaluate(
 							__eval.__getPe()), this.getExpression());
 
 		}
@@ -2343,14 +2343,14 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> expr = this
-					.getExpression().accept(__eval);
+					.getExpression().__evaluate(__eval);
 			int nSubs = this.getSubscripts().size();
 			org.rascalmpl.interpreter.result.Result<?> subscripts[] = new org.rascalmpl.interpreter.result.Result<?>[nSubs];
 			for (int i = 0; i < nSubs; i++) {
 				org.rascalmpl.ast.Expression subsExpr = this.getSubscripts()
 						.get(i);
 				subscripts[i] = __eval.isWildCard(subsExpr.toString()) ? null
-						: subsExpr.accept(__eval);
+						: subsExpr.__evaluate(__eval);
 			}
 			return expr.subscript(subscripts);
 
@@ -2396,7 +2396,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 
 			try {
 				org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> cval = this
-						.getCondition().accept(__eval);
+						.getCondition().__evaluate(__eval);
 
 				if (!cval.getType().isBoolType()) {
 					throw new org.rascalmpl.interpreter.staticErrors.UnexpectedTypeError(
@@ -2405,10 +2405,10 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				}
 
 				if (cval.isTrue()) {
-					return this.getThenExp().accept(__eval);
+					return this.getThenExp().__evaluate(__eval);
 				}
 
-				return this.getElseExp().accept(__eval);
+				return this.getElseExp().__evaluate(__eval);
 			} finally {
 				__eval.unwind(old);
 			}
@@ -2454,7 +2454,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.PatternEvaluator __eval) {
 
 			org.rascalmpl.interpreter.matching.IMatchingResult pat = this
-					.getPattern().accept(__eval);
+					.getPattern().__evaluate(__eval);
 			java.util.LinkedList<org.rascalmpl.ast.Name> names = new java.util.LinkedList<org.rascalmpl.ast.Name>();
 			names.add(this.getName());
 			org.rascalmpl.interpreter.matching.IMatchingResult var = new org.rascalmpl.interpreter.matching.QualifiedNamePattern(
@@ -2475,7 +2475,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 		public org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> __evaluate(
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
-			return this.getPattern().accept(__eval);
+			return this.getPattern().__evaluate(__eval);
 
 		}
 
@@ -2507,7 +2507,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> arg = this
-					.getArgument().accept(__eval);
+					.getArgument().__evaluate(__eval);
 			return arg.negative();
 
 		}
@@ -2517,7 +2517,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.BooleanEvaluator __eval) {
 
 			throw new org.rascalmpl.interpreter.staticErrors.UnexpectedTypeError(
-					__eval.__getTf().boolType(), this.accept(
+					__eval.__getTf().boolType(), this.__evaluate(
 							__eval.__getCtx().getEvaluator()).getType(), this);
 
 		}
@@ -2552,7 +2552,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.BooleanEvaluator __eval) {
 
 			throw new org.rascalmpl.interpreter.staticErrors.UnexpectedTypeError(
-					__eval.__getTf().boolType(), this.accept(
+					__eval.__getTf().boolType(), this.__evaluate(
 							__eval.__getCtx().getEvaluator()).getType(), this);
 
 		}
@@ -2562,9 +2562,9 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> left = this
-					.getLhs().accept(__eval);
+					.getLhs().__evaluate(__eval);
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> right = this
-					.getRhs().accept(__eval);
+					.getRhs().__evaluate(__eval);
 			return left.subtract(right);
 
 		}
@@ -2599,7 +2599,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.BooleanEvaluator __eval) {
 
 			throw new org.rascalmpl.interpreter.staticErrors.UnexpectedTypeError(
-					__eval.__getTf().boolType(), this.accept(
+					__eval.__getTf().boolType(), this.__evaluate(
 							__eval.__getCtx().getEvaluator()).getType(), this);
 
 		}
@@ -2608,7 +2608,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 		public org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> __evaluate(
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
-			return this.getArgument().accept(__eval)
+			return this.getArgument().__evaluate(__eval)
 					.transitiveReflexiveClosure();
 
 		}
@@ -2653,8 +2653,8 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 			return new org.rascalmpl.interpreter.matching.OrResult(__eval
 					.__getCtx(),
 					new org.rascalmpl.interpreter.matching.NotResult(__eval
-							.__getCtx(), this.getLhs().accept(__eval)), this
-							.getRhs().accept(__eval));
+							.__getCtx(), this.getLhs().__evaluate(__eval)), this
+							.getRhs().__evaluate(__eval));
 
 		}
 
@@ -2696,7 +2696,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			try {
-				this.getArgument().accept(__eval); // wait for exception
+				this.getArgument().__evaluate(__eval); // wait for exception
 				return org.rascalmpl.interpreter.result.ResultFactory
 						.makeResult(org.rascalmpl.interpreter.Evaluator
 								.__getTf().boolType(), __eval.__getVf().bool(
@@ -2730,7 +2730,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 
 			// TODO: move to result classes
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> base = this
-					.getExpression().accept(__eval);
+					.getExpression().__evaluate(__eval);
 
 			org.eclipse.imp.pdb.facts.type.Type baseType = base.getType();
 			if (!baseType.isTupleType() && !baseType.isRelationType()
@@ -2747,7 +2747,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.ast.Field f = fields.get(i);
 				if (f.isIndex()) {
 					selectedFields[i] = ((org.eclipse.imp.pdb.facts.IInteger) f
-							.getFieldIndex().accept(__eval).getValue())
+							.getFieldIndex().__evaluate(__eval).getValue())
 							.intValue();
 				} else {
 					java.lang.String fieldName = org.rascalmpl.interpreter.utils.Names
@@ -2792,7 +2792,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.BooleanEvaluator __eval) {
 
 			throw new org.rascalmpl.interpreter.staticErrors.UnexpectedTypeError(
-					__eval.__getTf().boolType(), this.accept(
+					__eval.__getTf().boolType(), this.__evaluate(
 							__eval.__getCtx().getEvaluator()).getType(), this);
 
 		}
@@ -2826,9 +2826,9 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> left = this
-					.getLhs().accept(__eval);
+					.getLhs().__evaluate(__eval);
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> right = this
-					.getRhs().accept(__eval);
+					.getRhs().__evaluate(__eval);
 			return left.equals(right);
 
 		}
@@ -2867,7 +2867,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> expr = this
-					.getExpression().accept(__eval);
+					.getExpression().__evaluate(__eval);
 			java.lang.String field = org.rascalmpl.interpreter.utils.Names
 					.name(this.getField());
 
@@ -2920,9 +2920,9 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> expr = this
-					.getExpression().accept(__eval);
+					.getExpression().__evaluate(__eval);
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> repl = this
-					.getReplacement().accept(__eval);
+					.getReplacement().__evaluate(__eval);
 			java.lang.String name = org.rascalmpl.interpreter.utils.Names
 					.name(this.getKey());
 			return expr.fieldUpdate(name, repl, __eval.getCurrentEnvt()
@@ -2935,7 +2935,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.BooleanEvaluator __eval) {
 
 			throw new org.rascalmpl.interpreter.staticErrors.UnexpectedTypeError(
-					__eval.__getTf().boolType(), this.accept(
+					__eval.__getTf().boolType(), this.__evaluate(
 							__eval.__getCtx().getEvaluator()).getType(), this);
 
 		}
@@ -2980,7 +2980,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 
 			for (org.rascalmpl.ast.Expression expr : elements) {
 				org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> resultElem = expr
-						.accept(__eval);
+						.__evaluate(__eval);
 				if (resultElem.getType().isVoidType())
 					throw new org.rascalmpl.interpreter.staticErrors.NonVoidTypeRequired(
 							expr);
@@ -3024,7 +3024,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.BooleanEvaluator __eval) {
 
 			throw new org.rascalmpl.interpreter.staticErrors.UnexpectedTypeError(
-					__eval.__getTf().boolType(), this.accept(
+					__eval.__getTf().boolType(), this.__evaluate(
 							__eval.__getCtx().getEvaluator()).getType(), this);
 
 		}
@@ -3050,7 +3050,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 		public org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> __evaluate(
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
-			return this.getPattern().accept(__eval);
+			return this.getPattern().__evaluate(__eval);
 
 		}
 
@@ -3071,7 +3071,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 					__eval.__getCtx().getCurrentEnvt(), __eval.__getCtx()
 							.getHeap()).eval(this.getType());
 			org.rascalmpl.interpreter.matching.IMatchingResult pat = this
-					.getPattern().accept(__eval);
+					.getPattern().__evaluate(__eval);
 			org.rascalmpl.interpreter.matching.IMatchingResult var = new org.rascalmpl.interpreter.matching.TypedVariablePattern(
 					__eval.__getCtx(), this, type, this.getName());
 			return new org.rascalmpl.interpreter.matching.VariableBecomesPattern(
@@ -3099,9 +3099,9 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> left = this
-					.getLhs().accept(__eval);
+					.getLhs().__evaluate(__eval);
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> right = this
-					.getRhs().accept(__eval);
+					.getRhs().__evaluate(__eval);
 			return right.in(left);
 
 		}
@@ -3151,7 +3151,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.BooleanEvaluator __eval) {
 
 			throw new org.rascalmpl.interpreter.staticErrors.UnexpectedTypeError(
-					__eval.__getTf().boolType(), this.accept(
+					__eval.__getTf().boolType(), this.__evaluate(
 							__eval.__getCtx().getEvaluator()).getType(), this);
 
 		}
@@ -3207,9 +3207,9 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> left = this
-					.getLhs().accept(__eval);
+					.getLhs().__evaluate(__eval);
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> right = this
-					.getRhs().accept(__eval);
+					.getRhs().__evaluate(__eval);
 			return left.join(right);
 
 		}
@@ -3239,7 +3239,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.BooleanEvaluator __eval) {
 
 			throw new org.rascalmpl.interpreter.staticErrors.UnexpectedTypeError(
-					__eval.__getTf().boolType(), this.accept(
+					__eval.__getTf().boolType(), this.__evaluate(
 							__eval.__getCtx().getEvaluator()).getType(), this);
 
 		}
@@ -3249,9 +3249,9 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> left = this
-					.getLhs().accept(__eval);
+					.getLhs().__evaluate(__eval);
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> right = this
-					.getRhs().accept(__eval);
+					.getRhs().__evaluate(__eval);
 			return left.multiply(right);
 
 		}
@@ -3322,9 +3322,9 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> left = this
-					.getLhs().accept(__eval);
+					.getLhs().__evaluate(__eval);
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> right = this
-					.getRhs().accept(__eval);
+					.getRhs().__evaluate(__eval);
 			return left.divide(right);
 
 		}
@@ -3339,7 +3339,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.BooleanEvaluator __eval) {
 
 			throw new org.rascalmpl.interpreter.staticErrors.UnexpectedTypeError(
-					__eval.__getTf().boolType(), this.accept(
+					__eval.__getTf().boolType(), this.__evaluate(
 							__eval.__getCtx().getEvaluator()).getType(), this);
 
 		}
@@ -3374,7 +3374,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 
 			return new org.rascalmpl.ast.Statement.NonEmptyBlock(
 					this.getTree(), new org.rascalmpl.ast.Label.Empty(this
-							.getTree()), this.getStatements()).accept(__eval);
+							.getTree()), this.getStatements()).__evaluate(__eval);
 
 		}
 
@@ -3477,9 +3477,9 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> left = this
-					.getLhs().accept(__eval);
+					.getLhs().__evaluate(__eval);
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> right = this
-					.getRhs().accept(__eval);
+					.getRhs().__evaluate(__eval);
 			return left.nonEquals(right);
 
 		}

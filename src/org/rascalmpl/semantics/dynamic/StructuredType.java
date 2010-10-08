@@ -20,7 +20,7 @@ public abstract class StructuredType extends org.rascalmpl.ast.StructuredType {
 		public org.eclipse.imp.pdb.facts.type.Type __evaluate(
 				org.rascalmpl.interpreter.TypeEvaluator.Visitor __eval) {
 
-			return this.getBasicType().accept(
+			return this.getBasicType().__evaluate(
 					new org.rascalmpl.interpreter.BasicTypeEvaluator(__eval
 							.__getEnv(), __eval.getArgumentTypes(this
 							.getArguments()), null));

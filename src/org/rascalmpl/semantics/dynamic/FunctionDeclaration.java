@@ -96,7 +96,7 @@ public abstract class FunctionDeclaration extends
 		public org.eclipse.imp.pdb.facts.type.Type __evaluate(
 				org.rascalmpl.interpreter.TypeEvaluator.Visitor __eval) {
 
-			return this.getSignature().accept(__eval);
+			return this.getSignature().__evaluate(__eval);
 
 		}
 

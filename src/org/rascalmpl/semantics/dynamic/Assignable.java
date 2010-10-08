@@ -32,17 +32,17 @@ public abstract class Assignable extends org.rascalmpl.ast.Assignable {
 				org.rascalmpl.interpreter.AssignableEvaluator __eval) {
 
 			try {
-				this.getReceiver().accept(__eval.__getEval()); // notice we use
+				this.getReceiver().__evaluate(__eval.__getEval()); // notice we use
 																// 'eval' here
 																// not '__eval'
 				// if it was not defined, __eval would have thrown an exception,
 				// so now we can just go on
-				return this.getReceiver().accept(__eval);
+				return this.getReceiver().__evaluate(__eval);
 			} catch (org.rascalmpl.interpreter.control_exceptions.Throw e) {
 				__eval.__setValue(__eval.newResult(this.getDefaultExpression()
-						.accept(__eval.__getEval()), __eval.__getValue()));
+						.__evaluate(__eval.__getEval()), __eval.__getValue()));
 				__eval.__setOperator(AssignmentOperator.Default);
-				return this.getReceiver().accept(__eval);
+				return this.getReceiver().__evaluate(__eval);
 			}
 
 		}
@@ -89,7 +89,7 @@ public abstract class Assignable extends org.rascalmpl.ast.Assignable {
 				org.rascalmpl.interpreter.AssignableEvaluator ae = new org.rascalmpl.interpreter.AssignableEvaluator(
 						__eval.__getEnv(), null, result, __eval.__getEval());
 				org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> argResult = arguments
-						.get(i).accept(ae);
+						.get(i).__evaluate(ae);
 				results[i] = argResult.getValue();
 				resultTypes[i] = argResult.getType();
 			}
@@ -137,9 +137,9 @@ public abstract class Assignable extends org.rascalmpl.ast.Assignable {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> receiver = this
-					.getReceiver().accept(__eval);
+					.getReceiver().__evaluate(__eval);
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> subscript = this
-					.getSubscript().accept(__eval);
+					.getSubscript().__evaluate(__eval);
 
 			if (receiver.getType().isListType()) {
 				if (subscript.getType().isIntegerType()) {
@@ -190,9 +190,9 @@ public abstract class Assignable extends org.rascalmpl.ast.Assignable {
 				org.rascalmpl.interpreter.AssignableEvaluator __eval) {
 
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> rec = this
-					.getReceiver().accept(__eval.__getEval());
+					.getReceiver().__evaluate(__eval.__getEval());
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> subscript = this
-					.getSubscript().accept(__eval.__getEval());
+					.getSubscript().__evaluate(__eval.__getEval());
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> result;
 
 			if (rec == null || rec.getValue() == null) {
@@ -389,7 +389,7 @@ public abstract class Assignable extends org.rascalmpl.ast.Assignable {
 				org.rascalmpl.interpreter.AssignableEvaluator ae = new org.rascalmpl.interpreter.AssignableEvaluator(
 						__eval.__getEnv(), null, result, __eval.__getEval());
 				org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> argResult = arguments
-						.get(i).accept(ae);
+						.get(i).__evaluate(ae);
 				results[i] = argResult.getValue();
 				resultTypes[i] = argType;
 			}
@@ -545,7 +545,7 @@ public abstract class Assignable extends org.rascalmpl.ast.Assignable {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> receiver = this
-					.getReceiver().accept(__eval);
+					.getReceiver().__evaluate(__eval);
 			java.lang.String label = this.getAnnotation().toString();
 
 			if (!__eval.getCurrentEnvt().declaresAnnotation(receiver.getType(),
@@ -571,7 +571,7 @@ public abstract class Assignable extends org.rascalmpl.ast.Assignable {
 			java.lang.String label = org.rascalmpl.interpreter.utils.Names
 					.name(this.getAnnotation());
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> result = this
-					.getReceiver().accept(__eval.__getEval());
+					.getReceiver().__evaluate(__eval.__getEval());
 
 			if (result == null || result.getValue() == null)
 				throw new org.rascalmpl.interpreter.staticErrors.UninitializedVariableError(
@@ -617,7 +617,7 @@ public abstract class Assignable extends org.rascalmpl.ast.Assignable {
 				org.rascalmpl.interpreter.AssignableEvaluator __eval) {
 
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> receiver = this
-					.getReceiver().accept(__eval.__getEval());
+					.getReceiver().__evaluate(__eval.__getEval());
 			java.lang.String label = org.rascalmpl.interpreter.utils.Names
 					.name(this.getField());
 
@@ -699,7 +699,7 @@ public abstract class Assignable extends org.rascalmpl.ast.Assignable {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> receiver = this
-					.getReceiver().accept(__eval);
+					.getReceiver().__evaluate(__eval);
 			java.lang.String label = org.rascalmpl.interpreter.utils.Names
 					.name(this.getField());
 

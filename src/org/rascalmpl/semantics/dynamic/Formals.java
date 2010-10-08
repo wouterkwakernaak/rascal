@@ -37,7 +37,7 @@ public abstract class Formals extends org.rascalmpl.ast.Formals {
 
 			for (int formal = 0, index = 0; formal < list.size(); formal++, index++) {
 				org.rascalmpl.ast.Formal f = list.get(formal);
-				org.eclipse.imp.pdb.facts.type.Type type = f.accept(__eval);
+				org.eclipse.imp.pdb.facts.type.Type type = f.__evaluate(__eval);
 
 				if (type == null) {
 					throw new org.rascalmpl.interpreter.staticErrors.UndeclaredTypeError(

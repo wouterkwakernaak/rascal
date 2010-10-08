@@ -25,7 +25,7 @@ public abstract class Test extends org.rascalmpl.ast.Test {
 			// System.err.println("visitTestLabeled: " + this);
 
 			try {
-				result = this.getExpression().accept(__eval.__getEval());
+				result = this.getExpression().__evaluate(__eval.__getEval());
 			} catch (org.rascalmpl.interpreter.control_exceptions.Throw e) {
 				__eval.__getTestResultListener().report(false, this.toString(),
 						this.getLocation(), e);
@@ -89,7 +89,7 @@ public abstract class Test extends org.rascalmpl.ast.Test {
 			// System.err.println("visitTestUnlabeled: " + this);
 
 			try {
-				result = this.getExpression().accept(__eval.__getEval());
+				result = this.getExpression().__evaluate(__eval.__getEval());
 			} catch (org.rascalmpl.interpreter.staticErrors.StaticError e) {
 				__eval.__getTestResultListener().report(false, this.toString(),
 						this.getLocation(), e);

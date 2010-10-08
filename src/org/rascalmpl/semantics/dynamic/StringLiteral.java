@@ -36,10 +36,10 @@ public abstract class StringLiteral extends org.rascalmpl.ast.StringLiteral {
 		public org.rascalmpl.ast.Statement __evaluate(
 				org.rascalmpl.interpreter.StringTemplateConverter.Visitor __eval) {
 
-			org.rascalmpl.ast.Statement pre = this.getPre().accept(__eval);
-			org.rascalmpl.ast.Statement template = this.getTemplate().accept(
+			org.rascalmpl.ast.Statement pre = this.getPre().__evaluate(__eval);
+			org.rascalmpl.ast.Statement template = this.getTemplate().__evaluate(
 					__eval);
-			org.rascalmpl.ast.Statement tail = this.getTail().accept(__eval);
+			org.rascalmpl.ast.Statement tail = this.getTail().__evaluate(__eval);
 			return org.rascalmpl.interpreter.StringTemplateConverter.Visitor
 					.makeBlock(this.getTree(), pre, template, tail);
 
@@ -66,10 +66,10 @@ public abstract class StringLiteral extends org.rascalmpl.ast.StringLiteral {
 		public org.rascalmpl.ast.Statement __evaluate(
 				org.rascalmpl.interpreter.StringTemplateConverter.Visitor __eval) {
 
-			org.rascalmpl.ast.Statement pre = this.getPre().accept(__eval);
+			org.rascalmpl.ast.Statement pre = this.getPre().__evaluate(__eval);
 			org.rascalmpl.ast.Statement exp = __eval.makeAppend(this
 					.getExpression());
-			org.rascalmpl.ast.Statement tail = this.getTail().accept(__eval);
+			org.rascalmpl.ast.Statement tail = this.getTail().__evaluate(__eval);
 			return org.rascalmpl.interpreter.StringTemplateConverter.Visitor
 					.makeBlock(this.getTree(), pre, exp, tail);
 

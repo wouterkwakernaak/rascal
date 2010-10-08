@@ -62,7 +62,7 @@ public abstract class IntegerLiteral extends org.rascalmpl.ast.IntegerLiteral {
 		public org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> __evaluate(
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
-			return this.getOctal().accept(__eval);
+			return this.getOctal().__evaluate(__eval);
 
 		}
 
@@ -85,7 +85,7 @@ public abstract class IntegerLiteral extends org.rascalmpl.ast.IntegerLiteral {
 		public org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> __evaluate(
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
-			return this.getHex().accept(__eval);
+			return this.getHex().__evaluate(__eval);
 
 		}
 

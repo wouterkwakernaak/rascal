@@ -19,7 +19,7 @@ public abstract class ProtocolPart extends org.rascalmpl.ast.ProtocolPart {
 		public org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> __evaluate(
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
-			return this.getProtocolChars().accept(__eval);
+			return this.getProtocolChars().__evaluate(__eval);
 
 		}
 
@@ -45,11 +45,11 @@ public abstract class ProtocolPart extends org.rascalmpl.ast.ProtocolPart {
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> pre = this
-					.getPre().accept(__eval);
+					.getPre().__evaluate(__eval);
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> expr = this
-					.getExpression().accept(__eval);
+					.getExpression().__evaluate(__eval);
 			org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> tail = this
-					.getTail().accept(__eval);
+					.getTail().__evaluate(__eval);
 			java.lang.StringBuilder result = new java.lang.StringBuilder();
 
 			result.append(((org.eclipse.imp.pdb.facts.IString) pre.getValue())

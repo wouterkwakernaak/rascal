@@ -46,7 +46,7 @@ public abstract class Declaration extends org.rascalmpl.ast.Declaration {
 		public org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> __evaluate(
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
-			return this.getTest().accept(__eval);
+			return this.getTest().__evaluate(__eval);
 
 		}
 
@@ -207,7 +207,7 @@ public abstract class Declaration extends org.rascalmpl.ast.Declaration {
 
 				if (var.isInitialized()) {
 					org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> v = var
-							.getInitial().accept(__eval);
+							.getInitial().__evaluate(__eval);
 
 					if (!__eval.getCurrentEnvt().declareVariable(declaredType,
 							var.getName())) {
@@ -257,7 +257,7 @@ public abstract class Declaration extends org.rascalmpl.ast.Declaration {
 		public org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> __evaluate(
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
-			return this.getPatternAction().accept(__eval);
+			return this.getPatternAction().__evaluate(__eval);
 
 		}
 
@@ -348,7 +348,7 @@ public abstract class Declaration extends org.rascalmpl.ast.Declaration {
 		public org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> __evaluate(
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
-			return this.getFunctionDeclaration().accept(__eval);
+			return this.getFunctionDeclaration().__evaluate(__eval);
 
 		}
 

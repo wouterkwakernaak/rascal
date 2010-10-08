@@ -19,7 +19,7 @@ public abstract class Parameters extends org.rascalmpl.ast.Parameters {
 				org.rascalmpl.interpreter.TypeEvaluator.Visitor __eval) {
 
 			org.eclipse.imp.pdb.facts.type.Type formals = this.getFormals()
-					.accept(__eval);
+					.__evaluate(__eval);
 			int arity = formals.getArity();
 
 			if (arity == 0) {
@@ -71,7 +71,7 @@ public abstract class Parameters extends org.rascalmpl.ast.Parameters {
 		public org.eclipse.imp.pdb.facts.type.Type __evaluate(
 				org.rascalmpl.interpreter.TypeEvaluator.Visitor __eval) {
 
-			return this.getFormals().accept(__eval);
+			return this.getFormals().__evaluate(__eval);
 
 		}
 

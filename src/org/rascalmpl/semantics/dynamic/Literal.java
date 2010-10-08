@@ -33,7 +33,7 @@ public abstract class Literal extends org.rascalmpl.ast.Literal {
 				org.rascalmpl.interpreter.PatternEvaluator __eval) {
 
 			return new org.rascalmpl.interpreter.matching.LiteralPattern(__eval
-					.__getCtx(), this, this.accept(
+					.__getCtx(), this, this.__evaluate(
 					__eval.__getCtx().getEvaluator()).getValue());
 
 		}
@@ -71,7 +71,7 @@ public abstract class Literal extends org.rascalmpl.ast.Literal {
 				org.rascalmpl.interpreter.PatternEvaluator __eval) {
 
 			return new org.rascalmpl.interpreter.matching.LiteralPattern(__eval
-					.__getCtx(), this, this.accept(
+					.__getCtx(), this, this.__evaluate(
 					__eval.__getCtx().getEvaluator()).getValue());
 
 		}
@@ -80,7 +80,7 @@ public abstract class Literal extends org.rascalmpl.ast.Literal {
 		public org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> __evaluate(
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
-			return this.getIntegerLiteral().accept(__eval);
+			return this.getIntegerLiteral().__evaluate(__eval);
 
 		}
 
@@ -102,7 +102,7 @@ public abstract class Literal extends org.rascalmpl.ast.Literal {
 		public org.rascalmpl.interpreter.matching.IMatchingResult __evaluate(
 				org.rascalmpl.interpreter.PatternEvaluator __eval) {
 
-			return this.getRegExpLiteral().accept(__eval);
+			return this.getRegExpLiteral().__evaluate(__eval);
 
 		}
 
@@ -135,7 +135,7 @@ public abstract class Literal extends org.rascalmpl.ast.Literal {
 				org.rascalmpl.interpreter.PatternEvaluator __eval) {
 
 			return new org.rascalmpl.interpreter.matching.LiteralPattern(__eval
-					.__getCtx(), this, this.accept(
+					.__getCtx(), this, this.__evaluate(
 					__eval.__getCtx().getEvaluator()).getValue());
 
 		}
@@ -169,7 +169,7 @@ public abstract class Literal extends org.rascalmpl.ast.Literal {
 		public org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> __evaluate(
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
-			return this.getDateTimeLiteral().accept(__eval);
+			return this.getDateTimeLiteral().__evaluate(__eval);
 
 		}
 
@@ -191,7 +191,7 @@ public abstract class Literal extends org.rascalmpl.ast.Literal {
 		public org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> __evaluate(
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
-			return this.getLocationLiteral().accept(__eval);
+			return this.getLocationLiteral().__evaluate(__eval);
 
 		}
 
@@ -214,7 +214,7 @@ public abstract class Literal extends org.rascalmpl.ast.Literal {
 				org.rascalmpl.interpreter.PatternEvaluator __eval) {
 
 			return new org.rascalmpl.interpreter.matching.LiteralPattern(__eval
-					.__getCtx(), this, this.accept(
+					.__getCtx(), this, this.__evaluate(
 					__eval.__getCtx().getEvaluator()).getValue());
 
 		}
@@ -238,7 +238,7 @@ public abstract class Literal extends org.rascalmpl.ast.Literal {
 				org.rascalmpl.ast.Statement stat = org.rascalmpl.interpreter.StringTemplateConverter
 						.convert(lit);
 				org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> value = stat
-						.accept(__eval);
+						.__evaluate(__eval);
 				if (!value.getType().isListType()) {
 					throw new org.rascalmpl.interpreter.asserts.ImplementationError(
 							"template eval returns non-list");

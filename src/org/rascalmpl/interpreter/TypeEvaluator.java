@@ -101,19 +101,23 @@ public class TypeEvaluator {
 	}
 
 	public org.eclipse.imp.pdb.facts.type.Type eval(org.rascalmpl.ast.Type type) {
-		return type.accept(this.visitor);
+//		return type.accept(this.visitor);
+		return type.__evaluate(this.visitor);
 	}
 
 	public org.eclipse.imp.pdb.facts.type.Type eval(org.rascalmpl.ast.Parameters parameters) {
-		return parameters.accept(this.visitor);
+//		return parameters.accept(this.visitor);
+		return parameters.__evaluate(this.visitor);
 	}
 
 	public org.eclipse.imp.pdb.facts.type.Type eval(org.rascalmpl.ast.Formal formal) {
-		return formal.accept(this.visitor);
+//		return formal.accept(this.visitor);
+		return formal.__evaluate(this.visitor);
 	}
 	
 	public org.eclipse.imp.pdb.facts.type.Type eval(org.rascalmpl.ast.Signature signature) {
-		return signature.accept(this.visitor);
+//		return signature.accept(this.visitor);
+		return signature.__evaluate(this.visitor);
 	}
 
 	public class Visitor extends org.rascalmpl.ast.NullASTVisitor<org.eclipse.imp.pdb.facts.type.Type> {
@@ -134,7 +138,8 @@ public class TypeEvaluator {
 			boolean someLabeled = false;
 	
 			for (org.rascalmpl.ast.TypeArg arg : args) {
-				fieldTypes[i] = arg.getType().accept(this);
+//				fieldTypes[i] = arg.getType().accept(this);
+				fieldTypes[i] = arg.getType().__evaluate(this);
 
 				if (arg.isNamed()) {
 					fieldLabels[i] = org.rascalmpl.interpreter.utils.Names.name(arg.getName());

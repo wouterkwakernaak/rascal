@@ -33,7 +33,7 @@ public abstract class Toplevel extends org.rascalmpl.ast.Toplevel {
 		public org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> __evaluate(
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
-			return this.getDeclaration().accept(__eval);
+			return this.getDeclaration().__evaluate(__eval);
 
 		}
 
@@ -41,7 +41,7 @@ public abstract class Toplevel extends org.rascalmpl.ast.Toplevel {
 		public org.rascalmpl.ast.Declaration __evaluate(
 				org.rascalmpl.interpreter.TypeDeclarationEvaluator.DeclarationCollector __eval) {
 
-			return this.getDeclaration().accept(__eval);
+			return this.getDeclaration().__evaluate(__eval);
 
 		}
 

@@ -32,7 +32,7 @@ public abstract class Declarator extends org.rascalmpl.ast.Declarator {
 					// side will shadow something
 					// that is used on the right hand side.
 					org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> v = var
-							.getInitial().accept(__eval);
+							.getInitial().__evaluate(__eval);
 
 					org.eclipse.imp.pdb.facts.type.Type declaredType = __eval
 							.evalType(this.getType());
