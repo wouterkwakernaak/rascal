@@ -106,7 +106,7 @@ public class TreeAdapter {
 	}
 
 	public static IList getListASTArgs(IConstructor tree) {
-		if (!isContextFree(tree) || !isList(tree)) {
+		if (!isList(tree)) {
 			throw new ImplementationError(
 					"This is not a context-free list production: " + tree);
 		}
@@ -118,9 +118,22 @@ public class TreeAdapter {
 			IValue kid = children.get(i);
 			writer.append(kid);
 			// skip layout and/or separators
-			i += (isSeparatedList(tree) ? 3 : 1);
+			if (isNewSeparatedList(tree)) {
+				i += getSeparatorCount(tree);
+			}
+			else {
+				i += (isSeparatedList(tree) ? 3 : 1);
+			}
 		}
 		return writer.done();
+	}
+
+	private static int getSeparatorCount(IConstructor tree) {
+		return SymbolAdapter.getSeparators(ProductionAdapter.getRhs(getProduction(tree))).length();
+	}
+
+	private static boolean isNewSeparatedList(IConstructor tree) {
+		return ProductionAdapter.isNewSeparatedList(getProduction(tree));
 	}
 
 	public static boolean isLexical(IConstructor tree) {
@@ -647,7 +660,9 @@ public class TreeAdapter {
 				}
 
 				if (SymbolAdapter.isIterPlus(sym)
-						|| SymbolAdapter.isIterPlusSep(sym)) {
+						|| SymbolAdapter.isIterPlusSep(sym) 
+						|| SymbolAdapter.isIterPlusSeps(sym)
+						|| SymbolAdapter.isIterStarSeps(sym)) {
 					return true;
 				}
 			}
@@ -721,5 +736,9 @@ public class TreeAdapter {
 			}
 		}
 		return writer.done();
+	}
+
+	public static boolean isRascalLexical(IConstructor tree) {
+		return ProductionAdapter.hasLexAttribute(getProduction(tree)); 
 	}
 }

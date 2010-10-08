@@ -6,6 +6,7 @@ import static org.rascalmpl.interpreter.result.ResultFactory.nothing;
 import static org.rascalmpl.interpreter.utils.Utils.unescape;
 
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -221,7 +222,6 @@ import org.rascalmpl.interpreter.result.OverloadedFunctionResult;
 import org.rascalmpl.interpreter.result.RascalFunction;
 import org.rascalmpl.interpreter.result.Result;
 import org.rascalmpl.interpreter.result.ResultFactory;
-import org.rascalmpl.interpreter.staticErrors.AmbiguousConcretePattern;
 import org.rascalmpl.interpreter.staticErrors.AppendWithoutLoop;
 import org.rascalmpl.interpreter.staticErrors.DateTimeParseError;
 import org.rascalmpl.interpreter.staticErrors.ItOutsideOfReducer;
@@ -253,16 +253,19 @@ import org.rascalmpl.interpreter.utils.Names;
 import org.rascalmpl.interpreter.utils.Profiler;
 import org.rascalmpl.interpreter.utils.RuntimeExceptionFactory;
 import org.rascalmpl.interpreter.utils.Utils;
-import org.rascalmpl.library.rascal.parser.RascalRascal;
+import org.rascalmpl.library.rascal.syntax.RascalRascal;
 import org.rascalmpl.parser.ASTBuilder;
+import org.rascalmpl.parser.ActionExecutor;
+import org.rascalmpl.parser.IParserInfo;
+import org.rascalmpl.parser.IRascalParser;
+import org.rascalmpl.parser.LegacyRascalParser;
+import org.rascalmpl.parser.NewRascalParser;
 import org.rascalmpl.parser.ParserGenerator;
-import org.rascalmpl.parser.RascalParser;
 import org.rascalmpl.parser.sgll.IGLL;
 import org.rascalmpl.uri.CWDURIResolver;
 import org.rascalmpl.uri.ClassResourceInputStreamResolver;
 import org.rascalmpl.uri.FileURIResolver;
 import org.rascalmpl.uri.HttpURIResolver;
-import org.rascalmpl.uri.MailToResolver;
 import org.rascalmpl.uri.URIResolverRegistry;
 import org.rascalmpl.values.ValueFactoryFactory;
 import org.rascalmpl.values.errors.SubjectAdapter;
@@ -297,7 +300,7 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 	private final java.util.List<ClassLoader> classLoaders;
 	protected final ModuleEnvironment rootScope;
 	private boolean concreteListsShouldBeSpliced;
-	private final RascalParser parser;
+	private final IRascalParser parser;
 
 	private PrintWriter stderr;
 	private PrintWriter stdout;
@@ -310,7 +313,7 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 	
 	private final URIResolverRegistry resolverRegistry;
 
-	public Evaluator(IValueFactory f, PrintWriter stderr, PrintWriter stdout, ModuleEnvironment scope, GlobalEnvironment heap) {
+	public Evaluator(IValueFactory f, PrintWriter stderr, PrintWriter stdout, IRascalParser parser, ModuleEnvironment scope, GlobalEnvironment heap) {
 		this.vf = f;
 		this.patternEvaluator = new PatternEvaluator(this);
 		this.strategyContextStack = new StrategyContextStack();
@@ -323,7 +326,7 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 		this.javaBridge = new JavaBridge(stderr, classLoaders, vf);
 		this.resolver = new RascalURIResolver(this);
 		this.sdf = new SDFSearchPath();
-		this.parser = new RascalParser();
+		this.parser = parser;
 		this.stderr = stderr;
 		this.stdout = stdout;
 		this.builder = new ASTBuilder(new ASTFactory());
@@ -389,9 +392,6 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 		HttpURIResolver http = new HttpURIResolver();
 		resolverRegistry.registerInput(http.scheme(), http);
 		
-		MailToResolver mailto = new MailToResolver();
-		resolverRegistry.registerOutput(mailto.scheme(), mailto);
-
 		CWDURIResolver cwd = new CWDURIResolver();
 		resolverRegistry.registerInput(cwd.scheme(), cwd);
 		resolverRegistry.registerOutput(cwd.scheme(), cwd);
@@ -503,7 +503,11 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 			name += SymbolAdapter.getName(startSort);
 		}
 		System.err.println("Calling the parser");
-		return parser.parse(name, inputURI, resolver.getInputStream(inputURI));
+		IConstructor forest = parser.parse(name, inputURI, resolver.getInputStream(inputURI));
+		
+		System.err.println("Executing actions");
+		ActionExecutor exec = new ActionExecutor(this, (IParserInfo) parser);
+		return exec.execute(forest);
 	}
 	
 	public IValue parseObjectExperimental(IConstructor startSort, URI inputURI, java.lang.String sentence) {
@@ -521,7 +525,11 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 			name += SymbolAdapter.getName(startSort);
 		}
 		System.err.println("Calling the parser");
-		return parser.parse(name, inputURI, sentence);
+		IConstructor forest = parser.parse(name, inputURI, sentence);
+		
+		System.err.println("Executing actions");
+		ActionExecutor exec = new ActionExecutor(this, (IParserInfo) parser);
+		return exec.execute(forest);
 	}
 
 	private IGLL getObjectParser() {
@@ -768,6 +776,11 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 		try {
 			tree = parser.parseCommand(getSDFImports(), sdf.getSdfSearchPath(), location, command);
 			
+			if (parser instanceof NewRascalParser) {
+				// execute the parse actions
+				// TODO: hide this inside the parser
+				tree = new ActionExecutor(this, ((NewRascalParser) parser).getInfo()).execute(tree);
+			}
 			if (tree.getConstructorType() == Factory.ParseTree_Summary) {
 				throw parseError(tree, location);
 			}
@@ -775,6 +788,16 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 			return tree;
 		} catch (IOException e) {
 			throw new ImplementationError("something weird happened", e);
+		}
+	}
+	
+	public IConstructor parseCommandExperimental(String command, URI location) {
+		IGLL parser = new RascalRascal();
+		try {
+			return parser.parse("Command", location, new ByteArrayInputStream(command.getBytes()));
+		} catch (IOException e) {
+			// TODO
+			throw new ImplementationError("TODO: " + e.getMessage());
 		}
 	}
 
@@ -1005,23 +1028,13 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 
 	@Override
 	public Result<IValue> visitExpressionAmbiguity(Ambiguity x) {
-		// TODO: assuming that that is the only reason for an expression to be ambiguous
-		// we might also check if this is an "appl" constructor...
-
-		//			System.err.println("Env: " + currentEnvt);
-		//			int i = 0;
-		//			for (Expression exp: x.getAlternatives()) {
-		//				System.err.println("Alt " + i++ + ": " + exp.getTree());
-		//			}
-		throw new AmbiguousConcretePattern(x);
+		throw new Ambiguous((IConstructor) x.getTree());
 	}
-
-
 
 	@Override
 	public Result<IValue> visitStatementAmbiguity(
 			org.rascalmpl.ast.Statement.Ambiguity x) {
-		throw new Ambiguous(x.toString());
+		throw new Ambiguous((IConstructor) x.getTree());
 	}
 
 	// Commands 
@@ -1034,7 +1047,7 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 	@Override
 	public Result<IValue> visitCommandAmbiguity(
 			org.rascalmpl.ast.Command.Ambiguity x) {
-		throw new ImplementationError("ambiguity in command " + x, x.getLocation());
+		throw new Ambiguous((IConstructor) x.getTree());
 	}
 	
 	@Override
@@ -1236,7 +1249,7 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 		}
 		
 		try {
-			parser.generateModuleParser(sdf.getSdfSearchPath(), getCurrentModuleEnvironment().getSDFImports(), mod);
+			((LegacyRascalParser) parser).generateModuleParser(sdf.getSdfSearchPath(), getCurrentModuleEnvironment().getSDFImports(), mod);
 		} catch (IOException e) {
 			RuntimeExceptionFactory.io(vf.string("IO exception while importing module " + x), x, getStackTrace());
 		}
@@ -1346,11 +1359,16 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 	}
 	
 	public IConstructor parseModule(byte[] data, URI location, ModuleEnvironment env) throws IOException {
-		
 		java.util.List<String> sdfSearchPath = sdf.getSdfSearchPath();
 		java.util.Set<String> sdfImports;
 
-		sdfImports = parser.getSdfImports(sdfSearchPath, location, data);
+		// TODO: remove support for SDF2 imports
+		if (parser instanceof LegacyRascalParser) {
+			sdfImports = ((LegacyRascalParser) parser).getSdfImports(sdfSearchPath, location, data);
+		}
+		else {
+			sdfImports = Collections.emptySet();
+		}
 
 		IConstructor tree = parser.parseModule(sdfSearchPath, sdfImports, location, data, env);
 		if(tree.getConstructorType() == Factory.ParseTree_Summary){
@@ -1405,7 +1423,7 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 		try{
 			IConstructor tree = null;
 			
-			if (!saveParsedModules) {
+			if (!saveParsedModules && !(parser instanceof NewRascalParser)) {
 				tree = tryLoadBinary(name);
 			}
 			
@@ -1413,7 +1431,7 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 				tree = parseModule(URI.create("rascal:///" + name), env);
 			}
 			
-			if (saveParsedModules) {
+			if (saveParsedModules && !(parser instanceof NewRascalParser)) {
 				writeBinary(name, tree);
 			}
 			
@@ -1443,6 +1461,7 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 				if (!getModuleName(module).equals(name)) {
 					throw new ModuleNameMismatchError(getModuleName(module), name, x);
 				}
+				heap.setModuleURI(name, module.getLocation().getURI());
 				module.accept(this);
 				return module;
 			}
@@ -1908,10 +1927,13 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 				}
 			}
 
-			if (!baseType.getElementType().isVoidType()) {
+			if (!baseType.isMapType() && !baseType.getElementType().isVoidType()) {
 				if (selectedFields[i] < 0 || selectedFields[i] > baseType.getArity()) {
 					throw RuntimeExceptionFactory.indexOutOfBounds(vf.integer(i), getCurrentAST(), getStackTrace());
 				}
+			}
+			else if (baseType.isMapType() && selectedFields[i] < 0 || selectedFields[i] > 1) {
+				throw RuntimeExceptionFactory.indexOutOfBounds(vf.integer(i), getCurrentAST(), getStackTrace());
 			}
 		}
 
@@ -2179,7 +2201,7 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 	@Override
 	public Result<IValue> visitAssignableAmbiguity(
 			org.rascalmpl.ast.Assignable.Ambiguity x) {
-		throw new Ambiguous(x.toString());
+		throw new Ambiguous((IConstructor) x.getTree());
 	}
 
 	@Override
@@ -2412,7 +2434,7 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 	public IBooleanResult makeBooleanResult(org.rascalmpl.ast.Expression pat){
 		if (pat instanceof Expression.Ambiguity) {
 			// TODO: wrong exception here.
-			throw new AmbiguousConcretePattern(pat);
+			throw new Ambiguous((IConstructor) pat.getTree());
 		}
 
 		BooleanEvaluator pe = new BooleanEvaluator(this);
@@ -3467,17 +3489,25 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 	@Override
 	public Result<IValue> visitExpressionIfThenElse(
 			org.rascalmpl.ast.Expression.IfThenElse x) {
-		Result<IValue> cval = x.getCondition().accept(this);
+		
+		Environment old = getCurrentEnvt();
+		pushEnv();
 
-		if (!cval.getType().isBoolType()) {
-			throw new UnexpectedTypeError(tf.boolType(), cval.getType(), x);
+		try {
+			Result<IValue> cval = x.getCondition().accept(this);
+	
+			if (!cval.getType().isBoolType()) {
+				throw new UnexpectedTypeError(tf.boolType(), cval.getType(), x);
+			}
+	
+			if (cval.isTrue()) {
+				return x.getThenExp().accept(this);
+			}
+	
+			return x.getElseExp().accept(this);	
+		} finally {
+			unwind(old);
 		}
-
-		if (cval.isTrue()) {
-			return x.getThenExp().accept(this);
-		}
-
-		return x.getElseExp().accept(this);	
 	}
 
 
@@ -3831,7 +3861,7 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 	}
 
 
-	private static final Name IT = new Name.Lexical(null, "<it>");
+	public static final Name IT = new Name.Lexical(null, "<it>");
 	private ParserGenerator parserGenerator;
 	
 	@Override
@@ -4192,6 +4222,14 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 		}
 		else {
 			AbstractFunction.setCallTracing(false);
+		}
+		
+		String sound = System.getProperty("rascal.config.soundTracing");
+		if (sound != null) {
+			AbstractFunction.setSoundCallTracing(sound.equals("true"));
+		}
+		else {
+			AbstractFunction.setSoundCallTracing(false);
 		}
 		
 		String binaryWriting = System.getProperty("rascal.config.saveBinaries");

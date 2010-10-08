@@ -53,20 +53,20 @@ public class AmbiguousEpsilonList extends SGLL implements IParserTest{
 		expect(PROD_A_epsilon, EPSILON3);
 	}
 	
-	public IValue executeParser(){
+	public IConstructor executeParser(){
 		return parse(NONTERMINAL_START_S, null, "a".toCharArray());
 	}
 	
 	public IValue getExpectedResult() throws IOException{
-		String expectedInput = "parsetree(appl(prod([iter(sort(\"A\"))],sort(\"S\"),\\no-attrs()),[amb({appl(regular(iter(sort(\"A\")),\\no-attrs()),[appl(prod([lit(\"a\")],sort(\"A\"),\\no-attrs()),[appl(prod([\\char-class([single(97)])],lit(\"a\"),\\no-attrs()),[char(97)])]),amb({appl(regular(iter(sort(\"A\")),\\no-attrs()),[appl(prod([empty()],sort(\"A\"),\\no-attrs()),[])]),cycle(iter(sort(\"A\")),1)})]),appl(regular(iter(sort(\"A\")),\\no-attrs()),[appl(prod([lit(\"a\")],sort(\"A\"),\\no-attrs()),[appl(prod([\\char-class([single(97)])],lit(\"a\"),\\no-attrs()),[char(97)])])]),appl(regular(iter(sort(\"A\")),\\no-attrs()),[amb({appl(regular(iter(sort(\"A\")),\\no-attrs()),[appl(prod([empty()],sort(\"A\"),\\no-attrs()),[])]),cycle(iter(sort(\"A\")),1)}),appl(prod([lit(\"a\")],sort(\"A\"),\\no-attrs()),[appl(prod([\\char-class([single(97)])],lit(\"a\"),\\no-attrs()),[char(97)])])]),appl(regular(iter(sort(\"A\")),\\no-attrs()),[amb({appl(regular(iter(sort(\"A\")),\\no-attrs()),[appl(prod([empty()],sort(\"A\"),\\no-attrs()),[])]),cycle(iter(sort(\"A\")),1)}),appl(prod([lit(\"a\")],sort(\"A\"),\\no-attrs()),[appl(prod([\\char-class([single(97)])],lit(\"a\"),\\no-attrs()),[char(97)])]),amb({appl(regular(iter(sort(\"A\")),\\no-attrs()),[appl(prod([empty()],sort(\"A\"),\\no-attrs()),[])]),cycle(iter(sort(\"A\")),1)})])})]),-1)";
+		String expectedInput = "parsetree(appl(prod([iter(sort(\"A\"))],sort(\"S\"),\\no-attrs()),[amb({appl(regular(iter(sort(\"A\")),\\no-attrs()),[amb({appl(regular(iter(sort(\"A\")),\\no-attrs()),[appl(prod([empty()],sort(\"A\"),\\no-attrs()),[])]),cycle(iter(sort(\"A\")),1)}),appl(prod([lit(\"a\")],sort(\"A\"),\\no-attrs()),[appl(prod([\\char-class([single(97)])],lit(\"a\"),\\no-attrs()),[char(97)])]),appl(prod([lit(\"a\")],sort(\"A\"),\\no-attrs()),[appl(prod([\\char-class([single(97)])],lit(\"a\"),\\no-attrs()),[char(97)])])]),appl(regular(iter(sort(\"A\")),\\no-attrs()),[amb({appl(regular(iter(sort(\"A\")),\\no-attrs()),[amb({appl(regular(iter(sort(\"A\")),\\no-attrs()),[appl(prod([empty()],sort(\"A\"),\\no-attrs()),[])]),cycle(iter(sort(\"A\")),1)}),appl(prod([lit(\"a\")],sort(\"A\"),\\no-attrs()),[appl(prod([\\char-class([single(97)])],lit(\"a\"),\\no-attrs()),[char(97)])]),appl(prod([lit(\"a\")],sort(\"A\"),\\no-attrs()),[appl(prod([\\char-class([single(97)])],lit(\"a\"),\\no-attrs()),[char(97)])])]),appl(regular(iter(sort(\"A\")),\\no-attrs()),[appl(prod([lit(\"a\")],sort(\"A\"),\\no-attrs()),[appl(prod([\\char-class([single(97)])],lit(\"a\"),\\no-attrs()),[char(97)])])])}),amb({appl(regular(iter(sort(\"A\")),\\no-attrs()),[appl(prod([empty()],sort(\"A\"),\\no-attrs()),[])]),cycle(iter(sort(\"A\")),1)})]),appl(regular(iter(sort(\"A\")),\\no-attrs()),[appl(prod([lit(\"a\")],sort(\"A\"),\\no-attrs()),[appl(prod([\\char-class([single(97)])],lit(\"a\"),\\no-attrs()),[char(97)])])])})]),-1)";
 		return new StandardTextReader().read(ValueFactoryFactory.getValueFactory(), Factory.uptr, Factory.ParseTree, new ByteArrayInputStream(expectedInput.getBytes()));
 	}
 	
 	public static void main(String[] args){
 		AmbiguousEpsilonList ael = new AmbiguousEpsilonList();
-		IValue result = ael.parse(NONTERMINAL_START_S, null, "a".toCharArray());
+		IConstructor result = ael.parse(NONTERMINAL_START_S, null, "a".toCharArray());
 		System.out.println(result);
 		
-		System.out.println("S([A+(repeat(A()),A([a](a)),repeat(A())),A+(A([a](a)),repeat(A())),A+(repeat(A()),A([a](a))),A+(A([a](a)))]) <- good");
+		System.out.println("S([A+([A+(A([a](a))),A+(repeat(A()),A([a](a)))],repeat(A())),A+(repeat(A()),A([a](a))),A+(A([a](a)))]) <- good");
 	}
 }

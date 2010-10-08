@@ -40,20 +40,21 @@ public set[str] categories = {};
 
 set[str] enabledCategories = {};
 
+map[str, Course] courses = ();
+
 // Initialize CourseManager. 
 // ** Be aware that this function should be called at the beginning of each function that can be
 // ** called from a servlet to ensure proper initialisation.
 
 private void initialize(){
   if(root == ""){
-     c = compileCourse("Rascal", "Rascal Tutorial", courseRoot);
-     //c = compileCourse("Test", "Testing", courseRoot);
-
-     reinitialize(c);
+     //c = compileCourse("Rascal", "Rascal Tutorial", courseRoot);
+     c = compileCourse("Test", "Testing", courseRoot);
+     reinitialize(c, {});
   }
 }
 
-private void reinitialize(Course c){
+private void reinitialize(Course c, set[str] enabled){
      thisCourse = c;
      root = c.root;
      directory = c.directory;
@@ -63,8 +64,26 @@ private void reinitialize(Course c){
      baseConcepts = c.baseConcepts;
      related = c.related;
      categories = c.categories;
-     enabledCategories = categories;
+     enabledCategories = isEmpty(enabled) ? categories : enabled;
 }
+
+// Start a new course
+// *** called from servlet Start in RascalTutor
+
+public str start(str name){
+ if(name in courses){
+   reinitialize(courses[name], {});
+   return showConcept(name);
+ }
+ if(name in listEntries(courseRoot)){
+    c = compileCourse(name, name, courseRoot);
+    courses[name] = c;
+    reinitialize(c, {});
+    return showConcept(name);
+ } else
+   throw "Course <name> not found";
+}
+
 
 public set[QuestionName] goodAnswer = {};
 public set[QuestionName] badAnswer = {};
@@ -85,7 +104,7 @@ public str prelude(){
   
         // "\<link type=\"text/css\" rel=\"stylesheet\" href=\"prelude.css\"/\>\n";
          "\<style type=\"text/css\"\><css>\</style\>" +
-          "\n\<script type=\"text/javascript\"\>var baseConcepts = new Array(<for(int i <- [0 .. nbc]){><(i==0)?"":",">\"<baseConcepts[i]>\"<}>);
+          "\n\<script type=\"text/javascript\"\>var baseConcepts = new Array(<for(int i <- [0 .. nbc]){><(i==0)?"":",">\"<escapeForJavascript(baseConcepts[i])>\"<}>);
           \</script\>\n";
 }
 
@@ -104,7 +123,7 @@ public str showConcept(ConceptName cn){
      options = [ name | name <- conceptNames, endsWith(name, "/" + cn)];
      if(size(options) == 0)
         return html(head(title("Concept <cn> does not exist") + prelude()),
-                    body(h1("Concept <cn> does not exist, please correct source!")));
+                    body(h1("Concept <cn> does not exist, please add concept or correct link!")));
      if(size(options) == 1)
        return showConcept(options[0], concepts[options[0]]);
      else {
@@ -122,6 +141,7 @@ public str showConcept(ConceptName cn, Concept C){
   return html(
   	head(title(C.name) + prelude()),
   	body(
+  	  "[\<a id=\"tutorAction\" href=\"http://localhost:8081/Courses/index.html\"\>\<b\>RascalTutor Home\</b\>\</a\>]" +
   	  section("Name", showConceptPath(cn)) + navigationMenu(cn) + categoryMenu(cn) +
   	  searchBox(cn) + 
   	  ((isEmpty(childs)) ? "" : section("Details", "<for(ref <- childs){><showConceptURL(ref, basename(ref))> &#032 <}>")) +
@@ -249,14 +269,21 @@ public str category(map[str,str] categories){
 
 private bool isEnabled(ConceptName cn){
   cats = concepts[cn].categories;
-  return isEmpty(cats) || !isEmpty(cats & enabledCategories);
+  if(isEmpty(cats))
+    cats = categories;
+    
+  if("Beginner" in enabledCategories && "Beginner" notin cats)
+     return false;
+
+  return !isEmpty(cats & enabledCategories);
 }
 
 public str editMenu(ConceptName cn){
   return "\n\<div id=\"editMenu\"\>
               [\<a id=\"editAction\" href=\"/edit?concept=<cn>&new=false&check=false\"\>\<b\>Edit\</b\>\</a\>] | 
               [\<a id=\"newAction\" href=\"/edit?concept=<cn>&new=true&check=true\"\>\<b\>New\</b\>\</a\>] |
-              [\<a id=\"checkAction\" href=\"/edit?concept=<cn>&new=false&check=true\"\>\<b\>Check\</b\>\</a\>]
+              [\<a id=\"checkAction\" href=\"/edit?concept=<cn>&new=false&check=true\"\>\<b\>Check\</b\>\</a\>] |
+              [\<a id=\"tutorAction\" href=\"http://localhost:8081/Courses/index.html\"\>\<b\>RascalTutor Home\</b\>\</a\>]
             \</div\>\n";
 }
 
@@ -292,7 +319,7 @@ public str edit(ConceptName cn, bool newConcept, bool check){
 public str doCheck(ConceptName cn){
     thisCourse = recompileCourse(thisCourse);
     warnings = thisCourse.warnings;
-    reinitialize(thisCourse);
+    reinitialize(thisCourse, enabledCategories);
     back = "\<a href=\"show?concept=<cn>\"\>" +
                      "\<img width=\"30\" height=\"30\" src=\"images/back.png\"\>" +
            "\</a\>";
@@ -348,7 +375,7 @@ public str save(ConceptName cn, str text, bool newConcept){
      try {
        concepts[fullName] = parseConcept(file, sections, directory.path);
        thisCourse.concepts = concepts;
-       reinitialize(thisCourse);
+       reinitialize(thisCourse, enabledCategories);
        return saveFeedback("", showConcept(fullName));
      } catch CourseError(e): {
        return saveFeedback(e, "");
@@ -362,7 +389,7 @@ public str save(ConceptName cn, str text, bool newConcept){
       thisCourse.concepts = concepts;
       thisCourse = recompileCourse(thisCourse);
       warnings = thisCourse.warnings;
-      reinitialize(thisCourse);
+      reinitialize(thisCourse, enabledCategories);
       println("parsed, returning feedback");
       return saveFeedback("", showConcept(cn));
     } catch ConceptError(e): {
@@ -580,10 +607,6 @@ println("showQuestion: <cpid>, <q>");
                   anotherQuestionForm(cpid, qid) + cheatForm(cpid, qid, qexpr) + br());
 }
 
-public void tstq(){
-println(showQuestion("xxx", tvQuestion(typeOfExpr(), details("qid", "descr", [], "\<A:int\> + \<B:int\>", "", (), ()))));
-}
-
 public QuestionName lastQuestion = "";
 
 // trim layout from a string
@@ -622,7 +645,7 @@ public str validateAnswer(map[str,str] params){
 	println("Validate: <params>");
 	println("Validate: <q>");
 	if(cheat == "yes")
-	   return showCheat(cpid, qid, q, expr);
+	   return showCheat(cpid, qid, q, params);
 	if(another == "yes")
 	   return showAnother(cpid, qid, q);
 	   
@@ -795,18 +818,16 @@ public str validateAnswer(map[str,str] params){
 	            
 	              return  wrongAnswer(cpid, qid, errorMsg);
 	            }
-	          } //catch SyntaxError(l): wrongAnswer(cpid, qid, "There is a syntax error in your answer.");
-	            //catch e:  wrongAnswer(cpid, qid, "There is an error in your answer: <e>");
-	            catch:
+	          } catch:
 	             return wrongAnswer(cpid, qid, "Cannot assess your answer.");
 	      }
 	    }
       }
     }
-    throw "Cannot validate answer: <qid>";
+    throw wrongAnswer(cpid, qid, "Cannot validate your answer");
 }
 
-public str showCheat(ConceptName cpid, QuestionName qid, Question q, str expr){
+public str showCheat(ConceptName cpid, QuestionName qid, Question q, map[str,str] params){
    switch(q){
       case choiceQuestion(qid,descr,choices): {
         gcnt = 0;
@@ -821,31 +842,30 @@ public str showCheat(ConceptName cpid, QuestionName qid, Question q, str expr){
         plural = (size(replies) > 1) ? "s" : "";
         return cheatAnswer(cpid, qid, "The expected answer<plural>: <for(r <- replies){><r> <}>");
       }
+      
+      case tvQuestion(qid, qkind, qdetails): {
+        setup  = qdetails.setup;
+        lstBefore = qdetails.lstBefore;
+        lstAfter  = qdetails.lstAfter;
+        cndBefore = qdetails.cndBefore;
+        cndAfter  = qdetails.cndAfter;
+        holeInLst = qdetails.holeInLst;
+        holeInCnd = qdetails.holeInCnd;
+        vars   = qdetails.vars;
+        auxVars = qdetails.auxVars;
+        rtype = qdetails.rtype;
+        hint = qdetails.hint;
         
-      case typeQuestion(qid,descr,setup,tp):
-        try {
-          expected = evalType(expr);
-          return cheatAnswer(cpid, qid, "The expected answer: <expected>");
-        } catch:
-        	cheatAnswer(cpid, qid, "Error while coputing the cheat");
-        
-      case exprQuestion(qid,descr,setup,tp): {
-          try {
-            expected = eval(expr);
-            return cheatAnswer(cpid, qid, "The expected answer: <expected>");
-          } catch:
-             return cheatAnswer(cpid, qid, "Error while computing the cheat");
+        switch(qkind){
+          case valueOfExpr():
+            return cheatAnswer(cpid, qid, "The expected answer: <hint>");
+          
+          case typeOfExpr():
+            return cheatAnswer(cpid, qid, "The expected answer: <rtype>");
         }
-        case exprTypeQuestion(qid,descr,setup,tp): {
-          try {
-            expected = evalType(expr);
-            return cheatAnswer(cpid, qid, "The expected answer: <expected>");
-          } catch:
-             return cheatAnswer(cpid, qid, "Error while computing the cheat");
-        }
+      }
     }
     throw "Cannot give cheat for: <qid>";
-
 }
 
 public str showAnother(ConceptName cpid, QuestionName qid, Question q){

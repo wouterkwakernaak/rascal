@@ -187,6 +187,11 @@ data Figure =
      text(FProperties props, str s)		  		// text label
    | text(str s)			              		// text label
    
+   												// file outline
+   | outline(FProperties props, map[int,Color] coloredLines)
+   | outline(map[int,Color] coloredLines)
+   
+   
 /* primitives/containers */
 
    | box(FProperties props)			          	// rectangular box
@@ -212,8 +217,8 @@ data Figure =
    | vcat(Figures elems)                        // vertical concatenation
    | vcat(FProperties props, Figures elems)
    
-   | align(Figures elems)                       // horizontal and vertical composition
-   | align(FProperties props, Figures elems)
+   | hvcat(Figures elems)                       // horizontal and vertical concatenation
+   | hvcat(FProperties props, Figures elems)
    
    | overlay(Figures elems)                     // overlay (stacked) composition
    | overlay(FProperties props, Figures elems)

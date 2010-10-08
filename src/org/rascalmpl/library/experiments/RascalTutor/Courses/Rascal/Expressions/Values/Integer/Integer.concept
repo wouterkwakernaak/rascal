@@ -1,14 +1,14 @@
 Name:Integer
 
-Categories: Language
-
+Categories: Language Beginner
 
 Syntax: sequence of digits of arbitrary length.
 Types: `int`
 
-
 Description:
 The integer values are represented by the type <tt>int</tt> and are written as usual. They can be arbitrarily large.
+
+See [Number] for all operations and functions on integers, reals and numbers.
 
 Examples:
 * <tt>12</tt>
@@ -21,5 +21,5 @@ Pittfalls:
 
 Questions:
 
-Type: <A:int>
+QType: <A:int>
 

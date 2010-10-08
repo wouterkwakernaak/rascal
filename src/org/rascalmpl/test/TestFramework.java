@@ -23,6 +23,7 @@ import org.rascalmpl.interpreter.load.IRascalSearchPathContributor;
 import org.rascalmpl.interpreter.load.ISdfSearchPathContributor;
 import org.rascalmpl.interpreter.result.Result;
 import org.rascalmpl.interpreter.staticErrors.StaticError;
+import org.rascalmpl.parser.LegacyRascalParser;
 import org.rascalmpl.uri.ClassResourceInputStreamResolver;
 import org.rascalmpl.uri.IURIInputStreamResolver;
 import org.rascalmpl.values.ValueFactoryFactory;
@@ -86,6 +87,12 @@ public class TestFramework {
 			// TODO Auto-generated method stub
 			return null;
 		}
+
+		@Override
+		public String absolutePath(URI uri) throws IOException {
+			// TODO Auto-generated method stub
+			return null;
+		}
 	}
 	
 	public TestFramework() {
@@ -97,7 +104,7 @@ public class TestFramework {
 		ModuleEnvironment root = heap.addModule(new ModuleEnvironment("***test***"));
 		stderr = new PrintWriter(System.err);
 		stdout = new PrintWriter(System.out);
-		Evaluator eval = new Evaluator(ValueFactoryFactory.getValueFactory(), stderr, stdout,  root, heap);
+		Evaluator eval = new Evaluator(ValueFactoryFactory.getValueFactory(), stderr, stdout,  new LegacyRascalParser(), root, heap);
 
 		eval.getResolverRegistry().registerInput("rascal-test", new ClassResourceInputStreamResolver("rascal-test", getClass()));
 		

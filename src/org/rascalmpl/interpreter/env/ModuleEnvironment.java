@@ -22,7 +22,6 @@ import org.rascalmpl.ast.QualifiedName;
 import org.rascalmpl.ast.Test;
 import org.rascalmpl.ast.Import.Syntax;
 import org.rascalmpl.interpreter.Evaluator;
-import org.rascalmpl.interpreter.asserts.ImplementationError;
 import org.rascalmpl.interpreter.result.AbstractFunction;
 import org.rascalmpl.interpreter.result.ConstructorFunction;
 import org.rascalmpl.interpreter.result.OverloadedFunctionResult;
@@ -266,7 +265,7 @@ public class ModuleEnvironment extends Environment {
 	
 	@Override
 	public Type concreteSyntaxType(String name, org.rascalmpl.ast.Type type) {
-		NonTerminalType sort = new NonTerminalType(type);
+		NonTerminalType sort = (NonTerminalType) RascalTypeFactory.getInstance().nonTerminalType(type);
 		concreteSyntaxTypes.put(name, sort);
 		clearParser();
 		return sort;
@@ -478,6 +477,7 @@ public class ModuleEnvironment extends Environment {
 		this.tests = new LinkedList<Test>();
 		this.productions = new HashSet<IValue>();
 		this.initialized = false;
+		this.parser = null;
 	}
 
 	public Class<IGLL> getParser() {

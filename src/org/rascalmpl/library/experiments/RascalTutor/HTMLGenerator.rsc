@@ -23,152 +23,159 @@ public set[ConceptName] getAndClearRelated(){
   return r;
 }
 
-private list[str] listNesting = [];
+// Allow for warnings in concepts
 
-private void pushList(str listType){
-	listNesting = listType + listNesting;
+private list[str] warnings = [];
+public list[str] getAndClearWarnings(){
+  w = warnings;
+  warnings = [];
+  return w;
 }
 
-private str popList(){
-   t = head(listNesting);
-   listNesting = tail(listNesting);
-   return t;
-}
-
-private str listEntry(str listType, int nesting, str entry){
-  start = "\<<listType>\>\n";
-  
-  currentNesting = size(listNesting);
-  if(nesting == currentNesting){
-  	 return li(markupRestLine(entry));
-  } else if(nesting > currentNesting){
-     startList = "";
-     while(nesting > size(listNesting)){
-       startList += start;
-       pushList(listType);
-     }
-     return startList + li(markupRestLine(entry));
-  } else {
-     endList = "";
-     while(nesting < size(listNesting)){
-       endList +=  "\n\</<popList()>\>\n";
-     }
-     return endList + li(markupRestLine(entry));
-  }
-}
-
-private str closeLists(){
-  endList = "";
-  while(size(listNesting) > 0){
-    endList +=  "\n\</<popList()>\>\n";
-  }
-  return endList;
-}
-
+// Path of current concept, used to get file URLs right.
 private str conceptPath = "";
+
+// markup
+// - lines: a list of lines
+// - cp: the concept path to be used when resolving URLs.
+
+public str markup(list[str] lines, str cp){
+  conceptPath = cp;
+  int i = 0;
+  res = "";
+  n = size(lines);
+  while(i < n){
+    <txt, i> = markup(lines, i, n);
+    res += " " + txt;
+  }
+  return res;
+}
 
 private str markup(list[str] lines){
   return markup(lines, conceptPath);
 }
 
-public str markup(list[str] lines, str cp){
-  conceptPath = cp;
-  n = size(lines);
-  int i = 0;
-  str res = "";
-  while(i < n){
-    switch(lines[i]){
+// Skip one empty line
+
+public int skipOneNL(list[str] lines, int i, int n){
+  if(i < n && /^\s*$/ := lines[i])
+     i += 1;
+  return i;
+}
+
+// markup: internal markup function:
+// lines: a list of lines
+// i: current index in list
+// n: size of list
+// Returns:
+// - HTML output
+// - first unread index in lines
+
+private tuple[str, int] markup(list[str] lines, int i, int n){
+  if(i >= n)
+    return <"", n>;
+  switch(lines[i]){
     // Sections
-    case /^=<eqs:[=]+><label:[^=]*>[=]+/: { res += h(size(eqs), label); i += 1; }
-    
-    // Unordered lists
-    case /^<stars:[\*]+><entry:.*>/: {
-       i += 1;
-       nl = 0;
-       while(i < n && nl < 2){
-         more = lines[i];
-         if(startsWith(more, "*"))
-            nl = 2;
-         else {
-            if(/^\s*$/ := more)
-              nl += 1;
-            else if(nl > 0){
-               nl = 0;
-               entry +=  br() + br() + more;
-            } else
-              entry += " " + more;
-            i += 1;
-          }
-       }
-       res += listEntry("ul", size(stars), entry); 
+    case /^=<eqs:[=]+><label:[^=]*>[=]+/: {
+      return <h(size(eqs), label), skipOneNL(lines, i + 1, n)>; 
     }
     
-    // Ordered lists
-    case /^<hashes:[\#]+><entry:.*>/: {
+    // Unordered/numbered lists:
+    // Collect all items at the same indentation level
+    case /^\s*<marker:[\*\#]+><entry:.*>/: {
        i += 1;
-       nl = 0;
-       while(i < n && nl < 2){
-         more = lines[i];
-         if(startsWith(more, "#"))
-            nl = 2;
-         else {
-            if(/^\s*$/ := more)
-              nl += 1;
-            else if(nl > 0){
-               nl = 0;
-               entry +=  br() + br() + more;
-            } else
-              entry += " " + more;
-            i += 1;
-          }
+       entry = markupRestLine(entry);
+       entries = "";
+       while(i < n) {
+         if(/^\s*<marker1:[\*\#]+><entry1:.*>/ := lines[i]){
+            if(size(marker1) > size(marker)){
+               <txt, i> = markup(lines, i, n);
+               entry += " " + txt;
+            } else if(size(marker1) < size(marker)) {
+               entries += li(entry);
+               return <startsWith(marker, "*") ? ul(entries) : ol(entries), i>;
+            } else {
+              entries += li(entry);
+              entry = markupRestLine(entry1);
+              i += 1;
+            }
+         } else if(i + 1 < n && /^\s*$/ := lines[i] && /^\s*$/ := lines[i+1]){
+           if(entry != "")
+              entries += li(entry);
+              inext = (size(marker) == 1) ? i + 2 : i;
+              return < startsWith(marker, "*") ? ul(entries) : ol(entries), inext>;
+         } else if(i < n && /^\s*$/ := lines[i]){
+             if(i + 1 < n && /^\s*[\*\#]/ !:= lines[i+1])
+                entry += br() + br();
+             i += 1;
+         } else {
+            <txt, i> = markup(lines, i, n);
+            entry += " " + txt;
+         }
        }
-       res += listEntry("ol", size(hashes), entry); 
+       if(entry != "")
+          entries += li(entry);
+       return <startsWith(marker, "*") ? ul(entries) : ol(entries), i>;
     }
    
+    // screen
     case /^\<screen\>\s*<codeLines:.*>$/: {
-      res += closeLists();
       i += 1;
       start = i;
       while((i < n) && /^\<\/screen\>/ !:= lines[i]){
          codeLines += lines[i] + "\n";
          i += 1;
       }
-      res += markupScreen(slice(lines, start, i - start));
-      i += 1;
-      }
-      
+      end = i - start;
+      return <markupScreen(slice(lines, start, end)), skipOneNL(lines, i+1, n)>;
+    }
+    
+    // listing from file
     case /^\<listing\s*<name:.+>\>$/: {
       loc L = |stdlib:///|[path = name];
       try {
       	codeLines = readFileLines(L);
-      	println("codeLines = <codeLines>");
-      	res += markupListing(codeLines);
-      } catch: res += "\<warning\>File <name> not found.\</warning\>";
-      i += 1;
+      	return < markupListing(codeLines), skipOneNL(lines, i+1, n) >;
+      } catch: return <"\<warning\>File <name> not found.\</warning\>", i + 1>;
     }
-      
+    
+    // inline listing  
     case /^\<listing\>\s*<rest:.*>$/: {
-      res += closeLists();
       i += 1;
       codeLines = [];
       while((i < n) && /^\<\/listing\>/ !:= lines[i]){
          codeLines += lines[i];
          i += 1;
       }
-      //res += pre("listing", codeLines);
-      res += markupListing(codeLines);
-      i += 1;
-      }
-    case /^$/: {
-      res += closeLists();
-      i += 1;
-      if(i < n && size(lines[i]) == 0){
-        i += 1;
-        res += br() + br();
-      } else
-        res += "\n";
+      return < markupListing(codeLines), skipOneNL(lines, i+1, n)  >;
     }
     
+    // render a figure
+    case /^\<figure\s*<file:.*>\>$/: {
+      i += 1;
+      codeLines = [];
+      while((i < n) && /^\<\/figure\>/ !:= lines[i]){
+         codeLines += lines[i];
+         i += 1;
+      }
+      return < markupFigure(codeLines, file), skipOneNL(lines, i+1, n)  >;
+    }
+    
+    // warning
+    case /^\<warning\><txt:.*>\<\/warning\><rest:.*>$/:{
+      warnings += txt;
+      return <"\<warning\><txt>\</warning\>" + markupRestLine(rest), i + 1>;
+    }
+    
+    // empty line
+    case /^\s*$/: {
+        if(i + 1 < n && /^\s*[\*\#=\|]/ !:= lines[i+1] &&
+           /\<listing/ !:= lines[i+1] &&  /\<screen/ !:= lines[i+1])
+           return <br() + br() + "\n", i + 1>;
+        else return <"", i + 1>;
+    }
+    
+    // table
     case /^\|/: {
       headings = getHeadings(lines[i]);
       i += 1;
@@ -177,74 +184,70 @@ public str markup(list[str] lines, str cp){
         i += 1;
         rows = "";
         while(i < n && startsWith(lines[i], "|")){
-          rows += tableRow(lines[i]);
+          rows += tableRow(lines[i], alignments);
           i += 1;
         }
-        res += table(headings, alignments, rows);
+        return <table(headings, alignments, rows), skipOneNL(lines, i+1, n)>;
       }
     }
-      
+    
+    // anything else
     default: {
-      res += closeLists() + markupRestLine(lines[i]) + "\n";
-      i += 1;
+      return < markupRestLine(lines[i]) + "\n", i + 1>;
     }
   }
-  }
-  res += closeLists();
-  //println("markupLine ==\> <res>");
-  return res;
 }
 
-public list[str] getAlignments(str txt){
+// Get the column alignments of a table
+
+private list[str] getAlignments(str txt){
   alignments = [];
   visit(txt){
-    case /^\|:-+/: { alignments += "left"; insert "";}
-    case /^\|-+:/:  { alignments += "right"; insert "";}
-    case /^\|-+/:  { alignments += "center"; insert "";}
+    case /^\|:\-+/: { alignments += "left"; insert "";}
+    case /^\|\-+:/: { alignments += "right"; insert "";}
+    case /^\|\-+/:  { alignments += "center"; insert "";}
   }
   return alignments;
 }
 
-public list[str] getHeadings(str txt){
-println("getHeadings(<txt>)");
+// Get the headings of a table
+
+private list[str] getHeadings(str txt){
   headings = [];
   visit(txt){
-    case /^\|<h:[^|]+>/: { headings += markupRestLine(h); insert "";}
+    case /^\|<h:(`[^`]*`|[^|])+>/: { headings += markupRestLine(h); insert "";}
   }
   return headings;
 }
 
-public str table(list[str] headings, list[str] alignments, str rows){
-println("table(<headings>, <alignments>, <rows>)");
-  res = "";
-  for(int i <- index(headings))
-     res += th(headings[i], alignments[i] ? "center");
-  res = tr(res);
+// Format a table
+
+private str table(list[str] headings, list[str] alignments, str rows){
+  cols = "";
   for(a <- alignments)
-     res += col(a);
-  return table(res + rows);
+     cols += col(a);
+  hds = "";
+  for(int i <- index(headings))
+     hds += th(headings[i], alignments[i] ? "center");
+  hds = tr(hds);
+  return table(cols + hds + rows);
 }
 
-public str tableRow(str txt){
+// Format a table row
+// Also add alignment to each table datum, since col does not seems to work properly
+
+private str tableRow(str txt, list[str] alignments){
   entries = "";
+  k = 0;
   visit(txt){
-      case /^\|<entry:[^\|]+>/: {entries += td(markupRestLine(entry)); insert "";}
+      case /^\|<entry:[^\|]+>/: {entries += td(markupRestLine(entry), alignments[k] ? "left"); k += 1; insert "";}
   }
   return tr(entries);
 }
 
-public str tst(){
-return
-markup([
-"| A | B |",
-"|---|---|",
-"| 1 | 2 |"
-]);
+// Take care of other markup in a line
 
-}
-
-public str markupRestLine(str line){
-  ///println("markupRestLine(<line>)");
+private str markupRestLine(str line){
   return visit(line){
     
     case /^<op1:__?>+<text:[^_]*><op2:__?>/: {
@@ -280,63 +283,58 @@ public str markupRestLine(str line){
     
     case /^\/\*<dig:[0-9]>\*\//  => "\<img src=\"images/<dig>.png\"\>"
     
-    case /^!\[<alt:[^\]]*>\]\(<file:[A-Za-z0-9\-\_]+\.png><opts:[^\)]*>\)/ => "\<img <getImgOpts(opts)> alt=\"<alt>\" src=\"<conceptPath>/<file>\"\>"
+    case /^!\[<alt:[^\]]*>\]\(<file:[A-Za-z0-9\-\_\.\/]+\.png><opts:[^\)]*>\)/ => "\<img <getImgOpts(opts)> alt=\"<alt>\" src=\"<conceptPath>/<file>\"\>"
     
    };
 }
 
-test markupRestLine("\\\\") ==  "\\";
-test markupRestLine("\\`") ==  "`";
-test markupRestLine("\\*") ==  "*";
-test markupRestLine("\\_") ==  "_";
-test markupRestLine("\\+") ==  "+";
-test markupRestLine("\\.") ==  ".";
+// Subscripts and superscripts
 
-test markupRestLine("*abc*") == "\<i\>abc\</i\>";
-test markupRestLine("**abc**") == "\<b\>abc\</b\>";
-test markupRestLine("_abc_") == "\<i\>abc\</i\>";
-test markupRestLine("__abc__") == "\<b\>abc\</b\>";
-
-test markupRestLine("`printf()`") == "\<code\>printf()\</code\>";
-test markupRestLine("x\<sub\>1\</sub\>") ==  "x\<sub\>1\</sub\>";
-test markupRestLine("x\<y") ==  "x\<sub\>1\</sub\>";
-
-test markupRestLine("&copy;") == "&copy;";
-test markupRestLine("C&A") == "C&A";
-
-public str markupSubs(str txt){
+private str markupSubs(str txt){
   return visit(txt){
     case /^_<subsup:[A-Za-z0-9]+>/  => sub(subsup) 
     case /^\^<subsup:[A-Za-z0-9]+>/ => sup(subsup)   
   }
 }
 
-public str show(str cn){
+// HTML to show a concept
+
+private str show(str cn){
   return "\<a href=\"/show?concept=<cn>\"\><cn>\</a\>";
 }
+
+// HTML for an external link
 
 public str link(str url, str text){
   return "\<a href=\"<url>\"\><(text=="")?url:text>\</a\>";
 }
 
-public str getImgOpts(str txt){
+// Get options for image
+
+private str getImgOpts(str txt){
   opts = "";
   visit(txt){
-    case /^\s*\|\s*left/: {opts += "align=\"left\" "; }
-    case /^\s*\|\s*right/: {opts += "align=\"right\" "; }
-    case /^\s*\|\s*<N:[0-9]+>\s*px/: {opts += "width=\"<N>px\" height=\"<N>px\" "; }
+    case /^\s*\|\s*left/: {opts += "style=\"float: left;\" "; insert "";}
+    case /^\s*\|\s*right/: {opts += "style=\"float: right;\" "; insert "";}
+    case /^\s*\|\s*center/: {opts += "style=\"float: center;\" "; insert "";}
+    case /^\s*\|\s*<N:[0-9]+>\s*px/: {opts += "width=\"<N>px\" height=\"<N>px\" "; insert ""; }
   }
+  println("getImgOpts(<txt>) returns <opts>");
   return opts;
 }
 
-public str markupListing(list[str] lines){
+// Do the markup for listings
+
+private str markupListing(list[str] lines){
   txt = "";
   for(line <- lines)
     txt += markupCode(line) + "\n";
   return pre("listing", txt);
 }
 
-public str markupCode(str text){
+// Do the markup for a code fragment
+
+private str markupCode(str text){
   return visit(text){
     case /^\</   => "&lt;"
     case /^&/    => "&amp;"
@@ -346,11 +344,42 @@ public str markupCode(str text){
   };
 }
 
-public str markupRascalPrompt(list[str] lines){
+private str markupFigure(list[str] lines, str file){
+  n = size(lines);
+  str renderCall = lines[n-1];
+  errors = "";
+  if(/\s*render\(<arg:.*>\);/ := renderCall){
+      // replace the render call by a call to renderSave
+	  absPath = courseRoot.path + "../<conceptPath>/<file>";
+	  println("absPath = <absPath>; conceptPath=<conceptPath>; file=<file>");
+	  lines[n-1] = "renderSave(<arg>, |cwd://<absPath>|);";
+	  out = shell(["import viz::Figure::Core;", 
+	               "import viz::Figure::Render;"] + 
+	              lines, 
+	              5000);
+	  println("**** shell output ****\n<out>");
+	  errors = "";
+	  for(line <- out)
+	     if(/.*[Ee]rror/ := line)
+	       errors += line;
+	  println("errors = <errors>");
+	  // Restore original call for listing
+	  lines[n-1] = renderCall;
+  } else
+    errors = "Last line should be a call to \"render\"";
+    
+  if(errors != "")
+    errors = "\<warning\>" + errors + "\</warning\>";
+  return errors + markupListing(lines);
+}
+
+private str markupRascalPrompt(list[str] lines){
   return  "<for(str line <- lines){><visit(line){ case /^rascal\>/ => b("rascal\>") }>\n<}>";
 }
 
-public str markupScreen(list[str] lines){
+// Do screen markup
+
+private str markupScreen(list[str] lines){
    stripped_code = "<for(line <- lines){><(startsWith(line, "//")) ? "" : (line + "\n")><}>";
    result_lines = shell(stripped_code);
    
@@ -371,7 +400,7 @@ public str markupScreen(list[str] lines){
            codeLines += "\</pre\>\n<markup(slice(lines, start, i - start))>\n<pre_open>";
          }
          if(i <upbi) {
-         	codeLines += b(prompt) + limitWidth(escapeForHtml(lines[i]), 80) + "\n";
+         	codeLines += b(prompt) + limitWidth(lines[i], 80) + "\n";
          	i += 1; j += 1;
          }
          while(j < upbj && !startsWith(result_lines[j], prompt)){
@@ -398,23 +427,29 @@ public str markupScreen(list[str] lines){
 
 public str limitWidth(str txt, int limit){
   if(size(txt) < limit)
-    return txt;
-  return substring(txt, 0, limit) + "&raquo;\n" + limitWidth(substring(txt, limit), limit);
+    return escapeForHtml(txt);
+  return escapeForHtml(substring(txt, 0, limit)) + "&raquo;\n" + limitWidth(substring(txt, limit), limit);
 }
 
-public set[str] searchTermsCode(str line){
+// Extract serach terms from a code fragment
+
+private set[str] searchTermsCode(str line){
   set[str] terms = {};
   visit(line){
     case /^\s+/: insert "";
     case /^\$[^\$]*\$/: insert "";
-    case /^<kw:[a-zA-z]+>/: {terms += kw; insert ""; }
-    case /^<op:[^a-zA-Z\$\ \t]+>/: { terms += op; insert ""; }
+    case /^<kw:\w+>/: {terms += kw; println("kw = <kw>"); insert ""; }
+    case /^<op:[^a-zA-Z\$\ \t]+>/: { terms += op; println("op = <op>"); insert ""; }
   }
   return terms;
 }
 
+// Collect search terms from the Synopsis-related entries in concept description
+
 public set[str] searchTermsSynopsis(list[str] syn, list[str] tp, list[str] fn, list[str] synop){
-  return searchTerms(syn) + (searchTerms(tp)-  {"[", "]", ","});
+  
+  return (searchTerms(syn) - {"...", "...,"}) + 
+         {t | str t <- searchTerms(tp), /\{\}\[\]\(\)[,]?/ !:= t, t notin {"...", "...,", ",...", ",...,"}};
          // TODO what do we do with searchTerms(fn), searchTerms(synop)?
 }
 
@@ -423,24 +458,20 @@ private set[str]  searchTerms(list[str] lines){
    n = size(lines);
    if(n == 0)
      return terms;
-   for(int k <- [0 .. n - 1])
-       visit(lines[k]){
-         case /`<syn:[^`]*>`/: {terms += searchTermsCode(syn); insert ""; }
-       };
+   k = 0;
+   while(k < n){
+       if(/\<listing\>/ := lines[k]){
+           k += 1;
+           while(k < n && /\<\/listing\>/ !:= lines[k]){
+             terms += searchTermsCode(lines[k]);
+             k += 1;
+           }
+       } else {
+         visit(lines[k]){
+           case /`<syn:[^`]*>`/: {terms += searchTermsCode(syn); insert ""; }
+         };
+       }
+       k += 1;
+    };
     return terms;
 }
-
-test markup(["===Level 2==="]) == "\<h2\>Level 2\</h2\>\n";
-
-test markup(["_abc_"]) == "\<i\>abc\</i\>";
-test markup(["__abc__"]) == "\<b\>abc\</b\>";
-
-test markup(["* abc"]) == "\<ul\>\n\<li\> abc\</li\>\n\</ul\>\n";
-test markup(["* abc"]) == "\<ul\>\n\<li\> abc\</li\>\n\</ul\>\n";
-test markup(["* abc", "X"]) == "\<ul\>\n\<li\> abc\</li\>\n\</ul\>\nX";
-test markup(["* abc", "* def", "X"]) == "\<ul\>\n\<li\> abc\</li\>\n\<li\> def\</li\>\n\</ul\>\nX";
-test markup(["* abc", "** def", "* ghi", "X"]) == "\<ul\>\n\<li\> abc\</li\>\n\<ul\>\n\<li\> def\</li\>\n\n\</ul\>\n\<li\> ghi\</li\>\n\</ul\>\nX";
-test markup(["* abc", "## def", "* ghi", "X"]) == "\<ul\>\n\<li\> abc\</li\>\n\<ol\>\n\<li\> def\</li\>\n\n\</ol\>\n\<li\> ghi\</li\>\n\</ul\>\nX";
-test markup(["* __abc__"]) == "\<ul\>\n\<li\> \<i\>abc\</i\>\</li\>\n\n\</ul\>\n";
-test markup(["* abc", "* def", "_ghi__"]) == "\<ul\>\n\<li\> abc\</li\>\n\<li\> def\</li\>\n\</ul\>\n\<i\>ghi\</i\>";
-

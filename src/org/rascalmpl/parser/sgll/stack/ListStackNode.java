@@ -2,6 +2,7 @@ package org.rascalmpl.parser.sgll.stack;
 
 import org.eclipse.imp.pdb.facts.IConstructor;
 import org.rascalmpl.parser.sgll.result.AbstractNode;
+import org.rascalmpl.parser.sgll.result.AbstractContainerNode;
 import org.rascalmpl.parser.sgll.result.struct.Link;
 import org.rascalmpl.parser.sgll.util.ArrayList;
 import org.rascalmpl.parser.sgll.util.specific.PositionStore;
@@ -17,7 +18,7 @@ public final class ListStackNode extends AbstractStackNode implements IListStack
 	private final AbstractStackNode child;
 	private final boolean isPlusList;
 	
-	private AbstractNode result;
+	private AbstractContainerNode result;
 	
 	public ListStackNode(int id, IConstructor production, AbstractStackNode child, boolean isPlusList){
 		super(id);
@@ -83,11 +84,11 @@ public final class ListStackNode extends AbstractStackNode implements IListStack
 		return new ListStackNode(this, prefixesMap);
 	}
 	
-	public void setResultStore(AbstractNode resultStore){
+	public void setResultStore(AbstractContainerNode resultStore){
 		result = resultStore;
 	}
 	
-	public AbstractNode getResultStore(){
+	public AbstractContainerNode getResultStore(){
 		return result;
 	}
 	
@@ -100,7 +101,8 @@ public final class ListStackNode extends AbstractStackNode implements IListStack
 		listNode.markAsEndNode();
 		listNode.setStartLocation(startLocation);
 		listNode.setParentProduction(production);
-		listNode.addNext(listNode);
+		listNode.setNext(listNode);
+		listNode.initEdges();
 		listNode.addEdgeWithPrefix(this, null, startLocation);
 		
 		if(isPlusList){
@@ -111,6 +113,7 @@ public final class ListStackNode extends AbstractStackNode implements IListStack
 		empty.markAsEndNode();
 		empty.setStartLocation(startLocation);
 		empty.setParentProduction(production);
+		empty.initEdges();
 		empty.addEdge(this);
 		
 		return new AbstractStackNode[]{listNode, empty};

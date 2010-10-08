@@ -2,6 +2,7 @@ package org.rascalmpl.parser.sgll.stack;
 
 import org.eclipse.imp.pdb.facts.IConstructor;
 import org.rascalmpl.parser.sgll.result.AbstractNode;
+import org.rascalmpl.parser.sgll.result.AbstractContainerNode;
 import org.rascalmpl.parser.sgll.result.struct.Link;
 import org.rascalmpl.parser.sgll.util.ArrayList;
 import org.rascalmpl.parser.sgll.util.specific.PositionStore;
@@ -18,7 +19,7 @@ public final class SeparatedListStackNode extends AbstractStackNode implements I
 	private final AbstractStackNode[] separators;
 	private final boolean isPlusList;
 	
-	private AbstractNode result;
+	private AbstractContainerNode result;
 	
 	public SeparatedListStackNode(int id, IConstructor production, AbstractStackNode child, AbstractStackNode[] separators, boolean isPlusList){
 		super(id);
@@ -88,11 +89,11 @@ public final class SeparatedListStackNode extends AbstractStackNode implements I
 		return new SeparatedListStackNode(this, prefixesMap);
 	}
 	
-	public void setResultStore(AbstractNode resultStore){
+	public void setResultStore(AbstractContainerNode resultStore){
 		result = resultStore;
 	}
 	
-	public AbstractNode getResultStore(){
+	public AbstractContainerNode getResultStore(){
 		return result;
 	}
 	
@@ -105,23 +106,21 @@ public final class SeparatedListStackNode extends AbstractStackNode implements I
 		listNode.markAsEndNode();
 		listNode.setStartLocation(startLocation);
 		listNode.setParentProduction(production);
+		listNode.initEdges();
 		listNode.addEdgeWithPrefix(this, null, startLocation);
 		
 		AbstractStackNode from = listNode;
 		AbstractStackNode to = separators[0].getCleanCopy();
 		to.markAsSeparator();
-		AbstractStackNode firstSeparator = to;
-		from.addNext(to);
+		from.setNext(to);
 		from = to;
 		for(int i = 1; i < separators.length; ++i){
 			to = separators[i].getCleanCopy();
 			to.markAsSeparator();
-			from.addNext(to);
+			from.setNext(to);
 			from = to;
 		}
-		from.addNext(listNode);
-		
-		listNode.addNext(firstSeparator);
+		from.setNext(listNode);
 		
 		if(isPlusList){
 			return new AbstractStackNode[]{listNode};
@@ -131,6 +130,7 @@ public final class SeparatedListStackNode extends AbstractStackNode implements I
 		empty.markAsEndNode();
 		empty.setStartLocation(startLocation);
 		empty.setParentProduction(production);
+		empty.initEdges();
 		empty.addEdge(this);
 		
 		return new AbstractStackNode[]{listNode, empty};

@@ -23,7 +23,14 @@ Box ( Tree ) userDefined=defaultUserDefined ;
 public void setUserDefined(Box ( Tree ) userDef) {
      userDefined=userDef;
      }
-
+     
+//  startEnd Block
+tuple[str, str] defaultStartEndBlock = <"{", "}">;
+tuple[str, str] startEndBlock = defaultStartEndBlock;
+public void setStartEndBlock(str startSym, str endSym) {
+    startEndBlock = <startSym, endSym>;
+    }
+    
 //   ISINDENT 
 
 list[int] defaultIndent(list[Symbol] p) {
@@ -107,17 +114,28 @@ str getName(Symbol s) {
 
 bool isTerminal(Symbol s,str c) {
      if (\lit(str a):=s) {
+          // if (c=="=\>") println("<a> <c> <a==c>");
           if (a==c) return true;
           }
      return false;
      }
-
+     
+bool isNonTerminal(Symbol s,str c) {
+     // println(s);
+     if (\sort(str a):=s || \cf(\sort(str a)):=s) {
+          // println("<a> <c>");
+          if (a==c) return true;
+          }
+     return false;
+     }
+     
 public bool isScheme(list[Symbol] q,list[str] b) {
+     // println("<size(b)>==<(size(q)+1)/2>");
      if (size(b)!=(size(q)+1)/2) return false;
      list[tuple[Symbol,str]] r=[<q[2*i],b[i]>|int i<-[0..size(b)-1]];
      for (<Symbol s,str z><-r) {
           if (!isTerminal(s)) {
-               if (z!="N") return false;
+               if (z!="N"&&!isNonTerminal(s,z)) return false;
                }
           else {
                if (z!="T"&&!isTerminal(s,z)) return false;
@@ -127,11 +145,11 @@ public bool isScheme(list[Symbol] q,list[str] b) {
      }
 
 bool isBlock(list[Symbol] q) {
-     return isScheme(q,["N","{","N","}"]);
+     return isScheme(q,["N",startEndBlock[0],"N",startEndBlock[1]]);
      }
 
 bool isBody(list[Symbol] q) {
-     return isScheme(q,["{","N","}"]);
+     return isScheme(q,[startEndBlock[0],"N",startEndBlock[1]]);
      }
 
 public list[int] isBody(list[Tree] t,int idx) {
@@ -155,8 +173,17 @@ public list[int] isBlock(list[Tree] t,int idx) {
 
 public bool isBody(Tree c) {
      if (appl(prod(list[Symbol] s,_,Attributes att),_):=c) {
+          /*
+          if (size(s)>=1) {
+                c = getFirst(c);
+                 if (appl(prod(list[Symbol] s,_,Attributes att),_):=c) {
+                    // println("<s> <isBody(s)>" );
+                    if (isBody(s)) return true;
+                    }
+                }
           r=isBody(s);
-          return r;
+          */
+          return isBody(s);
           }
      return false;
      }
@@ -192,7 +219,12 @@ public Tree getLast(Tree q) {
      list[Tree] a=getA(q);
      return a[size(a)-1];
      }
-
+     
+public Tree getFirst(Tree q) {
+     list[Tree] a=getA(q);
+     return a[0];
+     }
+     
 public Box evPt(Tree q) {
      return evPt(q,false);
      }
@@ -226,9 +258,8 @@ public Box evPt(Tree q,bool doIndent) {
      if (b!=NULL()) return b;
      switch (q) {
           case appl ( prod(list[Symbol] s,_,Attributes att),list[Tree] t ) : {
-                    pairs u=[<s[i],t[i]>|int i<-[0,1..(size(t)-1)]];
-                    Box r=walkThroughSymbols(u,true,doIndent,-1);
-                    return r;
+                       pairs u=[<s[i],t[i]>|int i<-[0,1..(size(t)-1)]];
+                       return walkThroughSymbols(u,true,doIndent,-1);        
                     }
           case appl ( \list(\cf(\iter-star-sep(Symbol s,Symbol sep))),list[Tree] t ) : {
                     return HV(0,getIterSep(q));
@@ -337,12 +368,14 @@ Box walkThroughSymbols(pairs u,bool hv,bool doIndent,int space) {
                     }
                }
           else if (i in block) {
+                         // println("Block:<i> <b>");
+                         if (isEmpty(out)) out+=I([b]);
+                         else {
                          tuple[Box,Box] c=compactStyle(b);
                          if (c[0]==NULL()) out+=c[1]; else {
                               out+=c[0];
                               if (first) {
-                                   Box r=H(1,out);
-                                   out=[r];
+                                   out = [H(1,out)];
                                    first=false;
                                    }
                               else {
@@ -352,33 +385,34 @@ Box walkThroughSymbols(pairs u,bool hv,bool doIndent,int space) {
                                    }
                               out+=I([c[1]]);
                               }
+                             }
                          }
                else if (i in indent) {
+                      if (first) {
+                          out = [H(1,out)];
+                          first=false;
+                          }
                        collectList+= b;
                        }
                     else {
                       if (!isEmpty(collectList)) {
-                          out = [H(out)];
-                          out = [V(out+I([V(collectList)])+b)];
+                          out += I([V(collectList)]);
+                          out+= b;
                           collectList=[];
                           }
                       else out+=b;
                     }
            }
      if (!isEmpty(collectList)) {
-          out = [H(out)];
-          out = [V(out+I([V(collectList)]))];
+          out += I([V(collectList)]);
           }
-     list[Box]
-     bl=
-     (hv&&isSeparated(y))?[H(1,out)]:
-     (doIndent?[V(0,out)]:(!collect?out:[V([out,I([V(collectList)])])]));
-     if (size(bl)==0) return NULL();
-     if (size(bl)==1) {
-          return bl[0];
+     if (hv && isSeparated(y)) out = [H(1,out)];
+     if (size(out)==0) return NULL();
+     if (size(out)==1) {
+          return out[0];
           }
      else {
-          Box r=(hv&&!doIndent&&isEmpty(block))?HV(-1,bl):V(0,bl);
+          Box r=(hv&&!doIndent &&isEmpty(block) && isEmpty(indent))?HV(-1,out):V(0,out);
           if (space>=0) r@hs=space;
           return r;
           }
@@ -397,6 +431,7 @@ public text toLatex(Tree a) {
      }
      
 public text toHtml(Tree a) {
+     // println("toHtml Concrete");
      Box q=NULL();
      if (aux[a]?) q=aux[a]; else {
           q=evPt(a);

@@ -28,6 +28,7 @@ import org.rascalmpl.interpreter.env.ModuleEnvironment;
 import org.rascalmpl.interpreter.result.Result;
 import org.rascalmpl.library.IO;
 import org.rascalmpl.parser.ASTBuilder;
+import org.rascalmpl.parser.LegacyRascalParser;
 import org.rascalmpl.values.ValueFactoryFactory;
 
 
@@ -50,7 +51,7 @@ public class MakeBox {
 	final PrintWriter stderr = new PrintWriter(System.err);
 	final PrintWriter stdout = new PrintWriter(System.out);
 	final private Evaluator commandEvaluator= new Evaluator(ValueFactoryFactory.getValueFactory(),
-			stderr, stdout, root, heap);
+			stderr, stdout, new LegacyRascalParser(), root, heap);
 	private Data data;
 	private TypeStore ts = BoxEvaluator.getTypeStore();
 	private Type adt = BoxEvaluator.getType();
@@ -116,16 +117,18 @@ public class MakeBox {
 		}
 	}
 
-	private IValue launchConcreteProgram(URI uri, String s) {
+	private IValue launchConcreteProgram(String cmd, URI uri, String s) {
 		final String resultName = "c";
+		/*
 		if (s.equals("rsc"))
 			s = "rascal"; // Exception at rascal
+		*/
 		execute("import box::" + s + "::Default;");
 		// IString v = ValueFactoryFactory.getValueFactory().string(fileName);
 		ISourceLocation v = ValueFactoryFactory.getValueFactory()
 				.sourceLocation(uri);
 		store(v, varName);
-		execute(resultName + "=toLatex(" + varName+");");
+		execute(resultName + "="+cmd+"(" + varName+");");
 		IValue r = fetch(resultName);
 		return r;
 	}
@@ -175,13 +178,15 @@ public class MakeBox {
 		return null;
 	}
 
+	/*
 	public IValue toTxt(URI uri) {
 		start();
 		int tail = uri.getPath().lastIndexOf('.');
 		String s = uri.getPath().substring(tail + 1);
 		// s = s.substring(0, 1).toUpperCase() + s.substring(1);
-		return launchConcreteProgram(uri, s);
+		return launchConcreteProgram("toLatex", uri, s);
 	}
+	*/
 
 	public IValue toSrc(URI uri) {
 		start();
@@ -203,9 +208,12 @@ public class MakeBox {
 		return b.toString();
 	}
 	
-	public String toLatex(URI uri) {
-		IValue v = toTxt(uri);
-		return text2String(v);
+	public String toPrint(String cmd, URI uri) {
+		start();
+		int tail = uri.getPath().lastIndexOf('.');
+		String s = uri.getPath().substring(tail + 1);
+		// s = s.substring(0, 1).toUpperCase() + s.substring(1);
+		return text2String(launchConcreteProgram(cmd, uri, s));
 	}
 	
 

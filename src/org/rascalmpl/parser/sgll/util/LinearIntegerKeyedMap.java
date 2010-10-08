@@ -15,6 +15,13 @@ public class LinearIntegerKeyedMap<V>{
 		values = (V[]) new Object[DEFAULT_SIZE];
 	}
 	
+	public LinearIntegerKeyedMap(int size){
+		super();
+		
+		keys = new int[size];
+		values = (V[]) new Object[size];
+	}
+	
 	public LinearIntegerKeyedMap(LinearIntegerKeyedMap<V> original){
 		super();
 		
@@ -40,7 +47,7 @@ public class LinearIntegerKeyedMap<V>{
 	}
 	
 	public void add(int key, V value){
-		if(size == keys.length){
+		while(size >= keys.length){
 			enlarge();
 		}
 		

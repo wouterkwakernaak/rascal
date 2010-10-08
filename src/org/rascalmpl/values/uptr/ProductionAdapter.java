@@ -92,7 +92,8 @@ public class ProductionAdapter {
 	}
 
 	public static boolean isList(IConstructor tree) {
-		return tree.getConstructorType() == Factory.Production_List;
+		return tree.getConstructorType() == Factory.Production_List 
+		    || tree.getConstructorType() == Factory.Production_Regular;
 	}
 	
 	public static boolean isRegular(IConstructor tree) {
@@ -104,7 +105,7 @@ public class ProductionAdapter {
 		if (SymbolAdapter.isLex(rhs) || SymbolAdapter.isCf(rhs)) {
 			rhs = SymbolAdapter.getSymbol(rhs);
 		}
-		return SymbolAdapter.isIterPlusSep(rhs) || SymbolAdapter.isIterStarSep(rhs);
+		return SymbolAdapter.isIterPlusSep(rhs) || SymbolAdapter.isIterStarSep(rhs) || SymbolAdapter.isIterPlusSeps(rhs) || SymbolAdapter.isIterStarSeps(rhs);
 	}
 
 	public static boolean isLexical(IConstructor tree) {
@@ -168,5 +169,13 @@ public class ProductionAdapter {
 
 	public static boolean hasAvoidAttribute(IConstructor tree) {
 		return hasAttribute(tree, Factory.Attr_Avoid.make(ValueFactoryFactory.getValueFactory()));
+	}
+
+	public static boolean isNewSeparatedList(IConstructor production) {
+		if (isRegular(production)) {
+			IConstructor rhs = getRhs(production);
+			return rhs.getConstructorType() == Factory.Symbol_IterStarSepX || rhs.getConstructorType() == Factory.Symbol_IterSepX;
+		}
+		return false;
 	}
 }

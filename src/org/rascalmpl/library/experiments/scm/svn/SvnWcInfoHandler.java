@@ -2,14 +2,11 @@ package org.rascalmpl.library.experiments.scm.svn;
 
 import org.eclipse.imp.pdb.facts.IConstructor;
 import org.eclipse.imp.pdb.facts.IDateTime;
-import org.eclipse.imp.pdb.facts.IMap;
-import org.eclipse.imp.pdb.facts.IMapWriter;
 import org.eclipse.imp.pdb.facts.ISet;
 import org.eclipse.imp.pdb.facts.ISetWriter;
 import org.eclipse.imp.pdb.facts.ISourceLocation;
 import org.rascalmpl.library.experiments.scm.Scm;
 import org.rascalmpl.library.experiments.scm.ScmTypes;
-import org.rascalmpl.library.experiments.scm.ScmTypes.Annotation;
 import org.rascalmpl.library.experiments.scm.ScmTypes.Info;
 import org.rascalmpl.library.experiments.scm.ScmTypes.Resource;
 import org.rascalmpl.library.experiments.scm.ScmTypes.Revision;
@@ -30,7 +27,6 @@ public class SvnWcInfoHandler implements ISVNInfoHandler {
 		resourceFilesWriter = ScmTypes.VF.setWriter(WcResource.getAbstractType());
 	}
 	
-	@Override
 	public void handleInfo(SVNInfo info) throws SVNException {
 		long revNumber = info.getCommittedRevision().getNumber();
 		boolean isDir = (info.getKind() == SVNNodeKind.DIR);

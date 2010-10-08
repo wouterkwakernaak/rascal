@@ -12,7 +12,7 @@ Types:
 | `real`   |  `real`    |
 
 
-Description: Yields the negated values of $NumExp$.
+Description: Yields the negated values of $Exp$.
 
 Examples:
 <screen>
@@ -27,7 +27,7 @@ Pittfalls:
 
 Questions:
 
-Type:  -<A:int>
-Type:  -<A:real>
-Value: -<A:num>
+QType:  -<A:int>
+QType:  -<A:real>
+QValue: -<A:num>
 

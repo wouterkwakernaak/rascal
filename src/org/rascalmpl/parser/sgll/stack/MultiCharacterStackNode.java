@@ -2,6 +2,7 @@ package org.rascalmpl.parser.sgll.stack;
 
 import org.eclipse.imp.pdb.facts.IConstructor;
 import org.rascalmpl.parser.sgll.result.AbstractNode;
+import org.rascalmpl.parser.sgll.result.AbstractContainerNode;
 import org.rascalmpl.parser.sgll.result.LiteralNode;
 import org.rascalmpl.parser.sgll.result.struct.Link;
 import org.rascalmpl.parser.sgll.util.ArrayList;
@@ -95,11 +96,11 @@ public class MultiCharacterStackNode extends AbstractStackNode implements IMatch
 		return new MultiCharacterStackNode(this, prefixesMap);
 	}
 	
-	public void setResultStore(AbstractNode resultStore){
+	public void setResultStore(AbstractContainerNode resultStore){
 		throw new UnsupportedOperationException();
 	}
 	
-	public AbstractNode getResultStore(){
+	public AbstractContainerNode getResultStore(){
 		throw new UnsupportedOperationException();
 	}
 	

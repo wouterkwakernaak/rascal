@@ -7,8 +7,6 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 
-import org.joda.time.DateTime;
-
 public class ClassResourceInputStreamResolver implements
 		IURIInputStreamResolver {
 	protected final Class<?> clazz;
@@ -54,6 +52,10 @@ public class ClassResourceInputStreamResolver implements
 		String[] ls = {};
 		URL res = clazz.getResource(uri.getPath());
 		return (res == null) ? ls : new File(res.getPath()).list();
+	}
+
+	public String absolutePath(URI uri) {
+		return clazz.getResource(uri.getPath()).getPath();
 	}
 
 }

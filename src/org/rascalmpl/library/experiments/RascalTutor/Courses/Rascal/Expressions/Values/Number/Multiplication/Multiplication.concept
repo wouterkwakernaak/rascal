@@ -14,7 +14,7 @@ Types:
 | `int`     |  `real`    | `real`              |
 | `real`    |  `real`    | `real`              |
 
-Description: Yields the result of multiplying the values of $NumExp_1$ and $NumExp_2$.
+Description: Yields the result of multiplying the values of $Exp_1$ and $Exp_2$.
 
 Examples:
 <screen>
@@ -29,8 +29,8 @@ Pittfalls:
 
 Questions:
 
-Type:  <A:int> * <B:int>
-Type:  <A:int> * <B:real>
-Type:  <A:real> * <B:int>
-Value: <A:num> * <B:num>
+QType:  <A:int> * <B:int>
+QType:  <A:int> * <B:real>
+QType:  <A:real> * <B:int>
+QValue: <A:num> * <B:num>
 

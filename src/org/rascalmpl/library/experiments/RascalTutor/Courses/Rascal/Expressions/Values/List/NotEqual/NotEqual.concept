@@ -1,6 +1,6 @@
 Name:NotEqual
 
-Categories: Language
+Categories: Language Beginner
 
 Syntax: `$Exp_1$ != $Exp_2$`
 
@@ -26,4 +26,4 @@ Pittfalls:
 
 Questions:
 
-Type: <A:list[arb]> != <B:same[A]>
+QType: <A:list[arb]> != <B:same[A]>

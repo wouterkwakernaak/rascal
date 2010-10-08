@@ -74,7 +74,7 @@ public class FollowRestriction extends SGLL implements IParserTest{
 		expect(PROD_C_epsilon, EPSILON_7);
 	}
 	
-	public IValue executeParser(){
+	public IConstructor executeParser(){
 		return parse(NONTERMINAL_START_S, null, "aaa".toCharArray());
 	}
 	
@@ -85,7 +85,7 @@ public class FollowRestriction extends SGLL implements IParserTest{
 	
 	public static void main(String[] args){
 		FollowRestriction fr = new FollowRestriction();
-		IValue result = fr.parse(NONTERMINAL_START_S, null, "aaa".toCharArray());
+		IConstructor result = fr.parse(NONTERMINAL_START_S, null, "aaa".toCharArray());
 		System.out.println(result);
 		
 		System.out.println("S(A(B+(a,a,a)),C()) <- good");
