@@ -1,5 +1,7 @@
 package org.rascalmpl.semantics.dynamic;
 
+import org.rascalmpl.ast.ASTFactoryFactory;
+
 public abstract class StringTemplate extends org.rascalmpl.ast.StringTemplate {
 
 	static public class DoWhile extends
@@ -17,9 +19,11 @@ public abstract class StringTemplate extends org.rascalmpl.ast.StringTemplate {
 		public org.rascalmpl.ast.Statement __evaluate(
 				org.rascalmpl.interpreter.StringTemplateConverter.Visitor __eval) {
 
+			org.rascalmpl.ast.ASTFactory factory = ASTFactoryFactory.getASTFactory();
+			
 			org.rascalmpl.ast.Statement body = this.getBody().__evaluate(__eval);
-			return new org.rascalmpl.ast.Statement.DoWhile(this.getTree(),
-					new org.rascalmpl.ast.Label.Empty(this.getTree()),
+			return factory.makeStatementDoWhile(this.getTree(),
+					factory.makeLabelEmpty(this.getTree()),
 					org.rascalmpl.interpreter.StringTemplateConverter.Visitor
 							.combinePreBodyPost(this.getTree(), this
 									.getPreStats(), body, this.getPostStats()),
@@ -53,9 +57,11 @@ public abstract class StringTemplate extends org.rascalmpl.ast.StringTemplate {
 		public org.rascalmpl.ast.Statement __evaluate(
 				org.rascalmpl.interpreter.StringTemplateConverter.Visitor __eval) {
 
+			org.rascalmpl.ast.ASTFactory factory = ASTFactoryFactory.getASTFactory();
+
 			org.rascalmpl.ast.Statement body = this.getBody().__evaluate(__eval);
-			return new org.rascalmpl.ast.Statement.While(this.getTree(),
-					new org.rascalmpl.ast.Label.Empty(this.getTree()),
+			return factory.makeStatementWhile(this.getTree(),
+					factory.makeLabelEmpty(this.getTree()),
 					java.util.Collections.singletonList(this.getCondition()),
 					org.rascalmpl.interpreter.StringTemplateConverter.Visitor
 							.combinePreBodyPost(this.getTree(), this
@@ -89,10 +95,12 @@ public abstract class StringTemplate extends org.rascalmpl.ast.StringTemplate {
 		public org.rascalmpl.ast.Statement __evaluate(
 				org.rascalmpl.interpreter.StringTemplateConverter.Visitor __eval) {
 
+			org.rascalmpl.ast.ASTFactory factory = ASTFactoryFactory.getASTFactory();
+
 			org.rascalmpl.ast.Statement t = this.getThenString().__evaluate(__eval);
 			org.rascalmpl.ast.Statement e = this.getElseString().__evaluate(__eval);
-			return new org.rascalmpl.ast.Statement.IfThenElse(this.getTree(),
-					new org.rascalmpl.ast.Label.Empty(this.getTree()), this
+			return factory.makeStatementIfThenElse(this.getTree(),
+					factory.makeLabelEmpty(this.getTree()), this
 							.getConditions(),
 					org.rascalmpl.interpreter.StringTemplateConverter.Visitor
 							.combinePreBodyPost(this.getTree(), this
@@ -136,9 +144,11 @@ public abstract class StringTemplate extends org.rascalmpl.ast.StringTemplate {
 		public org.rascalmpl.ast.Statement __evaluate(
 				org.rascalmpl.interpreter.StringTemplateConverter.Visitor __eval) {
 
+			org.rascalmpl.ast.ASTFactory factory = ASTFactoryFactory.getASTFactory();
+
 			org.rascalmpl.ast.Statement body = this.getBody().__evaluate(__eval);
-			return new org.rascalmpl.ast.Statement.For(this.getTree(),
-					new org.rascalmpl.ast.Label.Empty(this.getTree()), this
+			return factory.makeStatementFor(this.getTree(),
+					factory.makeLabelEmpty(this.getTree()), this
 							.getGenerators(),
 					org.rascalmpl.interpreter.StringTemplateConverter.Visitor
 							.combinePreBodyPost(this.getTree(), this
@@ -172,9 +182,11 @@ public abstract class StringTemplate extends org.rascalmpl.ast.StringTemplate {
 		public org.rascalmpl.ast.Statement __evaluate(
 				org.rascalmpl.interpreter.StringTemplateConverter.Visitor __eval) {
 
+			org.rascalmpl.ast.ASTFactory factory = ASTFactoryFactory.getASTFactory();
+
 			org.rascalmpl.ast.Statement body = this.getBody().__evaluate(__eval);
-			return new org.rascalmpl.ast.Statement.IfThen(this.getTree(),
-					new org.rascalmpl.ast.Label.Empty(this.getTree()), this
+			return factory.makeStatementIfThen(this.getTree(),
+					factory.makeLabelEmpty(this.getTree()), this
 							.getConditions(),
 					org.rascalmpl.interpreter.StringTemplateConverter.Visitor
 							.combinePreBodyPost(this.getTree(), this

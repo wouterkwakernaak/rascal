@@ -9,11 +9,11 @@ public class StringTemplateConverter {
 	private static org.rascalmpl.ast.Statement surroundWithSingleIterForLoop(org.eclipse.imp.pdb.facts.INode src, org.rascalmpl.ast.Name label, org.rascalmpl.ast.Statement body) {
 		ASTFactory factory = ASTFactoryFactory.getASTFactory();
 		org.rascalmpl.ast.Name dummy = factory.makeNameLexical(src, "_");
-		org.rascalmpl.ast.Expression var = factory.makeExpressionQualifiedName(src, new org.rascalmpl.ast.QualifiedName.Default(src, java.util.Arrays.asList(dummy)));
-		org.rascalmpl.ast.Expression truth = factory.makeExpressionLiteral(src, new org.rascalmpl.ast.Literal.Boolean(src, new org.rascalmpl.ast.BooleanLiteral.Lexical(src, "true")));
+		org.rascalmpl.ast.Expression var = factory.makeExpressionQualifiedName(src, factory.makeQualifiedNameDefault(src, java.util.Arrays.asList(dummy)));
+		org.rascalmpl.ast.Expression truth = factory.makeExpressionLiteral(src, factory.makeLiteralBoolean(src, factory.makeBooleanLiteralLexical(src, "true")));
 		org.rascalmpl.ast.Expression list = factory.makeExpressionList(src, java.util.Arrays.asList(truth));
 		org.rascalmpl.ast.Expression enumerator = factory.makeExpressionEnumerator(src, var, list);
-		org.rascalmpl.ast.Statement stat = factory.makeStatementFor(src, new org.rascalmpl.ast.Label.Default(src, label), java.util.Arrays.asList(enumerator), body);
+		org.rascalmpl.ast.Statement stat = factory.makeStatementFor(src, factory.makeLabelDefault(src, label), java.util.Arrays.asList(enumerator), body);
 		return stat;
 	}
 
@@ -40,7 +40,7 @@ public class StringTemplateConverter {
 		
 		private static org.rascalmpl.ast.Statement makeBlock(org.eclipse.imp.pdb.facts.INode src, java.util.List<org.rascalmpl.ast.Statement> stats) {
 			ASTFactory factory = ASTFactoryFactory.getASTFactory();
-			return factory.makeStatementNonEmptyBlock(src, new org.rascalmpl.ast.Label.Empty(src),
+			return factory.makeStatementNonEmptyBlock(src, factory.makeLabelEmpty(src),
 					stats);
 		}
 

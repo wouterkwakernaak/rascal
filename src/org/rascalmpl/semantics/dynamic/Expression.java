@@ -1,5 +1,6 @@
 package org.rascalmpl.semantics.dynamic;
 
+import org.rascalmpl.ast.ASTFactoryFactory;
 import org.rascalmpl.interpreter.Evaluator;
 import org.rascalmpl.values.uptr.Factory;
 
@@ -2459,7 +2460,7 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 			names.add(this.getName());
 			org.rascalmpl.interpreter.matching.IMatchingResult var = new org.rascalmpl.interpreter.matching.QualifiedNamePattern(
 					__eval.__getCtx(), this,
-					new org.rascalmpl.ast.QualifiedName.Default(this.getTree(),
+					ASTFactoryFactory.getASTFactory().makeQualifiedNameDefault(this.getTree(),
 							names));
 			return new org.rascalmpl.interpreter.matching.VariableBecomesPattern(
 					__eval.__getCtx(), this, var, pat);
@@ -3372,8 +3373,8 @@ public abstract class Expression extends org.rascalmpl.ast.Expression {
 		public org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> __evaluate(
 				org.rascalmpl.interpreter.Evaluator __eval) {
 
-			return new org.rascalmpl.ast.Statement.NonEmptyBlock(
-					this.getTree(), new org.rascalmpl.ast.Label.Empty(this
+			return ASTFactoryFactory.getASTFactory().makeStatementNonEmptyBlock(
+					this.getTree(), ASTFactoryFactory.getASTFactory().makeLabelEmpty(this
 							.getTree()), this.getStatements()).__evaluate(__eval);
 
 		}

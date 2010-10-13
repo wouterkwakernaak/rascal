@@ -1727,4 +1727,7 @@ return new org.rascalmpl.ast.DataTypeSelector.Ambiguity(node, alternatives);
 public org.rascalmpl.ast.DataTypeSelector.Selector makeDataTypeSelectorSelector(INode node, org.rascalmpl.ast.QualifiedName sort, org.rascalmpl.ast.Name production) { 
 return new org.rascalmpl.ast.DataTypeSelector.Selector(node, sort, production); 
 }
+public org.rascalmpl.ast.JavaFunctionBody makeJavaFunctionBody(INode node, java.lang.String string) {
+	return new org.rascalmpl.ast.JavaFunctionBody(node, string);
+}
 }

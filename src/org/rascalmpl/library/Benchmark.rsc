@@ -29,7 +29,7 @@ public void benchmark(map[str, void()] Cases)
 {
 	measurements = ();
 	for (str Name <- Cases) {
-		measurements[Name] = duration(Cases[Name]);
+		measurements[Name] = realTime(Cases[Name]);
 	}
 	
 	println(measurements);

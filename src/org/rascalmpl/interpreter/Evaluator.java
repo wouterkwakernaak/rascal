@@ -1897,7 +1897,7 @@ public class Evaluator extends org.rascalmpl.ast.NullASTVisitor<org.rascalmpl.in
 	}
 
 
-	public static final org.rascalmpl.ast.Name IT = new org.rascalmpl.ast.Name.Lexical(null, "<it>");
+	public static final org.rascalmpl.ast.Name IT = ASTFactoryFactory.getASTFactory().makeNameLexical(null, "<it>");
 	private org.rascalmpl.parser.ParserGenerator parserGenerator;
 	
 	public org.rascalmpl.interpreter.result.Result<org.eclipse.imp.pdb.facts.IValue> evalReducer(org.rascalmpl.ast.Expression init, org.rascalmpl.ast.Expression result, java.util.List<org.rascalmpl.ast.Expression> generators) {
