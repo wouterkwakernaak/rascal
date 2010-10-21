@@ -8,12 +8,10 @@ import static org.rascalmpl.interpreter.utils.Utils.unescape;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -63,7 +61,6 @@ import org.rascalmpl.ast.Field;
 import org.rascalmpl.ast.FunctionDeclaration;
 import org.rascalmpl.ast.FunctionModifier;
 import org.rascalmpl.ast.Import;
-import org.rascalmpl.ast.Label;
 import org.rascalmpl.ast.Module;
 import org.rascalmpl.ast.Name;
 import org.rascalmpl.ast.NullASTVisitor;
@@ -209,11 +206,8 @@ import org.rascalmpl.interpreter.env.Environment;
 import org.rascalmpl.interpreter.env.GlobalEnvironment;
 import org.rascalmpl.interpreter.env.ModuleEnvironment;
 import org.rascalmpl.interpreter.env.RewriteRule;
-import org.rascalmpl.interpreter.load.FromDefinedSdfSearchPathPathContributor;
 import org.rascalmpl.interpreter.load.IRascalSearchPathContributor;
-import org.rascalmpl.interpreter.load.ISdfSearchPathContributor;
 import org.rascalmpl.interpreter.load.RascalURIResolver;
-import org.rascalmpl.interpreter.load.SDFSearchPath;
 import org.rascalmpl.interpreter.matching.IBooleanResult;
 import org.rascalmpl.interpreter.matching.IMatchingResult;
 import org.rascalmpl.interpreter.matching.NodePattern;
@@ -262,7 +256,6 @@ import org.rascalmpl.parser.ASTBuilder;
 import org.rascalmpl.parser.ActionExecutor;
 import org.rascalmpl.parser.IParserInfo;
 import org.rascalmpl.parser.IRascalParser;
-import org.rascalmpl.parser.LegacyRascalParser;
 import org.rascalmpl.parser.NewRascalParser;
 import org.rascalmpl.parser.ParserGenerator;
 import org.rascalmpl.parser.sgll.IGLL;
@@ -277,7 +270,6 @@ import org.rascalmpl.values.errors.SubjectAdapter;
 import org.rascalmpl.values.errors.SummaryAdapter;
 import org.rascalmpl.values.uptr.Factory;
 import org.rascalmpl.values.uptr.ParsetreeAdapter;
-import org.rascalmpl.values.uptr.ProductionAdapter;
 import org.rascalmpl.values.uptr.SymbolAdapter;
 import org.rascalmpl.values.uptr.TreeAdapter;
 
@@ -313,12 +305,11 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 	private ITestResultListener testReporter;
 	private Stack<Accumulator> accumulators = new Stack<Accumulator>();
 	private final RascalURIResolver rascalPathResolver;
-	private final SDFSearchPath sdf;
 	private final ASTBuilder builder;
 	
 	private final URIResolverRegistry resolverRegistry;
 
-	public Evaluator(IValueFactory f, PrintWriter stderr, PrintWriter stdout, IRascalParser parser, ModuleEnvironment scope, GlobalEnvironment heap) {
+	public Evaluator(IValueFactory f, PrintWriter stderr, PrintWriter stdout, ModuleEnvironment scope, GlobalEnvironment heap) {
 		this.vf = f;
 		this.patternEvaluator = new PatternEvaluator(this);
 		this.strategyContextStack = new StrategyContextStack();
@@ -330,8 +321,7 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 		this.classLoaders = new ArrayList<ClassLoader>();
 		this.javaBridge = new JavaBridge(stderr, classLoaders, vf);
 		this.rascalPathResolver = new RascalURIResolver(this);
-		this.sdf = new SDFSearchPath();
-		this.parser = parser;
+		this.parser = new NewRascalParser();
 		this.stderr = stderr;
 		this.stdout = stdout;
 		this.builder = new ASTBuilder(ASTFactoryFactory.getASTFactory());
@@ -365,24 +355,6 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 				return "[current wd and stdlib]";
 			}
 		});
-
-		// add current wd and sdf-library to search path for SDF modules
-		sdf.addSdfSearchPathContributor(new ISdfSearchPathContributor() {
-			public java.util.List<String> contributePaths() {
-				java.util.List<String> result = new ArrayList<String>();
-
-				result.add(new File("/Users/jurgenv/Sources/Rascal/rascal/src/org/rascalmpl/library").getAbsolutePath());
-				result.add(new File("/Users/mhills/Projects/rascal/build/rascal/src/org/rascalmpl/library").getAbsolutePath());
-				result.add(new File("/Users/paulklint/software/source/roll/rascal/src/org/rascalmpl/library").getAbsolutePath());
-				result.add(new File("/ufs/lankamp/drowzee/RascalEclipse/rascal/src/org/rascalmpl/library").getAbsolutePath());
-				result.add(Configuration.getSdfLibraryPathProperty());
-				result.add(new File(System.getProperty("user.dir"), "src/org/rascalmpl/test/data").getAbsolutePath());
-				return result;
-			}
-		});
-
-		// adds folders using -Drascal.sdf.path=/colon-separated/path
-		sdf.addSdfSearchPathContributor(new FromDefinedSdfSearchPathPathContributor());
 
 		// load Java classes from the current jar (for the standard library)
 		classLoaders.add(getClass().getClassLoader());
@@ -429,10 +401,6 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 		this.testReporter = l;
 	}
 	
-	public SDFSearchPath getSDFSearchPath() {
-		return sdf;
-	}
-	
 	public JavaBridge getJavaBridge(){
 		return javaBridge;
 	}
@@ -472,21 +440,28 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 	 * Parse an object string using the imported SDF modules from the current context.
 	 */
 	public IConstructor parseObject(IConstructor startSort, URI input) {
-		if (parser instanceof LegacyRascalParser) {
-			try {
-				return filterStart(startSort, parser.parseStream(sdf.getSdfSearchPath(), ((ModuleEnvironment) getCurrentEnvt().getRoot()).getSDFImports(), resolverRegistry.getInputStream(input)));
-			} catch (IOException e) {
-				throw RuntimeExceptionFactory.io(vf.string(e.getMessage()), getCurrentAST(), getStackTrace());
-			} catch (SyntaxError e) {
-				throw RuntimeExceptionFactory.parseError(e.getLocation(), getCurrentAST(), getStackTrace());
+		try {
+			System.err.println("Generating a parser");
+			IGLL parser = getObjectParser();
+			String name = "";
+			if (SymbolAdapter.isCf(startSort)) {
+				startSort = SymbolAdapter.getSymbol(startSort);
 			}
-		}
-		else {
-			try {
-				return (IConstructor) parseObjectExperimental(startSort, input);
-			} catch (IOException e) {
-				throw RuntimeExceptionFactory.io(vf.string(e.getMessage()), getCurrentAST(), getStackTrace());
+			if (SymbolAdapter.isStart(startSort)) {
+				name = "start__";
+				startSort = SymbolAdapter.getStart(startSort);
 			}
+			if (SymbolAdapter.isSort(startSort)) {
+				name += SymbolAdapter.getName(startSort);
+			}
+			System.err.println("Calling the parser");
+			IConstructor forest = parser.parse(name, input, resolverRegistry.getInputStream(input));
+			
+			System.err.println("Executing actions");
+			ActionExecutor exec = new ActionExecutor(this, (IParserInfo) parser);
+			return exec.execute(forest);
+		} catch (IOException e) {
+			throw RuntimeExceptionFactory.io(vf.string(e.getMessage()), getCurrentAST(), getStackTrace());
 		}
 	}
 	
@@ -494,21 +469,7 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 	 * Parse an object string using the imported SDF modules from the current context.
 	 */
 	public IConstructor parseObject(IConstructor startSort, java.lang.String input) {
-		if (parser instanceof LegacyRascalParser) {
-			try {
-				return filterStart(startSort, parser.parseString(sdf.getSdfSearchPath(), ((ModuleEnvironment) getCurrentEnvt().getRoot()).getSDFImports(), input));
-			} catch (IOException e) {
-				throw new ImplementationError("unexpected io exception", e);
-			} catch (SyntaxError e) {
-				throw RuntimeExceptionFactory.parseError(e.getLocation(), getCurrentAST(), getStackTrace());
-			}
-		}
-		else {
-			return (IConstructor) parseObjectExperimental(startSort, getCurrentAST().getLocation().getURI(), input);
-		}
-	}
-	
-	public IValue parseObjectExperimental(IConstructor startSort, URI inputURI) throws IOException{
+		URI inputURI = getCurrentAST().getLocation().getURI();
 		System.err.println("Generating a parser");
 		IGLL parser = getObjectParser();
 		String name = "";
@@ -523,35 +484,13 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 			name += SymbolAdapter.getName(startSort);
 		}
 		System.err.println("Calling the parser");
-		IConstructor forest = parser.parse(name, inputURI, resolverRegistry.getInputStream(inputURI));
+		IConstructor forest = parser.parse(name, inputURI, input);
 		
 		System.err.println("Executing actions");
 		ActionExecutor exec = new ActionExecutor(this, (IParserInfo) parser);
 		return exec.execute(forest);
 	}
 	
-	public IValue parseObjectExperimental(IConstructor startSort, URI inputURI, java.lang.String sentence) {
-		System.err.println("Generating a parser");
-		IGLL parser = getObjectParser();
-		String name = "";
-		if (SymbolAdapter.isCf(startSort)) {
-			startSort = SymbolAdapter.getSymbol(startSort);
-		}
-		if (SymbolAdapter.isStart(startSort)) {
-			name = "start__";
-			startSort = SymbolAdapter.getStart(startSort);
-		}
-		if (SymbolAdapter.isSort(startSort)) {
-			name += SymbolAdapter.getName(startSort);
-		}
-		System.err.println("Calling the parser");
-		IConstructor forest = parser.parse(name, inputURI, sentence);
-		
-		System.err.println("Executing actions");
-		ActionExecutor exec = new ActionExecutor(this, (IParserInfo) parser);
-		return exec.execute(forest);
-	}
-
 	private IGLL getObjectParser() {
 		return getObjectParser( (ModuleEnvironment) getCurrentEnvt().getRoot());
 	}
@@ -630,38 +569,7 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 		}
 		return parserGenerator;
 	}
-
-	private IConstructor filterStart(IConstructor startSort, IConstructor ptree) {
-		IConstructor top = ParsetreeAdapter.getTop(ptree);
-		IList args = TreeAdapter.getArgs(top);
-		IConstructor tree = (IConstructor) args.get(1);
-
-		if (TreeAdapter.isAppl(tree)) {
-			IConstructor prod = TreeAdapter.getProduction(tree);
-			IConstructor rhs = ProductionAdapter.getRhs(prod);
-
-			if (!rhs.isEqual(startSort)) {
-				throw RuntimeExceptionFactory.parseError(TreeAdapter.getLocation(tree), null, null);
-			}
-
-			return ptree;
-		}
-		else if (TreeAdapter.isAmb(tree)) {
-			for (IValue alt : TreeAdapter.getAlternatives(tree)) {
-				IConstructor prod = TreeAdapter.getProduction((IConstructor) alt);
-				IConstructor rhs = ProductionAdapter.getRhs(prod);
-
-				if (rhs.isEqual(startSort)) {
-					return ptree.set("top", top.set("args", args.put(1, alt)));
-				}
-			}
-
-			throw RuntimeExceptionFactory.parseError(TreeAdapter.getLocation(tree), null, null);
-		}
-		
-		throw new ImplementationError("unexpected tree type: " + tree.getType());
-	}
-
+	
 	private void checkPoint(Environment env) {
 		env.checkPoint();
 	}
@@ -699,10 +607,6 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 		});
 	}
 	
-	public void addSdfSearchPathContributor(ISdfSearchPathContributor contrib) {
-		sdf.addSdfSearchPathContributor(contrib);
-	}
-
 	public void addClassLoader(ClassLoader loader) {
 		// later loaders have precedence
 		classLoaders.add(0, loader);
@@ -797,10 +701,6 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 		throw new NotYetImplemented(expr.toString());
 	}
 
-	private java.util.Set<String> getSDFImports() {
-		return ((ModuleEnvironment) getCurrentEnvt().getRoot()).getSDFImports();
-	}
-	
 	/**
 	 * Parse and evaluate a command in the current execution environment
 	 * @param command
@@ -808,7 +708,7 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 	 */
 	public Result<IValue> eval(String command, URI location) {
 		try {
-			IConstructor tree = parser.parseCommand(getSDFImports(), sdf.getSdfSearchPath(), location, command);
+			IConstructor tree = parser.parseCommand(location, command);
 			
 			if (tree.getConstructorType() == Factory.ParseTree_Summary) {
 				throw parseError(tree, location);
@@ -830,7 +730,7 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 		IConstructor tree;
 		try {
 			if (!command.contains("`")) {
-				tree = parser.parseCommand(getSDFImports(), sdf.getSdfSearchPath(), location, command);
+				tree = parser.parseCommand(location, command);
 			}
 			else {
 				IGLL rp = getRascalParser(getCurrentModuleEnvironment());
@@ -1260,24 +1160,6 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 		// TODO support for full complexity of import declarations
 		String name = getUnescapedModuleName(x);
 
-		//		TODO If a SDF module and a Rascal module are located in the same directory thing doesn't always do what you want.
-		// TODO: this code will be removed once bootstrapping is complete
-		if (isSDFModule(name)) {
-			if (!(parser instanceof LegacyRascalParser)) {
-				// ignore!
-				return nothing();
-			}
-			if (!heap.existsModule(name)) {
-				heap.addModule(new ModuleEnvironment(name));
-				addImportToCurrentModule(x, name);
-			}
-			else {
-				heap.resetModule(name);
-			}
-			evalSDFModule(name, x);
-			return nothing();
-		}
-		
 		if (!heap.existsModule(name)) {
 			// deal with a fresh module that needs initialization
 			heap.addModule(new ModuleEnvironment(name));
@@ -1304,23 +1186,6 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 		getCurrentEnvt().declareProduction(x);
 		loadParseTreeModule(x);
 		return nothing();
-	}
-
-	protected void evalSDFModule(String name, 
-			org.rascalmpl.ast.Import.Default x) {
-		loadParseTreeModule(x);
-		getCurrentModuleEnvironment().addSDFImport(getUnescapedModuleName(x));
-		ModuleEnvironment mod = heap.getModule(name);
-		if (mod == null) {
-			mod = new ModuleEnvironment(name);
-			heap.addModule(mod);
-		}
-		
-		try {
-			((LegacyRascalParser) parser).generateModuleParser(sdf.getSdfSearchPath(), getCurrentModuleEnvironment().getSDFImports(), mod);
-		} catch (IOException e) {
-			RuntimeExceptionFactory.io(vf.string("IO exception while importing module " + x), x, getStackTrace());
-		}
 	}
 
 	private void addImportToCurrentModule(
@@ -1351,10 +1216,6 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 			evalRascalModule(x, parseTreeModName);
 		}
 		addImportToCurrentModule(x, parseTreeModName);
-	}
-
-	private boolean isSDFModule(String name) {
-		return sdf.isSdfModule(name);
 	}
 
 	private IConstructor tryLoadBinary(String name){
@@ -1427,36 +1288,22 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 	}
 	
 	public IConstructor parseModule(byte[] data, URI location, ModuleEnvironment env) throws IOException {
-		java.util.List<String> sdfSearchPath = sdf.getSdfSearchPath();
-		java.util.Set<String> sdfImports;
+		NewRascalParser rp = (NewRascalParser) parser;
+		IConstructor prefix = rp.preParseModule(location, data);
+		Module preModule = builder.buildModule((IConstructor) TreeAdapter.getArgs(ParsetreeAdapter.getTop(prefix)).get(1));
+		ActionExecutor exec = new ActionExecutor(this, new RascalRascal());
 
-		// TODO: remove support for SDF2 imports
-		if (parser instanceof LegacyRascalParser) {
-			sdfImports = ((LegacyRascalParser) parser).getSdfImports(sdfSearchPath, location, data);
-			IConstructor tree = parser.parseModule(sdfSearchPath, sdfImports, location, data, env);
-			if(tree.getConstructorType() == Factory.ParseTree_Summary){
-				throw parseError(tree, location);
-			}
-			return tree;
+		// take care of imports and declare syntax
+		preModule.accept(this);
+
+		ISet prods = env.getProductions();
+		if (prods.isEmpty() || !preModule.toString().contains("`")) {
+			return exec.execute(rp.parseModule(location, data, env));
 		}
 		else {
-			NewRascalParser rp = (NewRascalParser) parser;
-			IConstructor prefix = rp.preParseModule(location, data);
-			Module preModule = builder.buildModule((IConstructor) TreeAdapter.getArgs(ParsetreeAdapter.getTop(prefix)).get(1));
-			ActionExecutor exec = new ActionExecutor(this, new RascalRascal());
-			
-			// take care of imports and declare syntax
-			preModule.accept(this);
-			
-			ISet prods = env.getProductions();
-			if (prods.isEmpty() || !preModule.toString().contains("`")) {
-				return exec.execute(rp.parseModule(sdfSearchPath, Collections.<java.lang.String>emptySet(), location, data, env));
-			}
-			else {
-				IGLL mp = needBootstrapParser(preModule) ? new MetaRascalRascal() : getRascalParser(env);
-				IConstructor tree = mp.parse(NewRascalParser.START_MODULE, location, NewRascalParser.bytesToChars(data));
-				return exec.execute(tree);
-			}
+			IGLL mp = needBootstrapParser(preModule) ? new MetaRascalRascal() : getRascalParser(env);
+			IConstructor tree = mp.parse(NewRascalParser.START_MODULE, location, NewRascalParser.bytesToChars(data));
+			return exec.execute(tree);
 		}
 	}
 	
@@ -1509,10 +1356,6 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 	
 	
 	private Module loadModule(String name, ModuleEnvironment env) throws IOException {
-		if(isSDFModule(name)){
-			return null;
-		}
-		
 		try{
 			IConstructor tree = null;
 			
@@ -1581,13 +1424,13 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 		String name = getModuleName(x);
 
 		ModuleEnvironment env = heap.getModule(name);
-		
-		env.setBootstrap(needBootstrapParser(x));
 
 		if (env == null) {
 			env = new ModuleEnvironment(name);
 			heap.addModule(env);
 		}
+		
+		env.setBootstrap(needBootstrapParser(x));
 
 		if (!env.isInitialized()) {
 			Environment oldEnv = getCurrentEnvt();
@@ -3024,7 +2867,7 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 		if (expected instanceof NonTerminalType && result.getType().isSubtypeOf(tf.stringType())) {
 			try {
 				String command = '(' + expected.toString() + ')' + '`' + ((IString) result.getValue()).getValue() + '`';
-				IConstructor tree = parser.parseCommand(((ModuleEnvironment) getCurrentEnvt().getRoot()).getSDFImports(), sdf.getSdfSearchPath(), x.getLocation().getURI(), command);
+				IConstructor tree = parser.parseCommand(x.getLocation().getURI(), command);
 
 				if (tree.getConstructorType() == Factory.ParseTree_Summary) {
 					throw RuntimeExceptionFactory.parseError(x.getPattern().getLocation(), x.getPattern(), getStackTrace());

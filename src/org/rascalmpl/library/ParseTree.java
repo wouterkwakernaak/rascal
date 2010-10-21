@@ -49,23 +49,6 @@ public class ParseTree {
 		return ((IList) ParsetreeAdapter.getTop(pt).get("args")).get(1);
 	}
 	
-	public IValue parseExperimental(IConstructor start, ISourceLocation input, IEvaluatorContext ctx) throws IOException{
-		Type reified = start.getType();
-		IConstructor startSort = checkPreconditions(start, reified);
-		
-		URI inputURI = input.getURI();
-		IConstructor pt = (IConstructor) ctx.getEvaluator().parseObjectExperimental(startSort, inputURI);
-		return ParsetreeAdapter.getTop(pt);
-	}
-	
-	public IValue parseExperimental(IConstructor start, IString input, IEvaluatorContext ctx) {
-		Type reified = start.getType();
-		IConstructor startSort = checkPreconditions(start, reified);
-		
-		IConstructor pt = (IConstructor) ctx.getEvaluator().parseObjectExperimental(startSort, URI.create("file://-"), input.getValue());
-		return ParsetreeAdapter.getTop(pt);
-	}
-	
 	public IString unparse(IConstructor tree) {
 		return values.string(TreeAdapter.yield(tree));
 	}

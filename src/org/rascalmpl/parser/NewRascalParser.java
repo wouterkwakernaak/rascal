@@ -3,8 +3,6 @@ package org.rascalmpl.parser;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.util.List;
-import java.util.Set;
 
 import org.eclipse.imp.pdb.facts.IConstructor;
 import org.rascalmpl.interpreter.asserts.NotYetImplemented;
@@ -17,15 +15,14 @@ public class NewRascalParser implements IRascalParser {
 	public static final String START_MODULE = "start__$Module";
 	public static final String START_PRE_MODULE = "start__$PreModule";
 	
-	public IConstructor parseCommand(Set<String> sdfImports,
-			List<String> sdfSearchPath, URI location, String command)
+	public IConstructor parseCommand(URI location,
+			String command)
 			throws IOException {
 		return new RascalRascal().parse(START_COMMAND, location, command);
 	}
 
-	public IConstructor parseModule(List<String> sdfSearchPath,
-			Set<String> sdfImports, URI location, InputStream source,
-			ModuleEnvironment env) throws IOException {
+	public IConstructor parseModule(URI location,
+			InputStream source, ModuleEnvironment env) throws IOException {
 		return new RascalRascal().parse(START_MODULE, location, source);
 	}
 	  
@@ -33,9 +30,8 @@ public class NewRascalParser implements IRascalParser {
 		return new RascalRascal().parse(START_PRE_MODULE, location, bytesToChars(data));
 	}
 
-	public IConstructor parseModule(List<String> sdfSearchPath,
-			Set<String> sdfImports, URI location, byte[] data,
-			ModuleEnvironment env) throws IOException {
+	public IConstructor parseModule(URI location,
+			byte[] data, ModuleEnvironment env) throws IOException {
 		return new RascalRascal().parse(START_MODULE, location,  bytesToChars(data));
 	}
 
@@ -50,13 +46,11 @@ public class NewRascalParser implements IRascalParser {
 		return input;
 	}
 
-	public IConstructor parseStream(List<String> sdfSearchPath,
-			Set<String> sdfImports, InputStream source) throws IOException {
+	public IConstructor parseStream(InputStream source) throws IOException {
 		throw new NotYetImplemented("new rascal parser");
 	}
 
-	public IConstructor parseString(List<String> sdfSearchPath,
-			Set<String> sdfImports, String source) throws IOException {
+	public IConstructor parseString(String source) throws IOException {
 		throw new NotYetImplemented("new rascal parser");
 	}
 

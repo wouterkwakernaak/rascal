@@ -48,7 +48,6 @@ public class ModuleEnvironment extends Environment {
 	protected Set<IValue> productions;
 	protected Map<String, NonTerminalType> concreteSyntaxTypes;
 	protected List<Test> tests;
-	private Set<String> importedSDFModules = new HashSet<String>();
 	private boolean initialized;
 	private boolean bootstrap;
 	
@@ -97,14 +96,6 @@ public class ModuleEnvironment extends Environment {
 	
 	public List<Test> getTests() {
 		return Collections.unmodifiableList(tests);
-	}
-	
-	public void addSDFImport(String name) {
-		importedSDFModules.add(name);
-	}
-	
-	public Set<String> getSDFImports() {
-		return importedSDFModules;
 	}
 	
 	@Override
