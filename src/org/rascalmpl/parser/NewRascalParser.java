@@ -7,7 +7,6 @@ import java.net.URI;
 import org.eclipse.imp.pdb.facts.IConstructor;
 import org.rascalmpl.interpreter.asserts.NotYetImplemented;
 import org.rascalmpl.interpreter.env.ModuleEnvironment;
-import org.rascalmpl.interpreter.utils.Timing;
 import org.rascalmpl.library.rascal.syntax.RascalRascal;
 
 public class NewRascalParser implements IRascalParser {
@@ -26,24 +25,13 @@ public class NewRascalParser implements IRascalParser {
 		return new RascalRascal().parse(START_MODULE, location, source);
 	}
 	  
-	public IConstructor preParseModule(URI location, byte[] data) throws IOException {
-		return new RascalRascal().parse(START_PRE_MODULE, location, bytesToChars(data));
+	public IConstructor preParseModule(URI location, char[] data) throws IOException {
+		return new RascalRascal().parse(START_PRE_MODULE, location, data);
 	}
 
 	public IConstructor parseModule(URI location,
-			byte[] data, ModuleEnvironment env) throws IOException {
-		return new RascalRascal().parse(START_MODULE, location,  bytesToChars(data));
-	}
-
-	public static char[] bytesToChars(byte[] data) {
-		Timing t = new Timing();
-		t.start();
-		char[] input = new char[data.length];
-		for (int i = 0; i < data.length; i++) {
-			input[i] = (char) data[i];
-		}
-		System.err.println("converting bytes to chars took " + (t.duration() / 1000 * 1000));
-		return input;
+			char[] data, ModuleEnvironment env) throws IOException {
+		return new RascalRascal().parse(START_MODULE, location, data);
 	}
 
 	public IConstructor parseStream(InputStream source) throws IOException {

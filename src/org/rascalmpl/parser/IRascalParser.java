@@ -21,7 +21,7 @@ public interface IRascalParser {
 			InputStream source, ModuleEnvironment env) throws IOException;
 
 	public IConstructor parseModule(URI location,
-			byte[] data, ModuleEnvironment env) throws IOException;
+			char[] data, ModuleEnvironment env) throws IOException;
 
 	/**
 	 * Parse a sentence in an object language defined by the sdfImports

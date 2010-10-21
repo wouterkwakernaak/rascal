@@ -7,9 +7,10 @@ import static org.rascalmpl.interpreter.utils.Utils.unescape;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.math.BigInteger;
@@ -255,7 +256,6 @@ import org.rascalmpl.library.rascal.syntax.RascalRascal;
 import org.rascalmpl.parser.ASTBuilder;
 import org.rascalmpl.parser.ActionExecutor;
 import org.rascalmpl.parser.IParserInfo;
-import org.rascalmpl.parser.IRascalParser;
 import org.rascalmpl.parser.NewRascalParser;
 import org.rascalmpl.parser.ParserGenerator;
 import org.rascalmpl.parser.sgll.IGLL;
@@ -297,7 +297,7 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 	private final java.util.List<ClassLoader> classLoaders;
 	protected final ModuleEnvironment rootScope;
 	private boolean concreteListsShouldBeSpliced;
-	private final IRascalParser parser;
+	private final NewRascalParser parser;
 
 	private PrintWriter stderr;
 	private PrintWriter stdout;
@@ -737,11 +737,7 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 				tree = rp.parse("start__$Command", location, command);
 			}
 			
-			if (parser instanceof NewRascalParser) {
-				// execute the parse actions
-				// TODO: hide this inside the parser
-				tree = new ActionExecutor(this, ((NewRascalParser) parser).getInfo()).execute(tree);
-			}
+			tree = new ActionExecutor(this, ((NewRascalParser) parser).getInfo()).execute(tree);
 			
 			if (tree.getConstructorType() == Factory.ParseTree_Summary) {
 				throw parseError(tree, location);
@@ -1266,7 +1262,7 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 	 * Parsing a module currently has the side effect of declaring non-terminal types in the given environment.
 	 */
 	public IConstructor parseModule(URI location, ModuleEnvironment env) throws IOException {
-		byte[] data;
+		char[] data;
 		
 		InputStream inputStream = null;
 		try {
@@ -1287,9 +1283,8 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 		return parseModule(data, location, env);
 	}
 	
-	public IConstructor parseModule(byte[] data, URI location, ModuleEnvironment env) throws IOException {
-		NewRascalParser rp = (NewRascalParser) parser;
-		IConstructor prefix = rp.preParseModule(location, data);
+	public IConstructor parseModule(char[] data, URI location, ModuleEnvironment env) throws IOException {
+		IConstructor prefix = parser.preParseModule(location, data);
 		Module preModule = builder.buildModule((IConstructor) TreeAdapter.getArgs(ParsetreeAdapter.getTop(prefix)).get(1));
 		ActionExecutor exec = new ActionExecutor(this, new RascalRascal());
 
@@ -1298,11 +1293,11 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 
 		ISet prods = env.getProductions();
 		if (prods.isEmpty() || !preModule.toString().contains("`")) {
-			return exec.execute(rp.parseModule(location, data, env));
+			return exec.execute(parser.parseModule(location, data, env));
 		}
 		else {
 			IGLL mp = needBootstrapParser(preModule) ? new MetaRascalRascal() : getRascalParser(env);
-			IConstructor tree = mp.parse(NewRascalParser.START_MODULE, location, NewRascalParser.bytesToChars(data));
+			IConstructor tree = mp.parse(NewRascalParser.START_MODULE, location, data);
 			return exec.execute(tree);
 		}
 	}
@@ -1327,17 +1322,17 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 		}
 	}
 		
-	private byte[] readModule(InputStream inputStream) throws IOException{
-		byte[] buffer = new byte[8192];
-		
-		ByteArrayOutputStream inputStringData = new ByteArrayOutputStream();
-		
+	private char[] readModule(InputStream inputStream) throws IOException{
+		char[] buffer = new char[8192];
+		CharArrayWriter writer = new CharArrayWriter();
+		InputStreamReader reader = new InputStreamReader(inputStream);
+
 		int bytesRead;
-		while((bytesRead = inputStream.read(buffer)) != -1){
-			inputStringData.write(buffer, 0, bytesRead);
+		while((bytesRead = reader.read(buffer)) != -1){
+			writer.write(buffer, 0, bytesRead);
 		}
 		
-		return inputStringData.toByteArray();
+		return writer.toCharArray();
 	}
 	
 	protected SyntaxError parseError(IConstructor tree, URI location){
