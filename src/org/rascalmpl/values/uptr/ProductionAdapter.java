@@ -13,36 +13,6 @@ public class ProductionAdapter {
 		super();
 	}
 
-	// TODO: for bootstrapping purposes we need a relaxed form of production equality
-	public static boolean isEqual(IConstructor p1, IConstructor p2) {
-		if (p1.isEqual(p2)) {
-			return true;
-		}
-		if (isList(p1) && isList(p2)) {
-			return SymbolAdapter.isEqual(getRhs(p1), getRhs(p2));
-		}
-		
-		String sort1 = getSortName(p1);
-		String sort2 = getSortName(p2);
-		
-		if (sort1 != null && sort2 != null && !sort1.equals(sort2)) {
-			return false;
-		}
-		
-		String cons1 = getConstructorName(p1);
-		String cons2 = getConstructorName(p2);
-		
-		if (cons1 != null && cons2 != null && !cons1.equals(cons2)) {
-			return false;
-		}
-		
-		if (sort1 != null && sort1.length() > 0 && cons1 != null && cons1.length() > 0 && cons1 != null) {
-			// cons is equal and sorts are equal
-			return true;
-		}
-		
-		return SymbolAdapter.isEqual(getLhs(p1),getLhs(p2)) && SymbolAdapter.isEqual(getRhs(p1), getRhs(p2));
-	}
 	public static String getConstructorName(IConstructor tree) {
 		for (IValue attr : getAttributes(tree)) {
 			if (attr.getType().isAbstractDataType() && ((IConstructor) attr).getConstructorType() == Factory.Attr_Term) {

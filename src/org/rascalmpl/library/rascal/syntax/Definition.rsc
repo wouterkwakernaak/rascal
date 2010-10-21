@@ -7,7 +7,6 @@
 @bootstrapParser
 module rascal::syntax::Definition
    
-import rascal::syntax::RascalForImportExtraction;
 import rascal::syntax::Grammar;
 import rascal::syntax::RascalRascal;
 import List;
