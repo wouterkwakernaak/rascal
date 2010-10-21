@@ -158,13 +158,12 @@ public class TreeAdapter {
 	}
 
 	public static IList getASTArgs(IConstructor tree) {
-		if (getSortName(tree).equals("<START>")) {
+		if (SymbolAdapter.isStartSort(ProductionAdapter.getRhs(TreeAdapter.getProduction(tree)))) {
 			return getArgs(tree).delete(0).delete(1);
 		}
 		
-		if (!isContextFree(tree)) {
-			throw new ImplementationError(
-					"This is not a context-free production: " + tree);
+		if (isLexical(tree)) {
+			throw new ImplementationError("This is not a context-free production: " + tree);
 		}
 
 		IList children = getArgs(tree);
