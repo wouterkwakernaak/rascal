@@ -2,10 +2,6 @@ module ParseTree
 
 import Message;
 
- /*
-  * The universal parse tree format. Parse functions always return values of type Tree.
-  */
- 
 data ParseTree = 
      parsetree(Tree top, int amb_cnt);
 

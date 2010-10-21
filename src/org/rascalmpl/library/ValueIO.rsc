@@ -1,14 +1,5 @@
 module ValueIO
 
-/* 
- * Library functions for reading and writing textual or binary values:
- * - readValueFile
- * - readBinaryValueFile
- * - readTextValueFile
- * - writeBinaryValueFile
- * - writeTextValueFile
- */
-
 @doc{Read  a value from a binary file in PBF format}
 public value readValueFile(loc file) {
   return readBinaryValueFile(#value, file);
