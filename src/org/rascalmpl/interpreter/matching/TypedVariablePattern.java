@@ -83,9 +83,7 @@ public class TypedVariablePattern extends AbstractMatchingResult {
 			Type subjectType = subject.getValue().getType(); 
 			if (subjectType.isSubtypeOf(Factory.Tree) && ((IConstructor)subject.getValue()).getConstructorType() == Factory.Tree_Appl) {
 				IConstructor tree = (IConstructor)subject.getValue();
-				// TODO: to implement bootstrapping using modules that are parsed using the old parser, but have to match
-				// trees that come from the new parser we have to relax sort equality a bit here. 
-				// For this we use the special SymbolAdapter.isEqual method
+
 				if (((NonTerminalType)declaredType).getSymbol().isEqual(ProductionAdapter.getRhs(TreeAdapter.getProduction(tree)))) {
 					if(anonymous) { 
 						return true;

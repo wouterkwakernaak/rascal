@@ -36,7 +36,6 @@ public class ConcreteListPattern extends AbstractMatchingResult {
 		if (type instanceof NonTerminalType) {
 			IConstructor rhs = ((NonTerminalType) type).getSymbol();
 
-			// these are the new ones (for bootstrapped Rascal):
 		   if (SymbolAdapter.isIterPlus(rhs) || SymbolAdapter.isIterStar(rhs)) {
 				pat = new ListPattern(ctx, callOrTree, list, 1);
 			}
