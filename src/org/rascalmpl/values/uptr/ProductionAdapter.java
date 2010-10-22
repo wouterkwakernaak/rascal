@@ -81,6 +81,10 @@ public class ProductionAdapter {
 		    || tree.getConstructorType() == Factory.Production_Regular;
 	}
 	
+	public static boolean isDefault(IConstructor tree) {
+		return tree.getConstructorType() == Factory.Production_Default;
+	}
+	
 	public static boolean isRegular(IConstructor tree) {
 		return tree.getConstructorType() == Factory.Production_Regular;
 	}

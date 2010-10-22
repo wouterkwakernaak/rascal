@@ -381,23 +381,14 @@ public class TreeAdapter {
 		}
 	}
 
-	public static boolean isContextFreeInjectionOrSingleton(IConstructor tree) {
+	public static boolean isInjectionOrSingleton(IConstructor tree) {
 		IConstructor prod = getProduction(tree);
 		if (isAppl(tree)) {
-			if (!ProductionAdapter.isList(prod)
-					&& ProductionAdapter.getLhs(prod).length() == 1) {
-				IConstructor rhs = ProductionAdapter.getRhs(prod);
-				// TODO Can this really go?
-//				if (SymbolAdapter.isCf(rhs)) {
-//					rhs = SymbolAdapter.getSymbol(rhs);
-//					if (SymbolAdapter.isSort(rhs)) {
-//						return true;
-//					}
-//				}
+			if (ProductionAdapter.isDefault(prod)) {
+			   return ProductionAdapter.getLhs(prod).length() == 1;
 			}
-		} else if (isList(tree)) {
-			if (getArgs(tree).length() == 1) {
-				return true;
+			else if (ProductionAdapter.isList(prod)) {
+				return getArgs(tree).length() == 1;
 			}
 		}
 		return false;

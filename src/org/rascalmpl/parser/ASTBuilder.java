@@ -598,7 +598,7 @@ public class ASTBuilder {
 						return result;
 					}
 					
-					if (TreeAdapter.isContextFreeInjectionOrSingleton(tree)) {
+					if (!TreeAdapter.isLexical(tree) || TreeAdapter.isInjectionOrSingleton(tree)) {
 						stats.setInjections(1);
 					}
 					else if (TreeAdapter.isNonEmptyStarList(tree)) {
@@ -854,7 +854,6 @@ public class ASTBuilder {
 
 			// the declared type inside the pattern must match the produced type outside the brackets
 			// "<" Pattern ">" -> STAT in the grammar and "<STAT t>" in the pattern. STAT == STAT.
-			// TODO: watch out when Cf is removed from typeToSymbol after bootstrapping!
 			if (type.equals(expected) ) {
 				return true;
 			}
