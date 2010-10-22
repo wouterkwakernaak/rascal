@@ -2,6 +2,7 @@ package org.rascalmpl.interpreter.utils;
 
 import java.util.List;
 
+import org.eclipse.imp.pdb.facts.IConstructor;
 import org.eclipse.imp.pdb.facts.IList;
 import org.eclipse.imp.pdb.facts.IListWriter;
 import org.eclipse.imp.pdb.facts.IString;
@@ -39,6 +40,9 @@ public class Symbols {
 	}
 
 	private static IValue symbolAST2SymbolConstructor(Symbol symbol) {
+		// TODO: this has to become a parameter
+		String layout = "LAYOUTLIST";
+		
 		if (symbol.isAlternative()) {
 			return Factory.Symbol_Alt.make(factory, symbolAST2SymbolConstructor(symbol.getLhs()), symbolAST2SymbolConstructor(symbol.getRhs()));
 		}
@@ -55,14 +59,22 @@ public class Symbols {
 		if (symbol.isIter()) {
 			return Factory.Symbol_IterPlus.make(factory, symbolAST2SymbolConstructor(symbol.getSymbol()));
 		}
-		if (symbol.isIterSep()) {
-			return Factory.Symbol_IterPlusSep.make(factory, symbolAST2SymbolConstructor(symbol.getSymbol()), literal2Symbol(symbol.getSep()));
-		}
 		if (symbol.isIterStar()) {
 			return Factory.Symbol_IterStar.make(factory, symbolAST2SymbolConstructor(symbol.getSymbol()));
 		}
+		if (symbol.isIterSep()) {
+			IValue layoutSymbol = Factory.Symbol_LayoutX.make(factory, layout);
+			IValue elementSym = symbolAST2SymbolConstructor(symbol.getSymbol());
+			IValue sepSym = literal2Symbol(symbol.getSep());
+			IValue seps = Factory.Symbols.make(factory, layoutSymbol, sepSym, layoutSymbol);
+			return Factory.Symbol_IterSepX.make(factory, elementSym, seps);
+		}
 		if (symbol.isIterStarSep()) {
-			return Factory.Symbol_IterStarSep.make(factory, symbolAST2SymbolConstructor(symbol.getSymbol()), literal2Symbol(symbol.getSep()));
+			IValue layoutSymbol = Factory.Symbol_LayoutX.make(factory, layout);
+			IValue elementSym = symbolAST2SymbolConstructor(symbol.getSymbol());
+			IValue sepSym = literal2Symbol(symbol.getSep());
+			IValue seps = Factory.Symbols.make(factory, layoutSymbol, sepSym, layoutSymbol);
+			return Factory.Symbol_IterStarSepX.make(factory, elementSym, seps);
 		}
 		if (symbol.isLiteral()) {
 			return literal2Symbol(symbol.getString());

@@ -87,15 +87,9 @@ public class Factory {
 	public static final Type Symbol_IterStarSepX = tf.constructor(uptr, Symbol, "iter-star-seps", Symbol, "symbol", tf.listType(Symbol), "separators");
 	public static final Type Symbol_IterPlus = tf.constructor(uptr, Symbol, "iter", Symbol, "symbol");
 	public static final Type Symbol_IterStar = tf.constructor(uptr, Symbol, "iter-star", Symbol, "symbol");
-	public static final Type Symbol_IterPlusSep = tf.constructor(uptr, Symbol, "iter-sep", Symbol, "symbol", Symbol, "separator");
-	public static final Type Symbol_IterStarSep = tf.constructor(uptr, Symbol, "iter-star-sep", Symbol, "symbol", Symbol, "separator");
-	public static final Type Symbol_IterN = tf.constructor(uptr, Symbol, "iter-n", Symbol, "symbol", tf.integerType(), "number");
-	public static final Type Symbol_IterSepN = tf.constructor(uptr, Symbol, "iter-sep-n", Symbol, "symbol", Symbol, "separator", tf.integerType(), "number");
-	public static final Type Symbol_Func = tf.constructor(uptr, Symbol, "func", tf.listType(Symbol), "symbols", Symbol, "symbol");
 	public static final Type Symbol_ParameterizedSort = tf.constructor(uptr, Symbol, "parameterized-sort", tf.stringType(), "sort", tf.listType(Symbol), "parameters");
 	public static final Type Symbol_Parameter = tf.constructor(uptr, Symbol, "parameter", tf.stringType(), "name");
 	public static final Type Symbol_Strategy = tf.constructor(uptr, Symbol, "strategy", Symbol, "lhs", Symbol, "rhs");
-	public static final Type Symbol_VarSym = tf.constructor(uptr, Symbol, "varsym", tf.stringType(), "string");
 	public static final Type Symbol_Layout = tf.constructor(uptr, Symbol, "layout");
 	public static final Type Symbol_LayoutX = tf.constructor(uptr, Symbol, "layouts", tf.stringType(), "name");
 	public static final Type Symbol_StartOfLine = tf.constructor(uptr, Symbol, "start-of-line");

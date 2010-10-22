@@ -631,8 +631,7 @@ public class TreeAdapter {
 			if (ProductionAdapter.isList(prod)) {
 				IConstructor sym = ProductionAdapter.getRhs(prod);
 
-				if (SymbolAdapter.isIterStar(sym)
-						|| SymbolAdapter.isIterStarSep(sym)) {
+				if (SymbolAdapter.isIterStar(sym) || SymbolAdapter.isIterStarSeps(sym)) {
 					return getArgs(tree).length() > 0;
 				}
 			}
@@ -647,10 +646,7 @@ public class TreeAdapter {
 			if (ProductionAdapter.isList(prod)) {
 				IConstructor sym = ProductionAdapter.getRhs(prod);
 
-				if (SymbolAdapter.isIterPlus(sym)
-						|| SymbolAdapter.isIterPlusSep(sym) 
-						|| SymbolAdapter.isIterPlusSeps(sym)
-						|| SymbolAdapter.isIterStarSeps(sym)) {
+				if (SymbolAdapter.isIterPlus(sym) || SymbolAdapter.isIterPlusSeps(sym)) { 
 					return true;
 				}
 			}

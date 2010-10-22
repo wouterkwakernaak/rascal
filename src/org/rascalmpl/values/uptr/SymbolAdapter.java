@@ -1,11 +1,8 @@
 package org.rascalmpl.values.uptr;
 
 import org.eclipse.imp.pdb.facts.IConstructor;
-import org.eclipse.imp.pdb.facts.IInteger;
 import org.eclipse.imp.pdb.facts.IList;
 import org.eclipse.imp.pdb.facts.IString;
-import org.eclipse.imp.pdb.facts.IValue;
-import org.hamcrest.core.IsEqual;
 import org.rascalmpl.interpreter.asserts.ImplementationError;
 
 public class SymbolAdapter {
@@ -46,19 +43,11 @@ public class SymbolAdapter {
 	}
 
 	public static IConstructor getSymbol(IConstructor tree) {
-		if (isLabel(tree) || isLex(tree) || isCf(tree) || isOpt(tree) || isIterPlus(tree) || isIterPlusSep(tree) || isIterStar(tree) || isIterStarSep(tree) || isIterPlusSeps(tree) || isIterStarSeps(tree)) {
+		if (isLabel(tree) || isLex(tree) || isCf(tree) || isOpt(tree) || isIterPlus(tree) || isIterStar(tree)  || isIterPlusSeps(tree) || isIterStarSeps(tree)) {
 			return ((IConstructor) tree.get("symbol"));
 		}
 		
 		throw new ImplementationError("Symbol does not have a child named symbol: " + tree);
-	}
-	
-	public static IConstructor getSeparator(IConstructor tree) {
-		if (isIterPlusSep(tree) || isIterStarSep(tree)) {
-			return (IConstructor) tree.get("separator");
-		}
-		
-		throw new ImplementationError("Symbol does not have a child named separator: " + tree);
 	}
 	
 	public static String getName(IConstructor tree) {
@@ -96,10 +85,6 @@ public class SymbolAdapter {
 		return tree.getConstructorType() == Factory.Symbol_CiLit;
 	}
 
-	public static boolean isIterPlusSep(IConstructor tree) {
-		return tree.getConstructorType() == Factory.Symbol_IterPlusSep;
-	}
-	
 	public static boolean isIterStar(IConstructor tree) {
 		return tree.getConstructorType() == Factory.Symbol_IterStar;
 	}
@@ -112,7 +97,7 @@ public class SymbolAdapter {
 		if(isProductionList(tree)){
 			return isLayout((IConstructor) tree.get("rhs"));
 		}
-		if (isCf(tree) || isLex(tree) || isOpt(tree) || isIterPlus(tree) || isIterPlusSep(tree) || isIterStar(tree) || isIterStarSep(tree)){
+		if (isCf(tree) || isLex(tree) || isOpt(tree) || isIterPlus(tree) || isIterStar(tree)){
 			IConstructor t = (IConstructor) tree.get("symbol");
 			if(t.getConstructorType() == Factory.Symbol_Layout){
 				return true;
@@ -132,15 +117,15 @@ public class SymbolAdapter {
 	}
 	
 	public static boolean isStarList(IConstructor tree) {
-		return isIterStar(tree) || isIterStarSep(tree);
+		return isIterStar(tree) || isIterStarSeps(tree) ;
 	}
 	
 	public static boolean isPlusList(IConstructor tree) {
-		return isIterPlus(tree) || isIterPlusSep(tree) || isIterPlusSep(tree) || isIterStarSeps(tree);
+		return isIterPlus(tree) || isIterPlusSeps(tree);
 	}
 	
 	public static boolean isSepList(IConstructor tree){
-		return isIterStarSep(tree) || isIterPlusSep(tree) || isIterPlusSeps(tree) || isIterStarSeps(tree);
+		return isIterPlusSeps(tree) || isIterStarSeps(tree);
 	}
 	
 	public static boolean isAnyList(IConstructor tree) {
@@ -154,157 +139,16 @@ public class SymbolAdapter {
 		return tree.getConstructorType() == Factory.Symbol_Opt;
 	}
 
-	public static boolean isIterStarSep(IConstructor tree) {
-		return tree.getConstructorType() == Factory.Symbol_IterStarSep;
-	}
-
 	public static String toString(IConstructor symbol) {
-		if (isSort(symbol)) {
-			return getName(symbol);
-		}
-		if (isIterPlus(symbol)) {
-			return toString(getSymbol(symbol)) + '+';
-		}
-		if (isIterStar(symbol)) {
-			return toString(getSymbol(symbol)) + '*';
-		}
-		if (isIterStarSep(symbol)) {
-			return '{' + toString(getSymbol(symbol)) + ' ' + toString(getSeparator(symbol)) + '}' + '*';
-		}
-		if (isIterPlusSep(symbol)) {
-			return '{' + toString(getSymbol(symbol)) + ' ' + toString(getSeparator(symbol)) + '}' + '+';
-		}
-		
-		if (isIterPlusSep(symbol)) {
-			IList seps = getSeparators(symbol);
-			return '{' + toString(getSymbol(symbol)) + ' ' 
-			+ toString((IConstructor) seps.get(seps.length() / 2)) + '}' + '+';
-		}
-		
-		if (isIterStarSep(symbol)) {
-			IList seps = getSeparators(symbol);
-			return '{' + toString(getSymbol(symbol)) + ' ' 
-			+ toString((IConstructor) seps.get(seps.length() / 2)) + '}' + '*';
-		}
-		
-		if (isOpt(symbol)) {
-			return toString(getSymbol(symbol)) + '?';
-		}
-		if (isLayout(symbol)) {
-			return "LAYOUT";
-		}
-		if (isLiteral(symbol)) {
-			return '\"' + ((IString) symbol.get("string")).getValue() + '\"';
-		}
-		if (isCILiteral(symbol)) {
-			return '\'' + ((IString) symbol.get("string")).getValue() + '\'';
-		}
-		if (isAlt(symbol)) {
-			return toString(getLhs(symbol)) + ' ' + '|' + ' ' + toString(getRhs(symbol));
-		}
-		if (isSeq(symbol)) {
-			StringBuilder b = new StringBuilder();
-			b.append('(');
-			b.append(' ');
-			for (IValue elem : getSymbols(symbol)) {
-				b.append(toString((IConstructor) elem));
-				b.append(' ');
-			}
-			b.append(')');
-		}
-		
-		if (isParameterizedSort(symbol)) {
-			StringBuilder b = new StringBuilder();
-			b.append(getName(symbol));
-			b.append('[');
-			b.append('[');
-			for (IValue elem : getSymbols(symbol)) {
-				b.append(toString((IConstructor) elem));
-				b.append(',');
-			}
-			b.append(']');
-			b.append(']');
-		}
-		
-		if (isEmpty(symbol)) {
-			return "()";
-		}
-		
-		if (isCharClass(symbol)) {
-			for (IValue range : getRanges(symbol)) {
-				IConstructor r = (IConstructor) range;
-				if (r.getConstructorType() == Factory.CharRange_Single) {
-					return decode((IInteger) r.get("start"));
-				}
-				if (r.getConstructorType() == Factory.CharRange_Range) {
-					return '[' +  decode((IInteger) r.get("start")) + '-' + decode((IInteger) r.get("end"))+ ']';
-				}
-			}
-		}
-		
-		// TODO more variants
 		return symbol.toString();
 	}
 
 
-	private static String decode(IInteger iInteger) {
-		char ch = (char) iInteger.intValue();
-		
-		if (Character.isLetterOrDigit(ch)) {
-			return String.valueOf(ch);
-		}
-		
-		switch (ch) {
-		case '\n':
-			return "\\n";
-		case '\t':
-			return "\\t";
-		case '\r':
-			return "\\r"; 
-		case ' ':
-			return "\\ ";
-		}
-
-		int digit1 = ch % 10;
-		ch = (char) (ch / 10);
-		int digit2 = ch % 10;
-		ch = (char) (ch / 10);
-		int digit3 = ch % 10;
-		
-		return "\\" + digit1 + digit2 + digit3;
-	}
-
-	private static IList getRanges(IConstructor symbol) {
-		return (IList) symbol.get("ranges");
-	}
-
-	private static boolean isCharClass(IConstructor symbol) {
-		return symbol.getConstructorType() == Factory.Symbol_CharClass;
-	}
-
-	private static boolean isEmpty(IConstructor symbol) {
-		return symbol.getConstructorType() == Factory.Symbol_Empty;
-	}
-
-	private static IList getSymbols(IConstructor symbol) {
-		return (IList) symbol.get("symbols");
-	}
-
-	private static boolean isSeq(IConstructor symbol) {
-		return symbol.getConstructorType() == Factory.Symbol_Seq;
-	}
 
 	public static IConstructor getRhs(IConstructor symbol) {
 		return (IConstructor) symbol.get("rhs");
 	}
 
-	private static IConstructor getLhs(IConstructor symbol) {
-		return (IConstructor) symbol.get("lhs");
-	}
-
-	private static boolean isAlt(IConstructor symbol) {
-		return symbol.getConstructorType() == Factory.Symbol_Alt;
-	}
 
 	public static boolean isIterStarSeps(IConstructor rhs) {
 		return rhs.getConstructorType() == Factory.Symbol_IterStarSepX;
@@ -331,9 +175,7 @@ public class SymbolAdapter {
 			return fst.isEqual(snd);
 		}
 		
-		if ((isIterPlusSep(fst) && isIterPlusSeps(snd))
-				|| (isIterStarSep(fst) && isIterStarSeps(snd))
-				|| (isIterPlus(fst) && isIterPlusSeps(snd))
+		if ((isIterPlus(fst) && isIterPlusSeps(snd))
 				|| (isIterStar(fst) && isIterStarSeps(snd))) {
 			return isEqual(snd, fst);
 		}
@@ -354,25 +196,6 @@ public class SymbolAdapter {
 				return false;
 			case 3:
 				return false;
-			}
-		}
-		
-		if ((isIterPlusSeps(fst) && isIterPlusSep(snd))
-				|| (isIterStarSeps(fst) && isIterStarSep(snd))) {
-			IList seps = getSeparators(fst);
-			if (!isEqual(getSymbol(fst),getSymbol(snd))) {
-				return false;
-			}
-			
-			switch (seps.length()) {
-			case 1: 
-				if (isLayouts((IConstructor) seps.get(0))) {
-					return false; // would have been an Cf Iter without seps  
-				}
-				// is a lexical iter
-				return isEqual((IConstructor) seps.get(0),getSeparator(snd));
-			case 3:
-				return isEqual((IConstructor) seps.get(1),getSeparator(snd));
 			}
 		}
 		

@@ -148,18 +148,6 @@ public class IUPTRAstToSymbolConstructor extends NullASTVisitor<IConstructor> {
 			return vf.constructor(Factory.Symbol_IterStar, arg);
 		}
 		
-		if (name.equals("iter-sep")) {
-			IConstructor arg = x.getArguments().get(0).accept(this);
-			IConstructor sep = x.getArguments().get(1).accept(this);
-			return vf.constructor(Factory.Symbol_IterPlusSep, arg, sep);
-		}
-		
-		if (name.equals("iter-star-sep")) {
-			IConstructor arg = x.getArguments().get(0).accept(this);
-			IConstructor sep = x.getArguments().get(1).accept(this);
-			return vf.constructor(Factory.Symbol_IterStarSep, arg, sep);
-		}
-		
 		if (name.equals("iter-star-seps")) {
 			IConstructor arg = x.getArguments().get(0).accept(this);
 			Expression.List args = (Expression.List) x.getArguments().get(1);
@@ -179,32 +167,7 @@ public class IUPTRAstToSymbolConstructor extends NullASTVisitor<IConstructor> {
 			}
 			return vf.constructor(Factory.Symbol_IterSepX, arg, seps);
 		}
-		
-		if (name.equals("iter-n")) {
-			IConstructor arg = x.getArguments().get(0).accept(this);
-			org.rascalmpl.ast.DecimalIntegerLiteral.Lexical arg1 = (org.rascalmpl.ast.DecimalIntegerLiteral.Lexical) x.getArguments().get(1).getLiteral().getIntegerLiteral().getDecimal();
-			IInteger num = vf.integer(java.lang.Integer.parseInt(arg1.getString())); 
-			return vf.constructor(Factory.Symbol_IterN, arg, num);
-		}
-		
-		if (name.equals("iter-n-sep")) {
-			IConstructor arg = x.getArguments().get(0).accept(this);
-			org.rascalmpl.ast.DecimalIntegerLiteral.Lexical arg1 = (org.rascalmpl.ast.DecimalIntegerLiteral.Lexical) x.getArguments().get(1).getLiteral().getIntegerLiteral().getDecimal();
-			IInteger num = vf.integer(java.lang.Integer.parseInt(arg1.getString())); 
-			return vf.constructor(Factory.Symbol_IterN, arg, num);
-		}
-		
-		if (name.equals("func")) {
-			java.util.List<Expression> args = x.getArguments();
-			IList formals = vf.list(Factory.Symbol);
-			for (Expression arg: ((Expression.List)args.get(0)).getElements()) {
-				formals = formals.append(arg.accept(this));
-			}
-			IConstructor result = args.get(1).accept(this); 
-			return vf.constructor(Factory.Symbol_Func, result, formals);
-			
-		}
-		
+
 		if (name.equals("parameterized-sort")) {
 			java.util.List<Expression> args = x.getArguments();
 			StringConstant.Lexical sort = (org.rascalmpl.ast.StringConstant.Lexical) 

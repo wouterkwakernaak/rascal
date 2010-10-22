@@ -84,7 +84,7 @@ public class ConcreteListVariablePattern extends AbstractMatchingResult {
 		if (subject.getType().isSubtypeOf(Factory.Args)) {
 			if (((IList)subject.getValue()).isEmpty()) {
 				IConstructor sym = SymbolAdapter.getSymbol(declaredType.getSymbol());
-				if (SymbolAdapter.isIterPlus(sym) || SymbolAdapter.isIterPlusSep(sym) || SymbolAdapter.isIterPlusSeps(sym)) {
+				if (SymbolAdapter.isIterPlus(sym) || SymbolAdapter.isIterPlusSeps(sym)) {
 					return false;
 				}
 			}
@@ -101,7 +101,7 @@ public class ConcreteListVariablePattern extends AbstractMatchingResult {
 		if (TreeAdapter.isList(subjectTree)) {
 			if ((TreeAdapter.getArgs(subjectTree)).isEmpty()) {
 				IConstructor sym = SymbolAdapter.getSymbol(declaredType.getSymbol());
-				if (SymbolAdapter.isIterPlus(sym) || SymbolAdapter.isIterPlusSep(sym) || (SymbolAdapter.isIterPlusSeps(sym) && SymbolAdapter.getSeparators(sym).length() > 1) || (SymbolAdapter.isIterStarSeps(sym) && SymbolAdapter.getSeparators(sym).length() > 1)) {
+				if (SymbolAdapter.isIterPlus(sym)  || (SymbolAdapter.isIterPlusSeps(sym) && SymbolAdapter.getSeparators(sym).length() > 1) || (SymbolAdapter.isIterStarSeps(sym) && SymbolAdapter.getSeparators(sym).length() > 1)) {
 					return false;
 				}
 			}

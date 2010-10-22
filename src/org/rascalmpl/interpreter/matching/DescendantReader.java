@@ -117,9 +117,6 @@ public class DescendantReader implements Iterator<IValue> {
 			if(SymbolAdapter.isIterPlus(sym) || SymbolAdapter.isIterStar(sym)){
 				if(debug)System.err.println("pushConcreteSyntaxChildren: isIterPlus or isIterStar");
 				delta = 1; // new iters never have layout separators
-			} else if(SymbolAdapter.isIterPlusSep(sym) || SymbolAdapter.isIterStarSep(sym)){
-				if(debug)System.err.println("pushConcreteSyntaxChildren: isIterPlusSep or isIterStarSep");
-				delta = 4;
 			} else if (SymbolAdapter.isIterPlusSeps(sym) || SymbolAdapter.isIterStarSeps(sym)) {
 				if(debug)System.err.println("pushConcreteSyntaxChildren: isIterPlusSeps or isIterStarSeps");
 				delta = SymbolAdapter.getSeparators(sym).length() + 1;

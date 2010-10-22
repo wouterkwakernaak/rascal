@@ -87,7 +87,7 @@ public class ProductionAdapter {
 
 	public static boolean isSeparatedList(IConstructor tree) {
 		IConstructor rhs = getRhs(tree);
-		return SymbolAdapter.isIterPlusSep(rhs) || SymbolAdapter.isIterStarSep(rhs) || SymbolAdapter.isIterPlusSeps(rhs) || SymbolAdapter.isIterStarSeps(rhs);
+		return SymbolAdapter.isIterPlusSeps(rhs) || SymbolAdapter.isIterStarSeps(rhs);
 	}
 
 	public static boolean isLexical(IConstructor tree) {
@@ -170,10 +170,6 @@ public class ProductionAdapter {
 				return true;
 			}
 			
-			if ((SymbolAdapter.isIterPlusSep(surroundingRhs) && SymbolAdapter.isIterStarSep(nestedRhs)) || (SymbolAdapter.isIterStarSep(surroundingRhs) && SymbolAdapter.isIterPlusSep(nestedRhs))) {
-				return SymbolAdapter.isEqual(SymbolAdapter.getSymbol(surroundingRhs),SymbolAdapter.getSymbol(nestedRhs)) && SymbolAdapter.isEqual(SymbolAdapter.getSeparator(surroundingRhs),SymbolAdapter.getSeparator(nestedRhs));
-			}
-
 			if ((SymbolAdapter.isIterPlus(surroundingRhs) && SymbolAdapter.isIterStar(nestedRhs)) || (SymbolAdapter.isIterStar(surroundingRhs) && SymbolAdapter.isIterPlus(nestedRhs))) {
 				return SymbolAdapter.isEqual(SymbolAdapter.getSymbol(surroundingRhs),SymbolAdapter.getSymbol(nestedRhs)) && SymbolAdapter.getSeparators(surroundingRhs).isEqual(SymbolAdapter.getSeparators(nestedRhs));
 			}

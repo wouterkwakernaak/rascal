@@ -858,7 +858,9 @@ public class ASTBuilder {
 			if (type.equals(expected) ) {
 				return true;
 			}
+			
 			if (SymbolAdapter.isAnyList((IConstructor) type)) {
+				
 				IConstructor elem = SymbolAdapter.getSymbol((IConstructor) type);
 				return elem.equals(expected);
 			}
