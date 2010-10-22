@@ -688,6 +688,8 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 		try {
 			IConstructor tree = parser.parseCommand(location, command);
 			
+			tree = new ActionExecutor(this, parser.getInfo()).execute(tree);
+			
 			if (tree.getConstructorType() == Factory.ParseTree_Summary) {
 				throw parseError(tree, location);
 			}

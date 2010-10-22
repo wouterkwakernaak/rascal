@@ -196,7 +196,7 @@ public class ActionExecutor {
 			}
 			else {
 				// TODO: see above, this should be fixed if every action knows to which module it belongs
-				System.err.println("WARNING: could not retrieve a module environment for action for " + TreeAdapter.getProduction(tree));
+//				System.err.println("WARNING: could not retrieve a module environment for action for " + TreeAdapter.getProduction(tree));
 				scope = new ModuleEnvironment("***no module environment for action***");
 			}
 			

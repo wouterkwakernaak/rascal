@@ -547,8 +547,12 @@ syntax Visit
 	| DefaultStrategy: "visit" "(" Expression subject ")" "{" Case+ cases "}" ;
 
 start syntax Command
-	= /*prefer()*/ Expression: Expression expression 
-	| /*avoid()*/ Declaration: Declaration declaration 
+	= Expression: Expression expression {
+	  if (appl(prod(_,sort("Expression"),attrs([term(cons("NonEmptyBlock"))])),_) := expression) { 
+	    fail;
+	  }
+	}
+	| Declaration: Declaration declaration 
 	| Shell: ":" ShellCommand command 
 	| Statement: Statement statement {
 	  // local variable declarations would be ambiguous with the "global" declarations defined above
