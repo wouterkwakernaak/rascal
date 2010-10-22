@@ -77,8 +77,8 @@ public class ProductionAdapter {
 	}
 
 	public static boolean isList(IConstructor tree) {
-		return tree.getConstructorType() == Factory.Production_List 
-		    || tree.getConstructorType() == Factory.Production_Regular;
+		return tree.getConstructorType() == Factory.Production_Regular
+		    && SymbolAdapter.isAnyList(getRhs(tree)); 
 	}
 	
 	public static boolean isDefault(IConstructor tree) {

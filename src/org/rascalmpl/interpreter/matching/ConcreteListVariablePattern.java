@@ -122,7 +122,7 @@ public class ConcreteListVariablePattern extends AbstractMatchingResult {
 
 	private IValue wrapWithListProd(IValue subject) {
 		IList args = (IList) subject;
-		IValue prod = Factory.Production_List.make(ctx.getValueFactory(), declaredType.getSymbol());
+		IValue prod = Factory.Production_Regular.make(ctx.getValueFactory(), declaredType.getSymbol());
 		
 		if (args.length() == 1) {
 			IConstructor arg = (IConstructor) args.get(0);
