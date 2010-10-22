@@ -964,9 +964,6 @@ public class ASTBuilder {
 	}
 
 	private boolean isLexical(IConstructor tree) {
-		if (TreeAdapter.isLexToCf(tree)) {
-			return !isRascalLiteral(tree);
-		}
 		if (TreeAdapter.isRascalLexical(tree)) {
 			return true;
 		}

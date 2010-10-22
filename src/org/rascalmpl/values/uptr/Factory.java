@@ -75,8 +75,6 @@ public class Factory {
 	public static final Type Symbol_START = tf.constructor(uptr, Symbol, "START");
 	public static final Type Symbol_Lit = tf.constructor(uptr, Symbol, "lit", tf.stringType(), "string");
 	public static final Type Symbol_CiLit = tf.constructor(uptr, Symbol, "cilit", tf.stringType(), "string");
-	public static final Type Symbol_Cf = tf.constructor(uptr, Symbol, "cf", Symbol, "symbol");
-	public static final Type Symbol_Lex = tf.constructor(uptr, Symbol, "lex", Symbol, "symbol");
 	public static final Type Symbol_Empty = tf.constructor(uptr, Symbol, "empty");
 	public static final Type Symbol_Seq = tf.constructor(uptr, Symbol, "seq", tf.listType(Symbol), "symbols");
 	public static final Type Symbol_Opt = tf.constructor(uptr, Symbol, "opt", Symbol, "symbol");

@@ -11,18 +11,10 @@ public class SymbolAdapter {
 		super();
 	}
 
-	public static boolean isCf(IConstructor tree) {
-		return tree.getConstructorType() == Factory.Symbol_Cf;
-	}
-	
 	public static boolean isLabel(IConstructor sym) {
 		return sym.getConstructorType() == Factory.Symbol_Label;
 	}
 
-	public static boolean isLex(IConstructor tree) {
-		return tree.getConstructorType() == Factory.Symbol_Lex;
-	}
-	
 	public static boolean isSort(IConstructor tree) {
 		return tree.getConstructorType() == Factory.Symbol_Sort;
 	}
@@ -43,7 +35,7 @@ public class SymbolAdapter {
 	}
 
 	public static IConstructor getSymbol(IConstructor tree) {
-		if (isLabel(tree) || isLex(tree) || isCf(tree) || isOpt(tree) || isIterPlus(tree) || isIterStar(tree)  || isIterPlusSeps(tree) || isIterStarSeps(tree)) {
+		if (isLabel(tree) || isOpt(tree) || isIterPlus(tree) || isIterStar(tree)  || isIterPlusSeps(tree) || isIterStarSeps(tree)) {
 			return ((IConstructor) tree.get("symbol"));
 		}
 		
@@ -97,7 +89,7 @@ public class SymbolAdapter {
 		if(isProductionList(tree)){
 			return isLayout((IConstructor) tree.get("rhs"));
 		}
-		if (isCf(tree) || isLex(tree) || isOpt(tree) || isIterPlus(tree) || isIterStar(tree)){
+		if (isOpt(tree) || isIterPlus(tree) || isIterStar(tree)){
 			IConstructor t = (IConstructor) tree.get("symbol");
 			if(t.getConstructorType() == Factory.Symbol_Layout){
 				return true;

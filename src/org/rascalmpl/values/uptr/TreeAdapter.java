@@ -73,11 +73,6 @@ public class TreeAdapter {
 				&& ProductionAdapter.getConstructorName(prod).equals(consName);
 	}
 
-	public static boolean isLexToCf(IConstructor tree) {
-		return isAppl(tree) ? ProductionAdapter.isLexToCf(getProduction(tree))
-				: false;
-	}
-
 	public static boolean isContextFree(IConstructor tree) {
 		return isAppl(tree) ? ProductionAdapter
 				.isContextFree(getProduction(tree)) : false;
@@ -447,7 +442,7 @@ public class TreeAdapter {
 					"locate assumes position information on the tree");
 		}
 
-		if (TreeAdapter.isLexToCf(tree)) {
+		if (TreeAdapter.isLexical(tree)) {
 			if (l.getOffset() <= offset
 					&& offset < l.getOffset() + l.getLength()) {
 				return tree;
@@ -500,7 +495,7 @@ public class TreeAdapter {
 					"locate assumes position information on the tree");
 		}
 
-		if (TreeAdapter.isLexToCf(tree)) {
+		if (TreeAdapter.isLexical(tree)) {
 			if (l.getOffset() <= offset
 					&& offset < l.getOffset() + l.getLength()) {
 				if (tree.hasAnnotation(label)) {
@@ -604,8 +599,7 @@ public class TreeAdapter {
 //					}
 //				}
 			}
-		} else if (isList(tree)
-				&& SymbolAdapter.isCf(ProductionAdapter.getRhs(prod))) {
+		} else if (isList(tree)) {
 			if (getArgs(tree).length() == 1) {
 				return true;
 			}

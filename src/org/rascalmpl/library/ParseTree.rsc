@@ -50,8 +50,6 @@ data Symbol =
      \label(str name, Symbol symbol) |
      \lit(str string) |
      \cilit(str string) | 
-     \cf(Symbol symbol)  |
-     \lex(Symbol symbol)  |
      \empty()  |
      \opt(Symbol symbol)  |
      \sort (str string)  | 
@@ -70,17 +68,9 @@ data Symbol =
 @deprecated{Used in SDF2, but not used in Rascal anymore}
 data Symbol =
      \layout()  | 
-     \iter-sep(Symbol symbol, Symbol separator) |
-     \iter-star-sep(Symbol symbol, Symbol separator)  | 
      \alt(Symbol lhs, Symbol rhs)  |
      \tuple(Symbol head, list[Symbol] rest)  |
-     \seq(list[Symbol] symbols)  |                                // <=== stil used!
-     \func(list[Symbol] symbols, Symbol symbol)  | 
-    
-     \strategy(Symbol lhs, Symbol rhs)  |
-     \var-sym(Symbol symbol) | 
-     \iter-n(Symbol symbol, int number)  | 
-     \iter-sep-n(Symbol symbol, Symbol separator, int number)  ; 
+     \seq(list[Symbol] symbols);
      
 @doc{provides access to the source location of a parse tree node}
 anno loc Tree@\loc;

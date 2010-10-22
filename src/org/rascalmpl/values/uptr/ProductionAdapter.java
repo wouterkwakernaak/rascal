@@ -91,29 +91,9 @@ public class ProductionAdapter {
 	}
 
 	public static boolean isLexical(IConstructor tree) {
-		return SymbolAdapter.isLex(getRhs(tree)) || TreeAdapter.hasLexAttribute(tree);
+		return TreeAdapter.hasLexAttribute(tree);
 	}
  
-	public static boolean isLexToCf(IConstructor tree) {
-		if (!isContextFree(tree)) {
-			return false;
-		}
-		if (isList(tree)) {
-			return false;
-		}
-		
-		IList lhs = getLhs(tree);
-		if (lhs.length() != 1) {
-			return false;
-		}
-		IConstructor lhsSym = (IConstructor) lhs.get(0);
-		if (!SymbolAdapter.isLex(lhsSym)) {
-			return false;
-		}
-		IConstructor rhsSym = getRhs(tree);
-		return SymbolAdapter.getSymbol(lhsSym).equals(SymbolAdapter.getSymbol(rhsSym));
-	}
-
 	public static String getCategory(IConstructor tree) {
 		if (!isList(tree)) {
 			for (IValue attr : getAttributes(tree)) {
