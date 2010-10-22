@@ -9,7 +9,7 @@ import org.rascalmpl.interpreter.asserts.NotYetImplemented;
 import org.rascalmpl.interpreter.env.ModuleEnvironment;
 import org.rascalmpl.library.rascal.syntax.RascalRascal;
 
-public class NewRascalParser implements IRascalParser {
+public class Parser  {
 	public static final String START_COMMAND = "start__$Command";
 	public static final String START_MODULE = "start__$Module";
 	public static final String START_PRE_MODULE = "start__$PreModule";

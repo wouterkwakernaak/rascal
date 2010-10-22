@@ -252,7 +252,7 @@ import org.rascalmpl.library.rascal.syntax.RascalRascal;
 import org.rascalmpl.parser.ASTBuilder;
 import org.rascalmpl.parser.ActionExecutor;
 import org.rascalmpl.parser.IParserInfo;
-import org.rascalmpl.parser.NewRascalParser;
+import org.rascalmpl.parser.Parser;
 import org.rascalmpl.parser.ParserGenerator;
 import org.rascalmpl.parser.sgll.IGLL;
 import org.rascalmpl.uri.CWDURIResolver;
@@ -291,7 +291,7 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 	private final java.util.List<ClassLoader> classLoaders;
 	protected final ModuleEnvironment rootScope;
 	private boolean concreteListsShouldBeSpliced;
-	private final NewRascalParser parser;
+	private final Parser parser;
 
 	private PrintWriter stderr;
 	private PrintWriter stdout;
@@ -315,7 +315,7 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 		this.classLoaders = new ArrayList<ClassLoader>();
 		this.javaBridge = new JavaBridge(stderr, classLoaders, vf);
 		this.rascalPathResolver = new RascalURIResolver(this);
-		this.parser = new NewRascalParser();
+		this.parser = new Parser();
 		this.stderr = stderr;
 		this.stdout = stdout;
 		this.builder = new ASTBuilder(ASTFactoryFactory.getASTFactory());
@@ -715,7 +715,7 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 				tree = rp.parse("start__$Command", location, command);
 			}
 			
-			tree = new ActionExecutor(this, ((NewRascalParser) parser).getInfo()).execute(tree);
+			tree = new ActionExecutor(this, ((Parser) parser).getInfo()).execute(tree);
 			
 			if (tree.getConstructorType() == Factory.ParseTree_Summary) {
 				throw parseError(tree, location);
@@ -1236,7 +1236,7 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 		}
 		else {
 			IGLL mp = needBootstrapParser(preModule) ? new MetaRascalRascal() : getRascalParser(env);
-			IConstructor tree = mp.parse(NewRascalParser.START_MODULE, location, data);
+			IConstructor tree = mp.parse(Parser.START_MODULE, location, data);
 			return exec.execute(tree);
 		}
 	}
