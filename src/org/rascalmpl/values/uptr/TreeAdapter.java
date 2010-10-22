@@ -475,14 +475,6 @@ public class TreeAdapter {
 		return false;
 	}
 
-	public static boolean hasPreferAttribute(IConstructor tree) {
-		return ProductionAdapter.hasPreferAttribute(getProduction(tree));
-	}
-
-	public static boolean hasAvoidAttribute(IConstructor tree) {
-		return ProductionAdapter.hasAvoidAttribute(getProduction(tree));
-	}
-
 	public static IList searchCategory(IConstructor tree, String category) {
 		IListWriter writer = Factory.Args.writer(ValueFactoryFactory
 				.getValueFactory());

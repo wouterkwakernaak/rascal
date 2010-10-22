@@ -61,8 +61,6 @@ public class Factory {
 	public static final Type Attr_Id = tf.constructor(uptr, Attr, "id", tf.stringType(), "moduleName");
 	public static final Type Attr_Bracket = tf.constructor(uptr, Attr, "bracket");
 	public static final Type Attr_Reject = tf.constructor(uptr, Attr, "reject");
-	public static final Type Attr_Prefer = tf.constructor(uptr, Attr, "prefer");
-	public static final Type Attr_Avoid = tf.constructor(uptr, Attr, "avoid");
 	
 	public static final Type Associativity_Left = tf.constructor(uptr, Associativity, "left");
 	public static final Type Associativity_Right = tf.constructor(uptr, Associativity, "right");
@@ -86,7 +84,6 @@ public class Factory {
 	public static final Type Symbol_IterStar = tf.constructor(uptr, Symbol, "iter-star", Symbol, "symbol");
 	public static final Type Symbol_ParameterizedSort = tf.constructor(uptr, Symbol, "parameterized-sort", tf.stringType(), "sort", tf.listType(Symbol), "parameters");
 	public static final Type Symbol_Parameter = tf.constructor(uptr, Symbol, "parameter", tf.stringType(), "name");
-	public static final Type Symbol_Strategy = tf.constructor(uptr, Symbol, "strategy", Symbol, "lhs", Symbol, "rhs");
 	public static final Type Symbol_LayoutX = tf.constructor(uptr, Symbol, "layouts", tf.stringType(), "name");
 	public static final Type Symbol_StartOfLine = tf.constructor(uptr, Symbol, "start-of-line");
 	public static final Type Symbol_EndOfLine = tf.constructor(uptr, Symbol, "end-of-line");

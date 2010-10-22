@@ -116,10 +116,6 @@ public class ProductionAdapter {
 		return tree;
 	}
 
-	public static boolean hasPreferAttribute(IConstructor tree) {
-		return hasAttribute(tree, Factory.Attr_Prefer.make(ValueFactoryFactory.getValueFactory()));
-	}
-
 	public static boolean hasAttribute(IConstructor tree, IValue wanted) {
 		for (IValue attr : getAttributes(tree)) {
 			if (attr.isEqual(wanted)) {
@@ -131,10 +127,6 @@ public class ProductionAdapter {
 	
 	public static boolean hasLexAttribute(IConstructor tree) {
 		return hasAttribute(tree, Factory.Attribute_Lex);
-	}
-
-	public static boolean hasAvoidAttribute(IConstructor tree) {
-		return hasAttribute(tree, Factory.Attr_Avoid.make(ValueFactoryFactory.getValueFactory()));
 	}
 
 	public static boolean isNewSeparatedList(IConstructor production) {

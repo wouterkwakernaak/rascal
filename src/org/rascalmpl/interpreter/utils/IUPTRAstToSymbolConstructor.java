@@ -180,12 +180,6 @@ public class IUPTRAstToSymbolConstructor extends NullASTVisitor<IConstructor> {
 			
 		}
 		
-		if (name.equals("strategy")) {
-			IConstructor arg = x.getArguments().get(0).accept(this);
-			IConstructor sep = x.getArguments().get(1).accept(this);
-			return vf.constructor(Factory.Symbol_Strategy, arg, sep);
-		}
-		
 		if (name.equals("lit")) {
 			StringConstant.Lexical arg = (org.rascalmpl.ast.StringConstant.Lexical) 
 				x.getArguments().get(0).getLiteral().getStringLiteral().getConstant();

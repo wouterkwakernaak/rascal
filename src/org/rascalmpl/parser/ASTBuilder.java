@@ -301,9 +301,6 @@ public class ASTBuilder {
 
 				ASTStatistics stats = ((AbstractAST) actuals[i]).getStats();
 				total.add(stats);
-				total.setAvoided(stats.isAvoided());
-				total.setPreferred(stats.isPreferred());
-					
 			}
 			i++;
 		}
@@ -320,20 +317,6 @@ public class ASTBuilder {
 			if (astExp.hasPattern() && astExp.getPattern()._getType() != null) {
 				astExp._setType(astExp.getPattern()._getType());
 			}
-		}
-		
-		if (arity > 2) { // is not an injection so kill accumulation of prefer and avoid
-			total.setAvoided(false);
-			total.setPreferred(false);
-		}
-		
-		if (TreeAdapter.hasPreferAttribute(tree)) {
-			total.setAvoided(false);
-			total.setPreferred(true);
-		}
-		if (TreeAdapter.hasAvoidAttribute(tree)) {
-			total.setAvoided(true);
-			total.setPreferred(false);
 		}
 		
 		ast.setStats(total);
