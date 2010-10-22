@@ -105,7 +105,7 @@ public class ConcreteListVariablePattern extends AbstractMatchingResult {
 					return false;
 				}
 			}
-			if (SymbolAdapter.isEqual(ProductionAdapter.getRhs(TreeAdapter.getProduction(subjectTree)),declaredType.getSymbol())) {
+			if (ProductionAdapter.getRhs(TreeAdapter.getProduction(subjectTree)).isEqual(declaredType.getSymbol())) {
 				ctx.getCurrentEnvt().storeVariable(name, subject);
 			}
 			if (debug)

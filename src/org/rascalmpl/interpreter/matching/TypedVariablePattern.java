@@ -86,7 +86,7 @@ public class TypedVariablePattern extends AbstractMatchingResult {
 				// TODO: to implement bootstrapping using modules that are parsed using the old parser, but have to match
 				// trees that come from the new parser we have to relax sort equality a bit here. 
 				// For this we use the special SymbolAdapter.isEqual method
-				if (SymbolAdapter.isEqual(((NonTerminalType)declaredType).getSymbol(), ProductionAdapter.getRhs(TreeAdapter.getProduction(tree)))) {
+				if (((NonTerminalType)declaredType).getSymbol().isEqual(ProductionAdapter.getRhs(TreeAdapter.getProduction(tree)))) {
 					if(anonymous) { 
 						return true;
 					}				

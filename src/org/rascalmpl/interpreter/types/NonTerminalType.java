@@ -92,7 +92,7 @@ public class NonTerminalType extends ExternalType {
 				return true; // TODO add check if they have the same element type
 			}
 			
-			return SymbolAdapter.isEqual(otherSym,symbol);
+			return otherSym.isEqual(symbol);
 		}
 		
 		if (other.isNodeType()) {

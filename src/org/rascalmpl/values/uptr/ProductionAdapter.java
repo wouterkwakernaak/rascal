@@ -166,16 +166,16 @@ public class ProductionAdapter {
 			IConstructor nestedRhs = ProductionAdapter.getRhs(nested);
 			IConstructor surroundingRhs = ProductionAdapter.getRhs(surrounding);
 			
-			if (SymbolAdapter.isEqual(surroundingRhs,nestedRhs)) {
+			if (surroundingRhs.isEqual(nestedRhs)) {
 				return true;
 			}
 			
 			if ((SymbolAdapter.isIterPlus(surroundingRhs) && SymbolAdapter.isIterStar(nestedRhs)) || (SymbolAdapter.isIterStar(surroundingRhs) && SymbolAdapter.isIterPlus(nestedRhs))) {
-				return SymbolAdapter.isEqual(SymbolAdapter.getSymbol(surroundingRhs),SymbolAdapter.getSymbol(nestedRhs)) && SymbolAdapter.getSeparators(surroundingRhs).isEqual(SymbolAdapter.getSeparators(nestedRhs));
+				return SymbolAdapter.getSymbol(surroundingRhs).isEqual(SymbolAdapter.getSymbol(nestedRhs)) && SymbolAdapter.getSeparators(surroundingRhs).isEqual(SymbolAdapter.getSeparators(nestedRhs));
 			}
 			
 			if ((SymbolAdapter.isIterPlusSeps(surroundingRhs) && SymbolAdapter.isIterStarSeps(nestedRhs)) || (SymbolAdapter.isIterStarSeps(surroundingRhs) && SymbolAdapter.isIterPlusSeps(nestedRhs))) {
-				return SymbolAdapter.isEqual(SymbolAdapter.getSymbol(surroundingRhs),SymbolAdapter.getSymbol(nestedRhs)) && SymbolAdapter.getSeparators(surroundingRhs).isEqual(SymbolAdapter.getSeparators(nestedRhs));
+				return SymbolAdapter.getSymbol(surroundingRhs).isEqual(SymbolAdapter.getSymbol(nestedRhs)) && SymbolAdapter.getSeparators(surroundingRhs).isEqual(SymbolAdapter.getSeparators(nestedRhs));
 			}
 		}
 		return false;
