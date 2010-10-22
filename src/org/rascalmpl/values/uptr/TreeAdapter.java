@@ -57,10 +57,6 @@ public class TreeAdapter {
 		return (IConstructor) tree.get("prod");
 	}
 
-	public static boolean hasSortName(IConstructor tree) {
-		return ProductionAdapter.hasSortName(getProduction(tree));
-	}
-
 	public static String getSortName(IConstructor tree)
 			throws FactTypeUseException {
 		return ProductionAdapter.getSortName(getProduction(tree));
@@ -600,12 +596,13 @@ public class TreeAdapter {
 			if (!ProductionAdapter.isList(prod)
 					&& ProductionAdapter.getLhs(prod).length() == 1) {
 				IConstructor rhs = ProductionAdapter.getRhs(prod);
-				if (SymbolAdapter.isCf(rhs)) {
-					rhs = SymbolAdapter.getSymbol(rhs);
-					if (SymbolAdapter.isSort(rhs)) {
-						return true;
-					}
-				}
+				// TODO Can this really go?
+//				if (SymbolAdapter.isCf(rhs)) {
+//					rhs = SymbolAdapter.getSymbol(rhs);
+//					if (SymbolAdapter.isSort(rhs)) {
+//						return true;
+//					}
+//				}
 			}
 		} else if (isList(tree)
 				&& SymbolAdapter.isCf(ProductionAdapter.getRhs(prod))) {

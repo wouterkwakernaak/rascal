@@ -78,8 +78,7 @@ public class TypeDeclarationEvaluator {
 		if (type.isNonterminal()) {
 			String nt = ((Nonterminal.Lexical) type.getNonterminal()).getString();
 		
-			// TODO: at some point the cf wrapper needs to be dropped here...
-			env.concreteSyntaxType(nt, (IConstructor) Factory.Symbol_Cf.make(vf, Factory.Symbol_Sort.make(vf, vf.string(nt))));
+			env.concreteSyntaxType(nt, (IConstructor) Factory.Symbol_Sort.make(vf, vf.string(nt)));
 		}
 		// do nothing
 	}

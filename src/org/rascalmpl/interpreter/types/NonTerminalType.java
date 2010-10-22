@@ -111,7 +111,7 @@ public class NonTerminalType extends ExternalType {
 	}
 	
 	public boolean isConcreteCFList() {
-		return SymbolAdapter.isCf(symbol) && (SymbolAdapter.isPlusList(symbol) || SymbolAdapter.isStarList(symbol));
+		return false;
 	}
 	
 	@Override

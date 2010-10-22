@@ -46,7 +46,7 @@ public class SymbolAdapter {
 	}
 
 	public static IConstructor getSymbol(IConstructor tree) {
-		if (isLabel(tree) || isCf(tree) || isLex(tree) || isOpt(tree) || isIterPlus(tree) || isIterPlusSep(tree) || isIterStar(tree) || isIterStarSep(tree) || isIterPlusSeps(tree) || isIterStarSeps(tree)) {
+		if (isLabel(tree) || isLex(tree) || isCf(tree) || isOpt(tree) || isIterPlus(tree) || isIterPlusSep(tree) || isIterStar(tree) || isIterStarSep(tree) || isIterPlusSeps(tree) || isIterStarSeps(tree)) {
 			return ((IConstructor) tree.get("symbol"));
 		}
 		
@@ -159,16 +159,6 @@ public class SymbolAdapter {
 	}
 	
 	public static boolean isCfOptLayout(IConstructor tree) {
-		if (isCf(tree)) {
-			tree = getSymbol(tree);
-			if (isOpt(tree)) {
-				tree = getSymbol(tree);
-				if (isLayout(tree)) {
-					return true;
-				}
-			}
-		}
-		
 		return false;
 	}
 	private static boolean isOpt(IConstructor tree) {

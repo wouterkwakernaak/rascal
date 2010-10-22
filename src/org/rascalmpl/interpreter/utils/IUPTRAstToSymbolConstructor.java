@@ -86,16 +86,6 @@ public class IUPTRAstToSymbolConstructor extends NullASTVisitor<IConstructor> {
 			return vf.constructor(Factory.Symbol_CiLit, vf.string(str));
 		}
 		
-		if (name.equals("cf")) {
-			IConstructor arg = x.getArguments().get(0).accept(this);
-			return vf.constructor(Factory.Symbol_Cf, arg);
-		}
-		
-		if (name.equals("lex")) {
-			IConstructor arg = x.getArguments().get(0).accept(this);
-			return vf.constructor(Factory.Symbol_Lex, arg);
-		}
-		
 		if (name.equals("empty")) {
 			return vf.constructor(Factory.Symbol_Empty);	
 		}

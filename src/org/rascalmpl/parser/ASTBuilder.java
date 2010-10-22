@@ -855,13 +855,10 @@ public class ASTBuilder {
 			// the declared type inside the pattern must match the produced type outside the brackets
 			// "<" Pattern ">" -> STAT in the grammar and "<STAT t>" in the pattern. STAT == STAT.
 			// TODO: watch out when Cf is removed from typeToSymbol after bootstrapping!
-			if (type.equals(expected) || SymbolAdapter.getSymbol((IConstructor) type).equals(expected)) {
+			if (type.equals(expected) ) {
 				return true;
 			}
 			if (SymbolAdapter.isAnyList((IConstructor) type)) {
-				if (SymbolAdapter.isCf((IConstructor) type) || SymbolAdapter.isLex((IConstructor) type)) {
-					type = SymbolAdapter.getSymbol((IConstructor) type);
-				}
 				IConstructor elem = SymbolAdapter.getSymbol((IConstructor) type);
 				return elem.equals(expected);
 			}
@@ -873,7 +870,7 @@ public class ASTBuilder {
 
 			// the declared type inside the pattern must match the produced type outside the brackets
 			// "<" [Type] Pattern ">" -> STAT in the grammar and "<[STAT] pattern>" in the pattern. STAT == STAT.
-			if (type.equals(expected) || SymbolAdapter.getSymbol((IConstructor) type).equals(expected)) {
+			if (type.equals(expected) ) {
 				return true;
 			}
 			return false;

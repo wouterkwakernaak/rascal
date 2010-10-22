@@ -34,7 +34,7 @@ public class ProductionAdapter {
 	}
 	
 	public static boolean isContextFree(IConstructor tree) {
-		return SymbolAdapter.isCf(getRhs(tree));
+		return false;
 	}
 	
 	public static boolean isCfOptLayout(IConstructor tree) {
@@ -45,23 +45,8 @@ public class ProductionAdapter {
 		return SymbolAdapter.isLayout(getRhs(tree));
 	}
 	
-	public static boolean hasSortName(IConstructor tree) {
-		IConstructor rhs = getRhs(tree);
-		if (SymbolAdapter.isCf(rhs) || SymbolAdapter.isLex(rhs)) {
-			rhs = SymbolAdapter.getSymbol(rhs);
-			if (SymbolAdapter.isSort(rhs) || SymbolAdapter.isParameterizedSort(rhs)){
-				return true;
-			}
-		}
-		return false;
-	}
-	
 	public static String getSortName(IConstructor tree) {
 		IConstructor rhs = getRhs(tree);
-		
-		if (SymbolAdapter.isCf(rhs) || SymbolAdapter.isLex(rhs)) {
-			rhs = SymbolAdapter.getSymbol(rhs);
-		}
 		
 		if (SymbolAdapter.isSort(rhs) || SymbolAdapter.isParameterizedSort(rhs)){
 			return SymbolAdapter.getName(rhs);

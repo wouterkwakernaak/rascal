@@ -29,12 +29,10 @@ public class Symbols {
 	
 	public static IValue typeToSymbol(Type type) {
 		if (type.isUser()) {
-			// TODO remove Cf when bootstrapped
-			return Factory.Symbol_Cf.make(factory, Factory.Symbol_Sort.make(factory, factory.string(Names.name(Names.lastName(type.getUser().getName())))));
+			return Factory.Symbol_Sort.make(factory, factory.string(Names.name(Names.lastName(type.getUser().getName()))));
 		}
 		else if (type.isSymbol()) {
-			// TODO remove Cf when bootstrapped
-			return Factory.Symbol_Cf.make(factory, symbolAST2SymbolConstructor(type.getSymbol()));
+			return symbolAST2SymbolConstructor(type.getSymbol());
 		}
 			
 	    return null;

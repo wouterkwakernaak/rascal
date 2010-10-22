@@ -86,24 +86,7 @@ public class ConcreteConstructorFunction extends ConstructorFunction {
 	private int getDelta(IConstructor prod) {
 		IConstructor rhs = ProductionAdapter.getRhs(prod);
 		
-		if (SymbolAdapter.isLex(rhs)) {
-			rhs = SymbolAdapter.getSymbol(rhs);
-			
-			if (SymbolAdapter.isIterPlusSep(rhs) || SymbolAdapter.isIterStarSep(rhs)) {
-				return 1;
-			}
-			return 0;
-		}
-		else if (SymbolAdapter.isCf(rhs)) {
-			rhs = SymbolAdapter.getSymbol(rhs);
-
-			if (SymbolAdapter.isIterPlusSep(rhs) || SymbolAdapter.isIterStarSep(rhs)) {
-				return 3;
-			}
-			
-			return 1;
-		}
-		else if (SymbolAdapter.isIterPlusSeps(rhs) || SymbolAdapter.isIterStarSeps(rhs)) {
+		if (SymbolAdapter.isIterPlusSeps(rhs) || SymbolAdapter.isIterStarSeps(rhs)) {
 			return SymbolAdapter.getSeparators(rhs).length();
 		}
 		else {
