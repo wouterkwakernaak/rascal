@@ -819,25 +819,40 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 	}
 
 
-	public void reloadModule(String name) {
+	public void reloadModule(String name, URI errorLocation) {
+		if (!heap.existsModule(name)) {
+			return;
+		}
+		else {
+			heap.removeModule(heap.getModule(name));
+		}
+		
+		ModuleEnvironment env =  new ModuleEnvironment(name);
+		heap.addModule(env);
+
 		try {
-			if (!heap.existsModule(name)) {
-				return; // ignore modules we don't know about
-			}
-
-			ModuleEnvironment mod = heap.resetModule(name);
-
-			Module module = loadModule(name, mod);
-
+			Module module = loadModule(name, env);
+	
 			if (module != null) {
 				if (!getModuleName(module).equals(name)) {
-					throw new ModuleNameMismatchError(getModuleName(module), name, getCurrentAST());
+					throw new ModuleNameMismatchError(getModuleName(module), name, vf.sourceLocation(errorLocation));
 				}
+				heap.setModuleURI(name, module.getLocation().getURI());
+				env.setInitialized(false);
 				module.accept(this);
 			}
 		}
+		catch (StaticError e) {
+			heap.removeModule(env);
+			throw e;
+		}
+		catch (org.rascalmpl.interpreter.control_exceptions.Throw e) {
+			heap.removeModule(env);
+			throw e;
+		} 
 		catch (IOException e) {
-			throw new ModuleLoadError(name, e.getMessage(), getCurrentAST());
+			heap.removeModule(env);
+			throw new ModuleLoadError(name, e.getMessage(), vf.sourceLocation(errorLocation));
 		}
 	}
 	
@@ -1335,9 +1350,11 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 			throw e;
 		} 
 		catch (IOException e) {
+			heap.removeModule(env);
 			throw new ModuleLoadError(name, e.getMessage(), x);
 		}
 
+		heap.removeModule(env);
 		throw new ImplementationError("Unexpected error while parsing module " + name + " and building an AST for it ", x.getLocation());
 	}
 

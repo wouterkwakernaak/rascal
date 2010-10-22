@@ -62,6 +62,19 @@ public class ModuleEnvironment extends Environment {
 		this.typeStore = new TypeStore();
 		this.tests = new LinkedList<Test>();
 		this.initialized = false;
+		this.bootstrap = false;
+	}
+	
+	public void reset() {
+		super.reset();
+		this.importedModules = new HashMap<String, ModuleEnvironment>();
+		this.extensions = new HashMap<Type, List<Type>>();
+		this.concreteSyntaxTypes = new HashMap<String, NonTerminalType>();
+		this.typeStore = new TypeStore();
+		this.tests = new LinkedList<Test>();
+		this.productions = new HashSet<IValue>();
+		this.initialized = false;
+		this.bootstrap = false;
 	}
 	
 	@Override
@@ -459,16 +472,7 @@ public class ModuleEnvironment extends Environment {
 		this.initialized = init;
 	}
 
-	public void reset() {
-		super.reset();
-		this.importedModules = new HashMap<String, ModuleEnvironment>();
-		this.extensions = new HashMap<Type, List<Type>>();
-		this.concreteSyntaxTypes = new HashMap<String, NonTerminalType>();
-		this.typeStore = new TypeStore();
-		this.tests = new LinkedList<Test>();
-		this.productions = new HashSet<IValue>();
-		this.initialized = false;
-	}
+	
 
 	public void setBootstrap(boolean needBootstrapParser) {
 		this.bootstrap = needBootstrapParser;
