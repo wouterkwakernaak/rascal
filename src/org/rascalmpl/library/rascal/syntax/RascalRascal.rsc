@@ -627,8 +627,6 @@ syntax Statement
 	  }
 	}
 	| AssertWithMessage: "assert" Expression expression ":" Expression message ";" 
-	| FunctionDeclaration: FunctionDeclaration functionDeclaration 
-	| VariableDeclaration: LocalVariableDeclaration declaration ";" 
 	| Visit: Label label Visit visit 
 	| While: Label label "while" "(" {Expression ","}+ conditions ")" Statement body 
 	| DoWhile: Label label "do" Statement body "while" "(" Expression condition ")" ";" 
@@ -651,7 +649,10 @@ syntax Statement
 		        | Assignment: Assignable assignable Assignment operator Statement statement 
 		        | Append    : "append" DataTarget dataTarget Statement statement 
 	            )
-    ;
+    > FunctionDeclaration: FunctionDeclaration functionDeclaration 
+	| VariableDeclaration: LocalVariableDeclaration declaration ";"
+	; 
+	
     
 syntax StructuredType
 	= Default: BasicType basicType "[" {TypeArg ","}+ arguments "]" ;
@@ -760,7 +761,8 @@ syntax Type
 	| Selector: DataTypeSelector selector 
 	| Variable: TypeVar typeVar 
 	| Symbol: Symbol symbol {
-	   if (appl(prod(_,sort("Symbol"),attrs([_*,term(cons("Sort")),_*])),_) := symbol) {
+	   if (appl(prod(_,sort("Symbol"),attrs([_*,term(cons("Sort")),_*])),_) := symbol
+	     ||appl(prod(_,sort("Symbol"),attrs([_*,term(cons("Alternative")),_*])),_) := symbol) {
 	    fail;
 	   }
 	} 

@@ -72,11 +72,11 @@ public str generate(str package, str name, str super, int () newItem, bool callS
       gr.rules[nt] = {choice(nt, gr.rules[nt])};
     }
     
-    println("extracting actions");
-    <gr, actions> = extractActions(gr);
-    
     println("expanding parameterized symbols");
     gr = expandParameterizedSymbols(gr);
+    
+    println("extracting actions");
+    <gr, actions> = extractActions(gr);
    
     println("generating stubs for regular");
     gr = makeRegularStubs(gr);
