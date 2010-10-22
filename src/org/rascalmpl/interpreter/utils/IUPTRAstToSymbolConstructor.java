@@ -193,10 +193,6 @@ public class IUPTRAstToSymbolConstructor extends NullASTVisitor<IConstructor> {
 			return vf.constructor(Factory.Symbol_Lit, vf.string(arg.getString()));
 		}
 		
-		if (name.equals("layout")) {
-			return vf.constructor(Factory.Symbol_Layout);
-		}
-		
 		if (name.equals("char-class")) {
 			java.util.List<Expression> args = x.getArguments();
 			IList ranges = vf.list(Factory.CharRange);

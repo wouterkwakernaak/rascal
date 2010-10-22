@@ -88,7 +88,6 @@ public class Factory {
 	public static final Type Symbol_ParameterizedSort = tf.constructor(uptr, Symbol, "parameterized-sort", tf.stringType(), "sort", tf.listType(Symbol), "parameters");
 	public static final Type Symbol_Parameter = tf.constructor(uptr, Symbol, "parameter", tf.stringType(), "name");
 	public static final Type Symbol_Strategy = tf.constructor(uptr, Symbol, "strategy", Symbol, "lhs", Symbol, "rhs");
-	public static final Type Symbol_Layout = tf.constructor(uptr, Symbol, "layout");
 	public static final Type Symbol_LayoutX = tf.constructor(uptr, Symbol, "layouts", tf.stringType(), "name");
 	public static final Type Symbol_StartOfLine = tf.constructor(uptr, Symbol, "start-of-line");
 	public static final Type Symbol_EndOfLine = tf.constructor(uptr, Symbol, "end-of-line");

@@ -85,27 +85,8 @@ public class SymbolAdapter {
 		return tree.getConstructorType() == Factory.Symbol_IterPlus;
 	}
 	
-	public static boolean isLayout(IConstructor tree) {
-		if(isProductionList(tree)){
-			return isLayout((IConstructor) tree.get("rhs"));
-		}
-		if (isOpt(tree) || isIterPlus(tree) || isIterStar(tree)){
-			IConstructor t = (IConstructor) tree.get("symbol");
-			if(t.getConstructorType() == Factory.Symbol_Layout){
-				return true;
-			}
-			return isLayout(t);
-		}
-		
-		return (tree.getConstructorType() == Factory.Symbol_Layout) || tree.getConstructorType() == Factory.Symbol_LayoutX;
-	}
-	
 	public static boolean isLayouts(IConstructor tree) {
 		return tree.getConstructorType() == Factory.Symbol_LayoutX;
-	}
-	
-	private static boolean isProductionList(IConstructor tree){
-		return (tree.getConstructorType() == Factory.Production_List);
 	}
 	
 	public static boolean isStarList(IConstructor tree) {

@@ -42,7 +42,7 @@ public class ProductionAdapter {
 	}
 	
 	public static boolean isLayout(IConstructor tree) {
-		return SymbolAdapter.isLayout(getRhs(tree));
+		return SymbolAdapter.isLayouts(getRhs(tree));
 	}
 	
 	public static String getSortName(IConstructor tree) {
