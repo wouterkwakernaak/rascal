@@ -6,11 +6,11 @@
 }
 @bootstrapParser
 module rascal::syntax::Definition
-   
+     
 import rascal::syntax::Grammar;
 import rascal::syntax::RascalRascal;
 import List;
-import String;
+import String; 
 import ParseTree;
 import IO;  
 import Integer;

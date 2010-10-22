@@ -1283,7 +1283,11 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 		ActionExecutor exec = new ActionExecutor(this, new RascalRascal());
 
 		// take care of imports and declare syntax
-		preModule.accept(this);
+		Result<IValue> name = preModule.accept(this);
+		
+		if (env == null) {
+			env = heap.getModule(((IString) name.getValue()).getValue());
+		}
 
 		ISet prods = env.getProductions();
 		if (prods.isEmpty() || !preModule.toString().contains("`")) {
