@@ -21,7 +21,7 @@ import Integer;
 } 
 public Grammar module2grammar(Module mod) {
   return syntax2grammar(collect(mod));
-}
+} 
   
 public Grammar imports2grammar(set[Import] imports) {
   return syntax2grammar({ s | (Import) `<SyntaxDefinition s>` <- imports});

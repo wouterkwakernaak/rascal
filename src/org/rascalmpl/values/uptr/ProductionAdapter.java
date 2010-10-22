@@ -87,9 +87,6 @@ public class ProductionAdapter {
 
 	public static boolean isSeparatedList(IConstructor tree) {
 		IConstructor rhs = getRhs(tree);
-		if (SymbolAdapter.isLex(rhs) || SymbolAdapter.isCf(rhs)) {
-			rhs = SymbolAdapter.getSymbol(rhs);
-		}
 		return SymbolAdapter.isIterPlusSep(rhs) || SymbolAdapter.isIterStarSep(rhs) || SymbolAdapter.isIterPlusSeps(rhs) || SymbolAdapter.isIterStarSeps(rhs);
 	}
 
@@ -171,11 +168,6 @@ public class ProductionAdapter {
 			
 			if (SymbolAdapter.isEqual(surroundingRhs,nestedRhs)) {
 				return true;
-			}
-			
-			if ((SymbolAdapter.isCf(surroundingRhs) && SymbolAdapter.isCf(nestedRhs)) || (SymbolAdapter.isLex(surroundingRhs) && SymbolAdapter.isLex(nestedRhs))) {
-				nestedRhs = SymbolAdapter.getSymbol(nestedRhs);
-				surroundingRhs = SymbolAdapter.getSymbol(surroundingRhs);
 			}
 			
 			if ((SymbolAdapter.isIterPlusSep(surroundingRhs) && SymbolAdapter.isIterStarSep(nestedRhs)) || (SymbolAdapter.isIterStarSep(surroundingRhs) && SymbolAdapter.isIterPlusSep(nestedRhs))) {

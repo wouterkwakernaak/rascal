@@ -976,9 +976,6 @@ public class ASTBuilder {
 			IConstructor prod = TreeAdapter.getProduction(tree);
 			IConstructor rhs = ProductionAdapter.getRhs(prod);
 			
-			if (SymbolAdapter.isCf(rhs)) {
-				rhs = SymbolAdapter.getSymbol(rhs);
-			}
 			if (SymbolAdapter.isParameterizedSort(rhs) && SymbolAdapter.getName(rhs).equals("_WrappedLiteral")) {
 				return true;
 			}

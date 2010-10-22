@@ -444,9 +444,6 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 			System.err.println("Generating a parser");
 			IGLL parser = getObjectParser();
 			String name = "";
-			if (SymbolAdapter.isCf(startSort)) {
-				startSort = SymbolAdapter.getSymbol(startSort);
-			}
 			if (SymbolAdapter.isStart(startSort)) {
 				name = "start__";
 				startSort = SymbolAdapter.getStart(startSort);
@@ -473,9 +470,6 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 		System.err.println("Generating a parser");
 		IGLL parser = getObjectParser();
 		String name = "";
-		if (SymbolAdapter.isCf(startSort)) {
-			startSort = SymbolAdapter.getSymbol(startSort);
-		}
 		if (SymbolAdapter.isStart(startSort)) {
 			name = "start__";
 			startSort = SymbolAdapter.getStart(startSort);
@@ -2560,40 +2554,15 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 					else {
 						// make sure to remove surrounding sep
 						if (!first) {
-							if (SymbolAdapter.isCf(sym)) {
-								IConstructor listSym = SymbolAdapter.getSymbol(sym);
-								if (SymbolAdapter.isIterStar(listSym)) {
-									results.remove(results.size() - 1);
-								}
-								else if (SymbolAdapter.isIterStarSep(listSym)) {
-									results.remove(results.size() - 1);
-									results.remove(results.size() - 1);
-									results.remove(results.size() - 1);
-								}
-							}
-							if (SymbolAdapter.isLex(sym)) {
-								IConstructor listSym = SymbolAdapter.getSymbol(sym);
-								if (SymbolAdapter.isIterStarSep(listSym)) {
-									results.remove(results.size() - 1);
+							if (SymbolAdapter.isIterStarSeps(sym)) {
+								for (@SuppressWarnings("unused") IValue sep : SymbolAdapter.getSeparators(sym)) {
 									results.remove(results.size() - 1);
 								}
 							}
 						}
 						else {
-							if (SymbolAdapter.isCf(sym)) {
-								IConstructor listSym = SymbolAdapter.getSymbol(sym);
-								if (SymbolAdapter.isIterStar(listSym)) {
-									skip = 1;
-								}
-								else if (SymbolAdapter.isIterStarSep(listSym)) {
-									skip = 3;
-								}
-							}
-							if (SymbolAdapter.isLex(sym)) {
-								IConstructor listSym = SymbolAdapter.getSymbol(sym);
-								if (SymbolAdapter.isIterStarSep(listSym)) {
-									skip = 2;
-								}
+							if (SymbolAdapter.isIterStarSeps(sym)) {
+								skip = SymbolAdapter.getSeparators(sym).length();
 							}
 						}
 					}

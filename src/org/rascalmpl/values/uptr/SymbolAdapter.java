@@ -132,25 +132,14 @@ public class SymbolAdapter {
 	}
 	
 	public static boolean isStarList(IConstructor tree) {
-		if (isCf(tree) || SymbolAdapter.isLex(tree)) {
-			tree = SymbolAdapter.getSymbol(tree);
-		}
-		
 		return isIterStar(tree) || isIterStarSep(tree);
 	}
 	
 	public static boolean isPlusList(IConstructor tree) {
-		if (isCf(tree) || SymbolAdapter.isLex(tree)) {
-			tree = getSymbol(tree);
-		}
-		
 		return isIterPlus(tree) || isIterPlusSep(tree) || isIterPlusSep(tree) || isIterStarSeps(tree);
 	}
 	
 	public static boolean isSepList(IConstructor tree){
-		if (isCf(tree) || SymbolAdapter.isLex(tree)) {
-			tree = getSymbol(tree);
-		}
 		return isIterStarSep(tree) || isIterPlusSep(tree) || isIterPlusSeps(tree) || isIterStarSeps(tree);
 	}
 	
@@ -170,9 +159,6 @@ public class SymbolAdapter {
 	}
 
 	public static String toString(IConstructor symbol) {
-		if (isCf(symbol) || isLex(symbol)) {
-			return toString(getSymbol(symbol));
-		}
 		if (isSort(symbol)) {
 			return getName(symbol);
 		}
@@ -339,14 +325,6 @@ public class SymbolAdapter {
 	public static boolean isEqual(IConstructor fst, IConstructor snd) {
 		if (fst.isEqual(snd)) {
 			return true;
-		}
-		
-		if (isLex(fst) || isCf(fst)) {
-			fst = getSymbol(fst);
-		}
-		
-		if (isLex(snd) || isCf(snd)) {
-			snd = getSymbol(snd);
 		}
 		
 		if (isSort(fst) && isSort(snd)) {
