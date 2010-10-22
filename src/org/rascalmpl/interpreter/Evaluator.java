@@ -5,13 +5,11 @@ import static org.rascalmpl.interpreter.result.ResultFactory.makeResult;
 import static org.rascalmpl.interpreter.result.ResultFactory.nothing;
 import static org.rascalmpl.interpreter.utils.Utils.unescape;
 
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.math.BigInteger;
 import java.net.URI;
@@ -41,8 +39,6 @@ import org.eclipse.imp.pdb.facts.IValueFactory;
 import org.eclipse.imp.pdb.facts.IWriter;
 import org.eclipse.imp.pdb.facts.exceptions.FactTypeUseException;
 import org.eclipse.imp.pdb.facts.exceptions.UndeclaredFieldException;
-import org.eclipse.imp.pdb.facts.io.PBFReader;
-import org.eclipse.imp.pdb.facts.io.PBFWriter;
 import org.eclipse.imp.pdb.facts.type.Type;
 import org.eclipse.imp.pdb.facts.type.TypeFactory;
 import org.eclipse.imp.pdb.facts.type.TypeStore;
@@ -289,8 +285,6 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 	private static boolean doProfiling = false;
 	private Profiler profiler;
 	
-	private boolean saveParsedModules = false;
-
 	private final TypeDeclarationEvaluator typeDeclarator;
 	protected IEvaluator<IMatchingResult> patternEvaluator;
 
@@ -1048,7 +1042,6 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 		out.println(":set <option> <expression> Sets an option");
 		out.println("e.g. profiling    true/false");
 		out.println("     tracing      true/false");
-		out.println("     saveBinaries true/false");
 		out.println(":edit <modulename>         Opens an editor for that module");
 		out.println(":modules                   Lists all imported modules");
 		out.println(":test                      Runs all unit tests currently loaded");
@@ -1198,48 +1191,6 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 		addImportToCurrentModule(x, parseTreeModName);
 	}
 
-	private IConstructor tryLoadBinary(String name){
-		InputStream inputStream = null;
-		
-		try {
-			inputStream = rascalPathResolver.getBinaryInputStream(URI.create("rascal:///" + name));
-			if(inputStream == null) {
-				return null;
-			}
-
-			PBFReader pbfReader = new PBFReader();
-			return (IConstructor) pbfReader.read(ValueFactoryFactory.getValueFactory(), inputStream);
-		}
-		catch (IOException e) {
-			return null;
-		}
-		finally {
-			try {
-				if (inputStream != null) {
-					inputStream.close();
-				}
-			}
-			catch (IOException ioex){
-				throw new ImplementationError(ioex.getMessage(), ioex);
-			}
-		}
-	}
-	
-	private void writeBinary(String name, IConstructor tree) throws IOException {
-		OutputStream outputStream = null;
-		PBFWriter pbfWriter = new PBFWriter();
-		
-		try{
-			outputStream = new BufferedOutputStream(rascalPathResolver.getBinaryOutputStream(URI.create("rascal:///" + name)));
-			pbfWriter.write(tree, outputStream);
-		}
-		finally{
-			if (outputStream != null) {
-				outputStream.flush();
-				outputStream.close();
-			}
-		}
-	}
 	
 	/**
 	 * Parse a module. Practical for implementing IDE features or features that use Rascal to implement Rascal.
@@ -1340,20 +1291,7 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 	
 	private Module loadModule(String name, ModuleEnvironment env) throws IOException {
 		try{
-			IConstructor tree = null;
-			
-			if (!saveParsedModules && !(parser instanceof NewRascalParser)) {
-				tree = tryLoadBinary(name);
-			}
-			
-			if (tree == null) {
-				tree = parseModule(URI.create("rascal:///" + name), env);
-			}
-			
-			if (saveParsedModules && !(parser instanceof NewRascalParser)) {
-				writeBinary(name, tree);
-			}
-			
+			IConstructor tree = parseModule(URI.create("rascal:///" + name), env);
 			ASTBuilder astBuilder = new ASTBuilder(ASTFactoryFactory.getASTFactory());
 			Module moduleAst = astBuilder.buildModule(tree);
 			
@@ -4124,14 +4062,6 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 		else {
 			AbstractFunction.setCallTracing(false);
 		}
-		
-		String binaryWriting = System.getProperty("rascal.config.saveBinaries");
-	    if (binaryWriting != null) {
-	    	saveParsedModules = binaryWriting.equals("true");
-	    }
-	    else {
-	    	saveParsedModules = false;
-	    }
 	}
 
 	public Stack<Environment> getCallStack() {
