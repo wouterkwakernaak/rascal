@@ -36,7 +36,6 @@ import org.rascalmpl.interpreter.utils.Names;
 import org.rascalmpl.interpreter.utils.Symbols;
 import org.rascalmpl.values.ValueFactoryFactory;
 import org.rascalmpl.values.uptr.Factory;
-import org.rascalmpl.values.uptr.ParsetreeAdapter;
 import org.rascalmpl.values.uptr.ProductionAdapter;
 import org.rascalmpl.values.uptr.SymbolAdapter;
 import org.rascalmpl.values.uptr.TreeAdapter;
@@ -78,7 +77,7 @@ public class ASTBuilder {
 	}
 	
 	public Module buildModule(IConstructor parseTree) throws FactTypeUseException {
-		IConstructor tree = parseTree.getConstructorType() == Factory.ParseTree_Top ? ParsetreeAdapter.getTop(parseTree) : parseTree;
+		IConstructor tree =  parseTree;
 		
 		if (TreeAdapter.isAppl(tree)) {
 			if (sortName(tree).equals(MODULE_SORT)) {
@@ -140,7 +139,7 @@ public class ASTBuilder {
 	
 	@SuppressWarnings("unchecked")
 	private <T extends AbstractAST> T buildSort(IConstructor parseTree, String sort) {
-		IConstructor top = (IConstructor) parseTree.get("top");
+		IConstructor top = parseTree;
 		
 		if (TreeAdapter.isAppl(top)) {
 			IConstructor tree = (IConstructor) TreeAdapter.getArgs(top).get(1);

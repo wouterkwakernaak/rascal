@@ -265,7 +265,6 @@ import org.rascalmpl.values.ValueFactoryFactory;
 import org.rascalmpl.values.errors.SubjectAdapter;
 import org.rascalmpl.values.errors.SummaryAdapter;
 import org.rascalmpl.values.uptr.Factory;
-import org.rascalmpl.values.uptr.ParsetreeAdapter;
 import org.rascalmpl.values.uptr.SymbolAdapter;
 import org.rascalmpl.values.uptr.TreeAdapter;
 
@@ -690,10 +689,6 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 			
 			tree = new ActionExecutor(this, parser.getInfo()).execute(tree);
 			
-			if (tree.getConstructorType() == Factory.ParseTree_Summary) {
-				throw parseError(tree, location);
-			}
-			
 			Command stat = builder.buildCommand(tree);
 			
 			if (stat == null) {
@@ -718,10 +713,6 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 			}
 			
 			tree = new ActionExecutor(this, ((Parser) parser).getInfo()).execute(tree);
-			
-			if (tree.getConstructorType() == Factory.ParseTree_Summary) {
-				throw parseError(tree, location);
-			}
 			
 			return tree;
 		} catch (IOException e) {
@@ -1237,7 +1228,7 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 	
 	public IConstructor parseModule(char[] data, URI location, ModuleEnvironment env) throws IOException {
 		IConstructor prefix = parser.preParseModule(location, data);
-		Module preModule = builder.buildModule((IConstructor) TreeAdapter.getArgs(ParsetreeAdapter.getTop(prefix)).get(1));
+		Module preModule = builder.buildModule((IConstructor) TreeAdapter.getArgs(prefix).get(1));
 		ActionExecutor exec = new ActionExecutor(this, new RascalRascal());
 
 		// take care of imports and declare syntax
@@ -2784,11 +2775,6 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 				String command = '(' + expected.toString() + ')' + '`' + ((IString) result.getValue()).getValue() + '`';
 				IConstructor tree = parser.parseCommand(x.getLocation().getURI(), command);
 
-				if (tree.getConstructorType() == Factory.ParseTree_Summary) {
-					throw RuntimeExceptionFactory.parseError(x.getPattern().getLocation(), x.getPattern(), getStackTrace());
-				}
-
-				tree = ParsetreeAdapter.getTop(tree); // start rule
 				tree = (IConstructor) TreeAdapter.getArgs(tree).get(1); // top command expression
 				tree = (IConstructor) TreeAdapter.getArgs(tree).get(0); // typed quoted embedded fragment
 				tree = (IConstructor) TreeAdapter.getArgs(tree).get(8); // wrapped string between `...`

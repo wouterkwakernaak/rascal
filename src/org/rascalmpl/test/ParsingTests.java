@@ -15,7 +15,6 @@ import org.rascalmpl.ast.Module.Default;
 import org.rascalmpl.interpreter.env.ModuleEnvironment;
 import org.rascalmpl.parser.ASTBuilder;
 import org.rascalmpl.parser.Parser;
-import org.rascalmpl.values.uptr.Factory;
 
 public class ParsingTests extends TestCase {
 
@@ -38,15 +37,8 @@ public class ParsingTests extends TestCase {
 				fis = new FileInputStream(file);
 				
 				IConstructor tree = parser.parseModule(file.getAbsoluteFile().toURI(), fis,new ModuleEnvironment("***dummy***"));
-				
-				if (tree.getConstructorType() == Factory.ParseTree_Top) {
-					Module.Default module = (Default) new ASTBuilder(ASTFactoryFactory.getASTFactory()).buildModule(tree);
-					System.err.println("SUCCEEDED: " + module.getHeader());
-				} else {
-					System.err.println("FAILED: " + file + "\n\t" + tree);
-					failed = true;
-
-				}
+				Module.Default module = (Default) new ASTBuilder(ASTFactoryFactory.getASTFactory()).buildModule(tree);
+				System.err.println("SUCCEEDED: " + module.getHeader());
 			} catch (FactTypeUseException e) {
 				System.err.println("FAILED: " + file);
 				e.printStackTrace();

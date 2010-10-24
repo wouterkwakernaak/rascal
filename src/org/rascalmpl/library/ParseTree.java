@@ -1,10 +1,6 @@
 package org.rascalmpl.library;
 
-import java.io.IOException;
-import java.net.URI;
-
 import org.eclipse.imp.pdb.facts.IConstructor;
-import org.eclipse.imp.pdb.facts.IList;
 import org.eclipse.imp.pdb.facts.ISourceLocation;
 import org.eclipse.imp.pdb.facts.IString;
 import org.eclipse.imp.pdb.facts.IValue;
@@ -14,7 +10,6 @@ import org.rascalmpl.interpreter.IEvaluatorContext;
 import org.rascalmpl.interpreter.types.NonTerminalType;
 import org.rascalmpl.interpreter.types.ReifiedType;
 import org.rascalmpl.interpreter.utils.RuntimeExceptionFactory;
-import org.rascalmpl.values.uptr.ParsetreeAdapter;
 import org.rascalmpl.values.uptr.ProductionAdapter;
 import org.rascalmpl.values.uptr.SymbolAdapter;
 import org.rascalmpl.values.uptr.TreeAdapter;
@@ -32,7 +27,7 @@ public class ParseTree {
 		IConstructor startSort = checkPreconditions(start, reified);
 		
 		IConstructor pt = ctx.getEvaluator().parseObject(startSort, input.getURI());
-		pt = ParsetreeAdapter.getTop(pt);
+
 		if (TreeAdapter.isAppl(pt)) {
 			if (SymbolAdapter.isStart(ProductionAdapter.getRhs(TreeAdapter.getProduction(pt)))) {
 				pt = (IConstructor) TreeAdapter.getArgs(pt).get(1);
@@ -46,7 +41,14 @@ public class ParseTree {
 		IConstructor startSort = checkPreconditions(start, reified);
 		
 		IConstructor pt = ctx.getEvaluator().parseObject(startSort, input.getValue());
-		return ((IList) ParsetreeAdapter.getTop(pt).get("args")).get(1);
+		
+		if (TreeAdapter.isAppl(pt)) {
+			if (SymbolAdapter.isStart(ProductionAdapter.getRhs(TreeAdapter.getProduction(pt)))) {
+				pt = (IConstructor) TreeAdapter.getArgs(pt).get(1);
+			}
+		}
+		
+		return pt;
 	}
 	
 	public IString unparse(IConstructor tree) {

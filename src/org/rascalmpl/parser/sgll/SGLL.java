@@ -36,7 +36,6 @@ import org.rascalmpl.parser.sgll.util.ObjectIntegerKeyedHashMap;
 import org.rascalmpl.parser.sgll.util.RotatingQueue;
 import org.rascalmpl.parser.sgll.util.specific.PositionStore;
 import org.rascalmpl.values.ValueFactoryFactory;
-import org.rascalmpl.values.uptr.Factory;
 
 public abstract class SGLL implements IGLL{
 	private final static int STREAM_READ_SEGMENT_SIZE = 8192;
@@ -624,9 +623,9 @@ public abstract class SGLL implements IGLL{
 			AbstractContainerNode result = levelResultStoreMap.get(startNode.getName(), getResultStoreId(startNode.getId()));
 			if(result != null){
 				IConstructor resultTree = result.toTerm(new IndexedStack<AbstractNode>(), 0, new CycleMark(), positionStore);
-					if(resultTree != null){
-						return makeParseTree(resultTree); // Success.
-					}
+				if(resultTree != null){
+					return resultTree; // Success.
+				}
 			}
 		}
 		
@@ -648,10 +647,6 @@ public abstract class SGLL implements IGLL{
 			int column = positionStore.getColumn(errorLocation, line);
 			throw new SyntaxError("all trees were filtered", vf.sourceLocation(inputURI, errorLocation, 0, line + 1, line + 1, column, column));
 		}
-	}
-	
-	private IConstructor makeParseTree(IConstructor tree){
-		return vf.constructor(Factory.ParseTree_Top, tree, vf.integer(-1)); // Amb counter is unsupported.
 	}
 	
 	protected IConstructor parseFromString(AbstractStackNode startNode, URI inputURI, String inputString){

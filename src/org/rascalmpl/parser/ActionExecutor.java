@@ -6,7 +6,6 @@ import org.eclipse.imp.pdb.facts.IConstructor;
 import org.eclipse.imp.pdb.facts.IList;
 import org.eclipse.imp.pdb.facts.IListWriter;
 import org.eclipse.imp.pdb.facts.ISetWriter;
-import org.eclipse.imp.pdb.facts.ISourceLocation;
 import org.eclipse.imp.pdb.facts.IValue;
 import org.eclipse.imp.pdb.facts.type.Type;
 import org.eclipse.imp.pdb.facts.type.TypeFactory;
@@ -53,23 +52,12 @@ public class ActionExecutor {
 	 * Executes all actions on a forest, possibly filtering it and/or having effect on the given scope.
 	 */
 	public IConstructor execute(IConstructor forest) {
-		if (forest.getConstructorType() == Factory.ParseTree_Top) {
-			IConstructor result = (IConstructor) forest.get("top");
-			result = rec(result);
-			if (result == filtered) {
-				// TODO: proper error messaging
-				throw new ImplementationError("all trees where filtered, the last one at", (ISourceLocation) lastFiltered.getAnnotation("loc"));
-			}
-			return forest.set("top", result);
+		IConstructor result = rec(forest);
+		if (result == filtered) {
+			// TODO: proper error messaging
+			throw new ImplementationError("all trees where filtered");
 		}
-		else {
-			IConstructor result = rec(forest);
-			if (result == filtered) {
-				// TODO: proper error messaging
-				throw new ImplementationError("all trees where filtered");
-			}
-			return result;
-		}
+		return result;
 	}
 	
 	private IConstructor rec(IConstructor forest) {

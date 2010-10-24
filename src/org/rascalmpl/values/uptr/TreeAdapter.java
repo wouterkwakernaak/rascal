@@ -3,22 +3,17 @@ package org.rascalmpl.values.uptr;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.MalformedURLException;
-import java.net.URI;
 
 import org.eclipse.imp.pdb.facts.IConstructor;
 import org.eclipse.imp.pdb.facts.IInteger;
 import org.eclipse.imp.pdb.facts.IList;
 import org.eclipse.imp.pdb.facts.IListWriter;
 import org.eclipse.imp.pdb.facts.ISet;
-import org.eclipse.imp.pdb.facts.ISetWriter;
 import org.eclipse.imp.pdb.facts.ISourceLocation;
 import org.eclipse.imp.pdb.facts.IValue;
-import org.eclipse.imp.pdb.facts.IValueFactory;
 import org.eclipse.imp.pdb.facts.exceptions.FactTypeUseException;
 import org.eclipse.imp.pdb.facts.visitors.VisitorException;
 import org.rascalmpl.interpreter.asserts.ImplementationError;
-import org.rascalmpl.parser.MappingsCache;
 import org.rascalmpl.values.ValueFactoryFactory;
 import org.rascalmpl.values.uptr.visitors.IdentityTreeVisitor;
 
@@ -351,9 +346,7 @@ public class TreeAdapter {
 	public static void unparse(IConstructor tree, OutputStream stream)
 			throws IOException, FactTypeUseException {
 		try {
-			if (tree.getConstructorType() == Factory.ParseTree_Top) {
-				tree.get("top").accept(new Unparser(stream));
-			} else if (tree.getType() == Factory.Tree) {
+			if (tree.getType() == Factory.Tree) {
 				tree.accept(new Unparser(stream));
 			} else {
 				throw new ImplementationError("Can not unparse this "

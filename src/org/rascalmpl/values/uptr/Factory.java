@@ -24,7 +24,6 @@ public class Factory {
 	private static TypeFactory tf = TypeFactory.getInstance();
 
 
-	public static final Type ParseTree = tf.abstractDataType(uptr, "ParseTree");
 	public static final Type Tree = tf.abstractDataType(uptr, "Tree");
 	public static final Type Production = tf.abstractDataType(uptr, "Production");
 	public static final Type Attributes = tf.abstractDataType(uptr, "Attributes");
@@ -38,9 +37,6 @@ public class Factory {
 	public static final Type Symbols = tf.listType(Symbol);
 	public static final Type CharRanges = tf.listType(CharRange);
 	public static final Type Alternatives = tf.setType(Tree);
-	
-	public static final Type ParseTree_Top = tf.constructor(uptr, ParseTree,"parsetree", Tree, "top", tf.integerType(), "amb_cnt");
-	public static final Type ParseTree_Summary = tf.constructor(uptr, ParseTree, "summary", tf.stringType(), "producer", tf.stringType(), "id", tf.listType(org.rascalmpl.values.errors.Factory.Error), "errors");
 	
 	public static final Type Constructor_Name = tf.constructor(uptr, Constructor, "cons", tf.stringType(), "name");
 	public static final Type Constructor_Category = tf.constructor(uptr, Constructor, "category", tf.stringType(), "name");
