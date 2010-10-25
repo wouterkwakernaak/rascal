@@ -83,6 +83,7 @@ public class ActionExecutor {
 			if (changed) {
 				oneChanged = true;
 			}
+			
 			if (newAlt != null) {
 				newAlternatives.insert(newAlt);
 				only = newAlt;
@@ -118,24 +119,24 @@ public class ActionExecutor {
 		
 		for (IValue child : children) {
 			IConstructor newChild = rec((IConstructor) child);
+			
+			if (changed) {
+				oneChanged = true;
+			}
+			
 			if (newChild == null) {
 				return null;
 			}
 			
 			if (!isList) {
 				newChildren.append(newChild);
-			}
-			else {
+			} else {
 				if (TreeAdapter.isList(newChild) && ProductionAdapter.shouldFlatten(prod,TreeAdapter.getProduction(newChild))) {
 					newChildren.appendAll(TreeAdapter.getArgs(newChild));
 				}
 				else {
 					newChildren.append(newChild);
 				}
-			}
-			
-			if (changed) {
-				oneChanged = true;
 			}
 			changed = false;
 		}
@@ -146,8 +147,7 @@ public class ActionExecutor {
 		
 		if(action != null){
 			if(changed){
-				IConstructor tree = forest.set("args", newChildren.done());
-				result = call(tree, action);
+				result = call(forest.set("args", newChildren.done()), action);
 				
 				if(result != null){
 					ISourceLocation loc = TreeAdapter.getLocation(forest);
