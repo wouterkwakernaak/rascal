@@ -109,9 +109,8 @@ public class ActionExecutor {
 			default: return forest.set("alternatives", newAlternatives.done());
 			}
 		}
-		else {
-			return forest;
-		}
+		
+		return forest;
 	}
 
 	private IConstructor recAppl(IConstructor forest) {
@@ -198,11 +197,9 @@ public class ActionExecutor {
 				eval.setCurrentAST(action.getExpression());
 				return (IConstructor) action.getExpression().accept(eval).getValue();
 			}
-			else {
-				for (Statement s : action.getStatements()) {
-					eval.setCurrentAST(s);
-					s.accept(eval);
-				}
+			for (Statement s : action.getStatements()) {
+				eval.setCurrentAST(s);
+				s.accept(eval);
 			}
 			
 			// nothing happens to the tree, but side-effects may have occurred

@@ -642,11 +642,11 @@ public abstract class SGLL implements IGLL{
 		if (lastRejectedLocation != null) {
 			throw new SyntaxError("all trees were filtered before character '" + input[lastRejectedLocation.getOffset()] + "'", lastRejectedLocation);
 		}
-		else {
-			int line = positionStore.findLine(errorLocation);
-			int column = positionStore.getColumn(errorLocation, line);
-			throw new SyntaxError("all trees were filtered", vf.sourceLocation(inputURI, errorLocation, 0, line + 1, line + 1, column, column));
-		}
+		
+		// Parse error.
+		int line = positionStore.findLine(errorLocation);
+		int column = positionStore.getColumn(errorLocation, line);
+		throw new SyntaxError("all trees were filtered", vf.sourceLocation(inputURI, errorLocation, 0, line + 1, line + 1, column, column));
 	}
 	
 	protected IConstructor parseFromString(AbstractStackNode startNode, URI inputURI, String inputString){

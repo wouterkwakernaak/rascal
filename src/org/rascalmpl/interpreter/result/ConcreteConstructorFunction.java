@@ -89,8 +89,7 @@ public class ConcreteConstructorFunction extends ConstructorFunction {
 		if (SymbolAdapter.isIterPlusSeps(rhs) || SymbolAdapter.isIterStarSeps(rhs)) {
 			return SymbolAdapter.getSeparators(rhs).length();
 		}
-		else {
-			return 0;
-		}
+		
+		return 0;
 	}
 }

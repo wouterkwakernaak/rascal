@@ -684,40 +684,32 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 	 * @return
 	 */
 	public Result<IValue> eval(String command, URI location) {
-		try {
-			IConstructor tree = parser.parseCommand(location, command);
-			
-			tree = new ActionExecutor(this, parser.getInfo()).execute(tree);
-			
-			Command stat = builder.buildCommand(tree);
-			
-			if (stat == null) {
-				throw new ImplementationError("Disambiguation failed: it removed all alternatives");
-			}
-			
-			return eval(stat);
-		} catch (IOException e) {
-			throw new ImplementationError("something weird happened", e);
+		IConstructor tree = parser.parseCommand(location, command);
+		
+		tree = new ActionExecutor(this, parser.getInfo()).execute(tree);
+		
+		Command stat = builder.buildCommand(tree);
+		
+		if (stat == null) {
+			throw new ImplementationError("Disambiguation failed: it removed all alternatives");
 		}
+		
+		return eval(stat);
 	}
 	
 	public IConstructor parseCommand(String command, URI location) {
 		IConstructor tree;
-		try {
-			if (!command.contains("`")) {
-				tree = parser.parseCommand(location, command);
-			}
-			else {
-				IGLL rp = getRascalParser(getCurrentModuleEnvironment());
-				tree = rp.parse("start__$Command", location, command);
-			}
-			
-			tree = new ActionExecutor(this, ((Parser) parser).getInfo()).execute(tree);
-			
-			return tree;
-		} catch (IOException e) {
-			throw new ImplementationError("something weird happened", e);
+		if (!command.contains("`")) {
+			tree = parser.parseCommand(location, command);
 		}
+		else {
+			IGLL rp = getRascalParser(getCurrentModuleEnvironment());
+			tree = rp.parse("start__$Command", location, command);
+		}
+		
+		tree = new ActionExecutor(this, ((Parser) parser).getInfo()).execute(tree);
+		
+		return tree;
 	}
 	
 	public IConstructor parseCommandExperimental(String command, URI location) {
@@ -814,10 +806,8 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 		if (!heap.existsModule(name)) {
 			return;
 		}
-		else {
-			heap.removeModule(heap.getModule(name));
-		}
 		
+		heap.removeModule(heap.getModule(name));
 		ModuleEnvironment env =  new ModuleEnvironment(name);
 		heap.addModule(env);
 
@@ -1242,11 +1232,10 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 		if (prods.isEmpty() || !preModule.toString().contains("`")) {
 			return exec.execute(parser.parseModule(location, data, env));
 		}
-		else {
-			IGLL mp = needBootstrapParser(preModule) ? new MetaRascalRascal() : getRascalParser(env);
-			IConstructor tree = mp.parse(Parser.START_MODULE, location, data);
-			return exec.execute(tree);
-		}
+		
+		IGLL mp = needBootstrapParser(preModule) ? new MetaRascalRascal() : getRascalParser(env);
+		IConstructor tree = mp.parse(Parser.START_MODULE, location, data);
+		return exec.execute(tree);
 	}
 	
 	private boolean needBootstrapParser(Module preModule) {
@@ -2771,18 +2760,13 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 
 		// TODO: clean up this hack
 		if (expected instanceof NonTerminalType && result.getType().isSubtypeOf(tf.stringType())) {
-			try {
-				String command = '(' + expected.toString() + ')' + '`' + ((IString) result.getValue()).getValue() + '`';
-				IConstructor tree = parser.parseCommand(x.getLocation().getURI(), command);
+			String command = '(' + expected.toString() + ')' + '`' + ((IString) result.getValue()).getValue() + '`';
+			IConstructor tree = parser.parseCommand(x.getLocation().getURI(), command);
 
-				tree = (IConstructor) TreeAdapter.getArgs(tree).get(1); // top command expression
-				tree = (IConstructor) TreeAdapter.getArgs(tree).get(0); // typed quoted embedded fragment
-				tree = (IConstructor) TreeAdapter.getArgs(tree).get(8); // wrapped string between `...`
-				return makeResult(expected, tree, this);
-
-			} catch (IOException e) {
-				throw RuntimeExceptionFactory.io(vf.string(e.getMessage()), x.getPattern(), getStackTrace());
-			}
+			tree = (IConstructor) TreeAdapter.getArgs(tree).get(1); // top command expression
+			tree = (IConstructor) TreeAdapter.getArgs(tree).get(0); // typed quoted embedded fragment
+			tree = (IConstructor) TreeAdapter.getArgs(tree).get(8); // wrapped string between `...`
+			return makeResult(expected, tree, this);
 		}
 		if (!result.getType().isSubtypeOf(expected)) {
 			throw new UnexpectedTypeError(expected, result.getType(), x.getPattern());

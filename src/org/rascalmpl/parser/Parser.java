@@ -14,9 +14,7 @@ public class Parser  {
 	public static final String START_MODULE = "start__$Module";
 	public static final String START_PRE_MODULE = "start__$PreModule";
 	
-	public IConstructor parseCommand(URI location,
-			String command)
-			throws IOException {
+	public IConstructor parseCommand(URI location, String command) {
 		return new RascalRascal().parse(START_COMMAND, location, command);
 	}
 
@@ -25,20 +23,20 @@ public class Parser  {
 		return new RascalRascal().parse(START_MODULE, location, source);
 	}
 	  
-	public IConstructor preParseModule(URI location, char[] data) throws IOException {
+	public IConstructor preParseModule(URI location, char[] data) {
 		return new RascalRascal().parse(START_PRE_MODULE, location, data);
 	}
 
 	public IConstructor parseModule(URI location,
-			char[] data, ModuleEnvironment env) throws IOException {
+			char[] data, ModuleEnvironment env) {
 		return new RascalRascal().parse(START_MODULE, location, data);
 	}
 
-	public IConstructor parseStream(InputStream source) throws IOException {
+	public IConstructor parseStream(InputStream source) {
 		throw new NotYetImplemented("new rascal parser");
 	}
 
-	public IConstructor parseString(String source) throws IOException {
+	public IConstructor parseString(String source) {
 		throw new NotYetImplemented("new rascal parser");
 	}
 

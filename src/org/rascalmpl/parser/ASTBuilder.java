@@ -184,9 +184,7 @@ public class ASTBuilder {
 			if (TreeAdapter.isRascalLexical(tree)) {
 				return buildLexicalNode(tree);
 			}
-			else {
-				return buildLexicalNode((IConstructor) ((IList) ((IConstructor) arg).get("args")).get(0));
-			}
+			return buildLexicalNode((IConstructor) ((IList) ((IConstructor) arg).get("args")).get(0));
 		}
 		
 		if (sortName(tree).equals("Pattern") && isEmbedding(tree)) {
