@@ -79,11 +79,12 @@ public class ActionExecutor {
 			IConstructor newAlt = rec((IConstructor) alt);
 			
 			if(newAlt != alt){
-				if(newAlt != null){
-					newAlternatives.insert(newAlt);
-					only = newAlt;
-				}
 				changed = true;
+			}
+			
+			if(newAlt != null){
+				newAlternatives.insert(newAlt);
+				only = newAlt;
 			}
 		}
 		
@@ -121,7 +122,7 @@ public class ActionExecutor {
 			if(!isList){
 				newChildren.append(newChild);
 			}else{
-				if (TreeAdapter.isList(newChild) && ProductionAdapter.shouldFlatten(prod,TreeAdapter.getProduction(newChild))) {
+				if(TreeAdapter.isList(newChild) && ProductionAdapter.shouldFlatten(prod,TreeAdapter.getProduction(newChild))){
 					newChildren.appendAll(TreeAdapter.getArgs(newChild));
 				}else{
 					newChildren.append(newChild);
@@ -131,17 +132,15 @@ public class ActionExecutor {
 		
 		LanguageAction action = info.getAction(prod);
 		
-		if(action != null){
-			if(changed){
-				result = call(forest.set("args", newChildren.done()), action);
-			}else{
-				result = call(forest, action);
-			}
-		}else if(changed){
+		result = forest;
+		if(changed){
 			result = forest.set("args", newChildren.done());
-		}else{
-			result = forest;
 		}
+		
+		if(action != null){
+			result = call(result, action);
+		}
+		
 		return result;
 	}
 
