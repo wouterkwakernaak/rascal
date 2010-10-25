@@ -35,7 +35,6 @@ public class ActionExecutor {
 	private final Evaluator eval;
 	private final IParserInfo info;
 	private final HashMap<IConstructor, IConstructor> cache;
-	private boolean changed = false;
 	
 	public ActionExecutor(Evaluator eval, IParserInfo info) {
 		this.eval = eval;
@@ -73,27 +72,23 @@ public class ActionExecutor {
 
 	private IConstructor recAmb(IConstructor forest) {
 		ISetWriter newAlternatives = eval.getValueFactory().setWriter(Factory.Tree);
-		boolean oneChanged = false;
 		IConstructor only = null;
-		changed = false;
+		boolean changed = false;
 		
 		for (IValue alt : TreeAdapter.getAlternatives(forest)) {
 			IConstructor newAlt = rec((IConstructor) alt);
-			if (changed) {
-				oneChanged = true;
-			}
 			
-			if (newAlt != null) {
-				newAlternatives.insert(newAlt);
-				only = newAlt;
+			if(newAlt != alt){
+				if(newAlt != null){
+					newAlternatives.insert(newAlt);
+					only = newAlt;
+				}
+				changed = true;
 			}
-			changed = false;
 		}
 		
-		changed = oneChanged;
-		
-		if (changed) {
-			switch (newAlternatives.size()) {
+		if(changed){
+			switch(newAlternatives.size()){
 				case 0: return null;
 				case 1: return only;
 				default:
@@ -108,36 +103,31 @@ public class ActionExecutor {
 		IConstructor result;
 		IList children = TreeAdapter.getArgs(forest);
 		IListWriter newChildren = eval.getValueFactory().listWriter(Factory.Tree);
-		boolean oneChanged = false;
-		changed = false;
+		boolean changed = false;
 		boolean isList = TreeAdapter.isList(forest);
 		IConstructor prod = TreeAdapter.getProduction(forest);
 		
 		for (IValue child : children) {
 			IConstructor newChild = rec((IConstructor) child);
 			
-			if (changed) {
-				oneChanged = true;
+			if(newChild != child){
+				if(newChild == null){
+					return null;
+				}
+				
+				changed = true;
 			}
 			
-			if (newChild == null) {
-				return null;
-			}
-			
-			if (!isList) {
+			if(!isList){
 				newChildren.append(newChild);
-			} else {
+			}else{
 				if (TreeAdapter.isList(newChild) && ProductionAdapter.shouldFlatten(prod,TreeAdapter.getProduction(newChild))) {
 					newChildren.appendAll(TreeAdapter.getArgs(newChild));
-				}
-				else {
+				}else{
 					newChildren.append(newChild);
 				}
 			}
-			changed = false;
 		}
-		
-		changed = oneChanged;
 		
 		LanguageAction action = info.getAction(prod);
 		
@@ -195,16 +185,13 @@ public class ActionExecutor {
 		}
 		catch (Insert e) {
 			// TODO add type checking!
-			changed = true;
 			return (IConstructor) e.getValue().getValue();
 		}
 		catch (Return e) {
 			// TODO add type checking!
-			changed = true;
 		    return (IConstructor) e.getValue().getValue();	
 		}
 		catch (Failure e) {
-			changed = true;
 			return null;
 		}
 		finally {
