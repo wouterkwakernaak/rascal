@@ -11,7 +11,8 @@ import IO;
 import ValueIO;
 
 private str package = "org.rascalmpl.library.rascal.syntax";
-private loc folder = |project://RascalLibrary/src/rascal/syntax|;
+private loc inputFolder = |rascal:///rascal/syntax|;
+private loc outputFolder = |project://RascalLibrary/src/rascal/syntax|;
 private str grammarName = "RascalRascal";
 private str rootName = "RascalRascal";
 private str objectName = "ObjectRascalRascal";
@@ -26,7 +27,7 @@ public void bootstrap() {
 
 public Grammar getRascalGrammar() {
   println("parsing the rascal definition of rascal");
-  Module \module = parse(#Module, folder + "/<grammarName>.rsc");
+  Module \module = parse(#Module, inputFolder + "/<grammarName>.rsc");
   println("imploding the syntax definition and normalizing and desugaring it");
   return module2grammar(\module);
 }
@@ -35,14 +36,14 @@ public void bootRootParser(Grammar gr) {
   println("generating root parser");
   str source = generateRootParser(package,rootName, gr);
   println("writing rascal root parser");
-  writeFile(folder + "/<rootName>.java", source);
+  writeFile(outputFolder + "/<rootName>.java", source);
 }
 
 public void bootObjectParser(Grammar gr) {
   println("generating rascal object parser");
   source = generateObjectParser(package, objectName, gr);
   println("writing rascal object parser");
-  writeFile(folder + "/<objectName>.java", source);
+  writeFile(outputFolder + "/<objectName>.java", source);
 }
 
 public void bootMetaParser(Grammar gr) {
@@ -50,5 +51,5 @@ public void bootMetaParser(Grammar gr) {
   gr.rules[sort("RascalReservedKeywords")] = {};
   source = generateMetaParser(package, metaName, objectName, gr);
   println("writing assimilated parser");
-  writeFile(folder + "/<metaName>.java", source);
+  writeFile(outputFolder + "/<metaName>.java", source);
 }
