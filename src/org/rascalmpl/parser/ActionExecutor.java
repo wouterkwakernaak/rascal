@@ -6,7 +6,6 @@ import org.eclipse.imp.pdb.facts.IConstructor;
 import org.eclipse.imp.pdb.facts.IList;
 import org.eclipse.imp.pdb.facts.IListWriter;
 import org.eclipse.imp.pdb.facts.ISetWriter;
-import org.eclipse.imp.pdb.facts.ISourceLocation;
 import org.eclipse.imp.pdb.facts.IValue;
 import org.eclipse.imp.pdb.facts.type.Type;
 import org.rascalmpl.ast.AbstractAST;
@@ -98,10 +97,7 @@ public class ActionExecutor {
 				case 0: return null;
 				case 1: return only;
 				default:
-					ISourceLocation loc = TreeAdapter.getLocation(forest);
-					IConstructor tree = forest.set("alternatives", newAlternatives.done());
-					TreeAdapter.setLocation(tree, loc);
-					return tree;
+					return forest.set("alternatives", newAlternatives.done());
 			}
 		}
 		
@@ -148,21 +144,11 @@ public class ActionExecutor {
 		if(action != null){
 			if(changed){
 				result = call(forest.set("args", newChildren.done()), action);
-				
-				if(result != null){
-					ISourceLocation loc = TreeAdapter.getLocation(forest);
-					result = TreeAdapter.setLocation(result, loc);
-				}
 			}else{
 				result = call(forest, action);
 			}
 		}else if(changed){
 			result = forest.set("args", newChildren.done());
-			
-			if(result != null){
-				ISourceLocation loc = TreeAdapter.getLocation(forest);
-				result = TreeAdapter.setLocation(result, loc);
-			}
 		}else{
 			result = forest;
 		}
