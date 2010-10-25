@@ -9,8 +9,6 @@ import org.eclipse.imp.pdb.facts.ISetWriter;
 import org.eclipse.imp.pdb.facts.ISourceLocation;
 import org.eclipse.imp.pdb.facts.IValue;
 import org.eclipse.imp.pdb.facts.type.Type;
-import org.eclipse.imp.pdb.facts.type.TypeFactory;
-import org.eclipse.imp.pdb.facts.type.TypeStore;
 import org.rascalmpl.ast.AbstractAST;
 import org.rascalmpl.ast.LanguageAction;
 import org.rascalmpl.ast.Statement;
@@ -24,7 +22,6 @@ import org.rascalmpl.interpreter.env.ModuleEnvironment;
 import org.rascalmpl.interpreter.result.Result;
 import org.rascalmpl.interpreter.types.RascalTypeFactory;
 import org.rascalmpl.parser.sgll.util.HashMap;
-import org.rascalmpl.values.ValueFactoryFactory;
 import org.rascalmpl.values.uptr.Factory;
 import org.rascalmpl.values.uptr.ProductionAdapter;
 import org.rascalmpl.values.uptr.SymbolAdapter;
@@ -40,8 +37,6 @@ public class ActionExecutor {
 	private final IParserInfo info;
 	private final HashMap<IConstructor, IConstructor> cache;
 	private boolean changed = false;
-	private static IConstructor filtered = (IConstructor) TypeFactory.getInstance().constructor(new TypeStore(Factory.uptr), Factory.Tree, "filtered").make(ValueFactoryFactory.getValueFactory());
-	private static IConstructor lastFiltered = null;
 	
 	public ActionExecutor(Evaluator eval, IParserInfo info) {
 		this.eval = eval;
@@ -54,7 +49,7 @@ public class ActionExecutor {
 	 */
 	public IConstructor execute(IConstructor forest) {
 		IConstructor result = rec(forest);
-		if (result == filtered) {
+		if (result == null) {
 			// TODO: proper error messaging
 			throw new ImplementationError("all trees where filtered");
 		}
@@ -88,7 +83,7 @@ public class ActionExecutor {
 			if (changed) {
 				oneChanged = true;
 			}
-			if (newAlt != filtered) {
+			if (newAlt != null) {
 				newAlternatives.insert(newAlt);
 				only = newAlt;
 			}
@@ -99,7 +94,7 @@ public class ActionExecutor {
 		
 		if (changed) {
 			switch (newAlternatives.size()) {
-				case 0: return filtered;
+				case 0: return null;
 				case 1: return only;
 				default:
 					ISourceLocation loc = TreeAdapter.getLocation(forest);
@@ -123,8 +118,8 @@ public class ActionExecutor {
 		
 		for (IValue child : children) {
 			IConstructor newChild = rec((IConstructor) child);
-			if (newChild == filtered) {
-				return filtered;
+			if (newChild == null) {
+				return null;
 			}
 			
 			if (!isList) {
@@ -151,17 +146,23 @@ public class ActionExecutor {
 		
 		if(action != null){
 			if(changed){
-				ISourceLocation loc = TreeAdapter.getLocation(forest);
 				IConstructor tree = forest.set("args", newChildren.done());
 				result = call(tree, action);
-				result = TreeAdapter.setLocation(result, loc);
+				
+				if(result != null){
+					ISourceLocation loc = TreeAdapter.getLocation(forest);
+					result = TreeAdapter.setLocation(result, loc);
+				}
 			}else{
 				result = call(forest, action);
 			}
 		}else if(changed){
-			ISourceLocation loc = TreeAdapter.getLocation(forest);
 			result = forest.set("args", newChildren.done());
-			result = TreeAdapter.setLocation(result, loc);
+			
+			if(result != null){
+				ISourceLocation loc = TreeAdapter.getLocation(forest);
+				result = TreeAdapter.setLocation(result, loc);
+			}
 		}else{
 			result = forest;
 		}
@@ -218,8 +219,7 @@ public class ActionExecutor {
 		}
 		catch (Failure e) {
 			changed = true;
-			lastFiltered = tree;
-			return filtered;
+			return null;
 		}
 		finally {
 			eval.setCurrentEnvt(old);
