@@ -1216,7 +1216,7 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 		return parseModule(data, location, env);
 	}
 	
-	public IConstructor parseModule(char[] data, URI location, ModuleEnvironment env) throws IOException {
+	public IConstructor parseModule(char[] data, URI location, ModuleEnvironment env) {
 		IConstructor prefix = parser.preParseModule(location, data);
 		Module preModule = builder.buildModule((IConstructor) TreeAdapter.getArgs(prefix).get(1));
 		ActionExecutor exec = new ActionExecutor(this, new RascalRascal());
@@ -1301,8 +1301,7 @@ public class Evaluator extends NullASTVisitor<Result<IValue>> implements IEvalua
 		}
 	}
 	
-	protected Module evalRascalModule(AbstractAST x,
-			String name) {
+	protected Module evalRascalModule(AbstractAST x, String name) {
 		ModuleEnvironment env = heap.getModule(name);
 		if (env == null) {
 			env = new ModuleEnvironment(name);

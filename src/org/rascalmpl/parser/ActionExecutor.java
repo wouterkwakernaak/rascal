@@ -6,6 +6,7 @@ import org.eclipse.imp.pdb.facts.IConstructor;
 import org.eclipse.imp.pdb.facts.IList;
 import org.eclipse.imp.pdb.facts.IListWriter;
 import org.eclipse.imp.pdb.facts.ISetWriter;
+import org.eclipse.imp.pdb.facts.ISourceLocation;
 import org.eclipse.imp.pdb.facts.IValue;
 import org.eclipse.imp.pdb.facts.type.Type;
 import org.eclipse.imp.pdb.facts.type.TypeFactory;
@@ -61,20 +62,14 @@ public class ActionExecutor {
 	}
 	
 	private IConstructor rec(IConstructor forest) {
-		IConstructor result = null; // cache.get(forest);
-		// TODO: why if we add caching do ambiguities remain in the forest? I don't get it.
+		IConstructor result = cache.get(forest);
+		if(result != null) return result;
 		
-		if (result != null) {
-			return result;
-		}
-		
-		if (forest.getConstructorType() == Factory.Tree_Appl) {
+		if(forest.getConstructorType() == Factory.Tree_Appl){
 			result = recAppl(forest);
-		}
-		else if (forest.getConstructorType() == Factory.Tree_Amb) {
+		}else if (forest.getConstructorType() == Factory.Tree_Amb){
 			result = recAmb(forest);
-		}
-		else {
+		}else{
 			result = forest;
 		}
 		
@@ -104,9 +99,13 @@ public class ActionExecutor {
 		
 		if (changed) {
 			switch (newAlternatives.size()) {
-			case 0: return filtered;
-			case 1: return only;
-			default: return forest.set("alternatives", newAlternatives.done());
+				case 0: return filtered;
+				case 1: return only;
+				default:
+					ISourceLocation loc = TreeAdapter.getLocation(forest);
+					IConstructor tree = forest.set("alternatives", newAlternatives.done());
+					TreeAdapter.setLocation(tree, loc);
+					return tree;
 			}
 		}
 		
@@ -150,18 +149,20 @@ public class ActionExecutor {
 		
 		LanguageAction action = info.getAction(prod);
 		
-		if (action != null) {
-			if (changed) {
-				result = call(forest.set("args", newChildren.done()), action);
-			}
-			else {
+		if(action != null){
+			if(changed){
+				ISourceLocation loc = TreeAdapter.getLocation(forest);
+				IConstructor tree = forest.set("args", newChildren.done());
+				result = call(tree, action);
+				result = TreeAdapter.setLocation(result, loc);
+			}else{
 				result = call(forest, action);
 			}
-		}
-		else if (changed) {
+		}else if(changed){
+			ISourceLocation loc = TreeAdapter.getLocation(forest);
 			result = forest.set("args", newChildren.done());
-		}
-		else {
+			result = TreeAdapter.setLocation(result, loc);
+		}else{
 			result = forest;
 		}
 		return result;

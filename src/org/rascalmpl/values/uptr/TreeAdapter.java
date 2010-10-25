@@ -184,6 +184,10 @@ public class TreeAdapter {
 		return (ISourceLocation) tree.getAnnotation(Factory.Location);
 	}
 
+	public static IConstructor setLocation(IConstructor tree, ISourceLocation sourceLocation) {
+		return tree.setAnnotation(Factory.Location, sourceLocation);
+	}
+
 	public static int getCharacter(IConstructor tree) {
 		return ((IInteger) tree.get("character")).intValue();
 	}
