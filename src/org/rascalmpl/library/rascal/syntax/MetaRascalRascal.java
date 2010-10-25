@@ -1,27 +1,25 @@
 
 package org.rascalmpl.library.rascal.syntax;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-
-import org.eclipse.imp.pdb.facts.type.TypeFactory;
 import org.eclipse.imp.pdb.facts.IConstructor;
-import org.eclipse.imp.pdb.facts.IValue;
-import org.eclipse.imp.pdb.facts.IMap;
-import org.eclipse.imp.pdb.facts.ISet;
-import org.eclipse.imp.pdb.facts.IRelation;
-import org.eclipse.imp.pdb.facts.ITuple;
 import org.eclipse.imp.pdb.facts.IInteger;
-import org.eclipse.imp.pdb.facts.exceptions.FactTypeUseException;
-import org.eclipse.imp.pdb.facts.io.StandardTextReader;
-import org.rascalmpl.parser.sgll.stack.*;
+import org.eclipse.imp.pdb.facts.IMap;
+import org.eclipse.imp.pdb.facts.IRelation;
+import org.eclipse.imp.pdb.facts.ISet;
+import org.eclipse.imp.pdb.facts.ITuple;
+import org.eclipse.imp.pdb.facts.IValue;
+import org.rascalmpl.ast.ASTFactory;
+import org.rascalmpl.parser.ASTBuilder;
+import org.rascalmpl.parser.IParserInfo;
+import org.rascalmpl.parser.sgll.stack.AbstractStackNode;
+import org.rascalmpl.parser.sgll.stack.CharStackNode;
+import org.rascalmpl.parser.sgll.stack.ListStackNode;
+import org.rascalmpl.parser.sgll.stack.LiteralStackNode;
+import org.rascalmpl.parser.sgll.stack.NonTerminalStackNode;
 import org.rascalmpl.parser.sgll.util.IntegerKeyedHashMap;
 import org.rascalmpl.parser.sgll.util.IntegerList;
 import org.rascalmpl.parser.sgll.util.IntegerMap;
 import org.rascalmpl.values.uptr.Factory;
-import org.rascalmpl.ast.ASTFactory;
-import org.rascalmpl.parser.ASTBuilder;
-import org.rascalmpl.parser.IParserInfo;
 
 public class MetaRascalRascal extends ObjectRascalRascal implements IParserInfo {
     
@@ -481,7 +479,7 @@ public class MetaRascalRascal extends ObjectRascalRascal implements IParserInfo 
 	private static final IConstructor prod___lit___96_layouts_$QUOTES_PostPathChars_layouts_$QUOTES_lit___96_$Pattern_attrs___term__cons_ConcreteQuoted = (IConstructor) _read("prod([lit(\"`\"),layouts(\"$QUOTES\"),sort(\"PostPathChars\"),layouts(\"$QUOTES\"),lit(\"`\")],sort(\"Pattern\"),attrs([term(cons(\"ConcreteQuoted\"))]))", Factory.Production);
 	private static final IConstructor prod___lit___96_layouts_$QUOTES_PathPart_layouts_$QUOTES_lit___96_$Pattern_attrs___term__cons_ConcreteQuoted = (IConstructor) _read("prod([lit(\"`\"),layouts(\"$QUOTES\"),sort(\"PathPart\"),layouts(\"$QUOTES\"),lit(\"`\")],sort(\"Pattern\"),attrs([term(cons(\"ConcreteQuoted\"))]))", Factory.Production);
 	private static final IConstructor prod___lit___40_layouts_$QUOTES_lit_SyntaxDefinition_layouts_$QUOTES_lit___41_layouts_$QUOTES_lit___96_layouts_$QUOTES_SyntaxDefinition_layouts_$QUOTES_lit___96_$Expression_attrs___term__cons_ConcreteTypedQuoted = (IConstructor) _read("prod([lit(\"(\"),layouts(\"$QUOTES\"),lit(\"SyntaxDefinition\"),layouts(\"$QUOTES\"),lit(\")\"),layouts(\"$QUOTES\"),lit(\"`\"),layouts(\"$QUOTES\"),sort(\"SyntaxDefinition\"),layouts(\"$QUOTES\"),lit(\"`\")],sort(\"Expression\"),attrs([term(cons(\"ConcreteTypedQuoted\"))]))", Factory.Production);
-	private static final IConstructor prod___lit___60_layouts_$QUOTES_$Pattern_layouts_$QUOTES_lit___62_Mapping__parameter___84_attrs___term__cons_MetaVariable = (IConstructor) _read("prod([lit(\"\\<\"),layouts(\"$QUOTES\"),sort(\"Pattern\"),layouts(\"$QUOTES\"),lit(\"\\>\")],\\parameterized-sort(\"Mapping\",[parameter(\"T\")]),attrs([term(cons(\"MetaVariable\"))]))", Factory.Production);
+	//private static final IConstructor prod___lit___60_layouts_$QUOTES_$Pattern_layouts_$QUOTES_lit___62_Mapping__parameter___84_attrs___term__cons_MetaVariable = (IConstructor) _read("prod([lit(\"\\<\"),layouts(\"$QUOTES\"),sort(\"Pattern\"),layouts(\"$QUOTES\"),lit(\"\\>\")],\\parameterized-sort(\"Mapping\",[parameter(\"T\")]),attrs([term(cons(\"MetaVariable\"))]))", Factory.Production);
 	private static final IConstructor prod___char_class___range__73_73_char_class___range__109_109_char_class___range__112_112_char_class___range__111_111_char_class___range__114_114_char_class___range__116_116_lit_Import_attrs___term__literal = (IConstructor) _read("prod([\\char-class([range(73,73)]),\\char-class([range(109,109)]),\\char-class([range(112,112)]),\\char-class([range(111,111)]),\\char-class([range(114,114)]),\\char-class([range(116,116)])],lit(\"Import\"),attrs([term(literal())]))", Factory.Production);
 	private static final IConstructor prod___lit___40_layouts_$QUOTES_lit_Header_layouts_$QUOTES_lit___41_layouts_$QUOTES_lit___96_layouts_$QUOTES_Header_layouts_$QUOTES_lit___96_$Pattern_attrs___term__cons_ConcreteTypedQuoted = (IConstructor) _read("prod([lit(\"(\"),layouts(\"$QUOTES\"),lit(\"Header\"),layouts(\"$QUOTES\"),lit(\")\"),layouts(\"$QUOTES\"),lit(\"`\"),layouts(\"$QUOTES\"),sort(\"Header\"),layouts(\"$QUOTES\"),lit(\"`\")],sort(\"Pattern\"),attrs([term(cons(\"ConcreteTypedQuoted\"))]))", Factory.Production);
 	private static final IConstructor prod___lit___40_layouts_$QUOTES_lit_PrePathChars_layouts_$QUOTES_lit___41_layouts_$QUOTES_lit___96_layouts_$QUOTES_PrePathChars_layouts_$QUOTES_lit___96_$Expression_attrs___term__cons_ConcreteTypedQuoted = (IConstructor) _read("prod([lit(\"(\"),layouts(\"$QUOTES\"),lit(\"PrePathChars\"),layouts(\"$QUOTES\"),lit(\")\"),layouts(\"$QUOTES\"),lit(\"`\"),layouts(\"$QUOTES\"),sort(\"PrePathChars\"),layouts(\"$QUOTES\"),lit(\"`\")],sort(\"Expression\"),attrs([term(cons(\"ConcreteTypedQuoted\"))]))", Factory.Production);
@@ -984,7 +982,7 @@ public class MetaRascalRascal extends ObjectRascalRascal implements IParserInfo 
 	private static final IConstructor prod___lit___40_layouts_$QUOTES_lit_Toplevel_layouts_$QUOTES_lit___41_layouts_$QUOTES_lit___96_layouts_$QUOTES_Toplevel_layouts_$QUOTES_lit___96_$Expression_attrs___term__cons_ConcreteTypedQuoted = (IConstructor) _read("prod([lit(\"(\"),layouts(\"$QUOTES\"),lit(\"Toplevel\"),layouts(\"$QUOTES\"),lit(\")\"),layouts(\"$QUOTES\"),lit(\"`\"),layouts(\"$QUOTES\"),sort(\"Toplevel\"),layouts(\"$QUOTES\"),lit(\"`\")],sort(\"Expression\"),attrs([term(cons(\"ConcreteTypedQuoted\"))]))", Factory.Production);
 	private static final IConstructor prod___char_class___range__80_80_char_class___range__97_97_char_class___range__116_116_char_class___range__104_104_char_class___range__67_67_char_class___range__104_104_char_class___range__97_97_char_class___range__114_114_char_class___range__115_115_lit_PathChars_attrs___term__literal = (IConstructor) _read("prod([\\char-class([range(80,80)]),\\char-class([range(97,97)]),\\char-class([range(116,116)]),\\char-class([range(104,104)]),\\char-class([range(67,67)]),\\char-class([range(104,104)]),\\char-class([range(97,97)]),\\char-class([range(114,114)]),\\char-class([range(115,115)])],lit(\"PathChars\"),attrs([term(literal())]))", Factory.Production);
 	private static final IConstructor prod___lit___40_layouts_$QUOTES_lit_DateTimeLiteral_layouts_$QUOTES_lit___41_layouts_$QUOTES_lit___96_layouts_$QUOTES_DateTimeLiteral_layouts_$QUOTES_lit___96_$Pattern_attrs___term__cons_ConcreteTypedQuoted = (IConstructor) _read("prod([lit(\"(\"),layouts(\"$QUOTES\"),lit(\"DateTimeLiteral\"),layouts(\"$QUOTES\"),lit(\")\"),layouts(\"$QUOTES\"),lit(\"`\"),layouts(\"$QUOTES\"),sort(\"DateTimeLiteral\"),layouts(\"$QUOTES\"),lit(\"`\")],sort(\"Pattern\"),attrs([term(cons(\"ConcreteTypedQuoted\"))]))", Factory.Production);
-	private static final IConstructor prod___lit___60_layouts_$QUOTES_$Pattern_layouts_$QUOTES_lit___62_RascalReservedKeywords_attrs___term__cons_MetaVariable = (IConstructor) _read("prod([lit(\"\\<\"),layouts(\"$QUOTES\"),sort(\"Pattern\"),layouts(\"$QUOTES\"),lit(\"\\>\")],sort(\"RascalReservedKeywords\"),attrs([term(cons(\"MetaVariable\"))]))", Factory.Production);
+//	private static final IConstructor prod___lit___60_layouts_$QUOTES_$Pattern_layouts_$QUOTES_lit___62_RascalReservedKeywords_attrs___term__cons_MetaVariable = (IConstructor) _read("prod([lit(\"\\<\"),layouts(\"$QUOTES\"),sort(\"Pattern\"),layouts(\"$QUOTES\"),lit(\"\\>\")],sort(\"RascalReservedKeywords\"),attrs([term(cons(\"MetaVariable\"))]))", Factory.Production);
 	private static final IConstructor prod___char_class___range__82_82_char_class___range__101_101_char_class___range__110_110_char_class___range__97_97_char_class___range__109_109_char_class___range__105_105_char_class___range__110_110_char_class___range__103_103_lit_Renaming_attrs___term__literal = (IConstructor) _read("prod([\\char-class([range(82,82)]),\\char-class([range(101,101)]),\\char-class([range(110,110)]),\\char-class([range(97,97)]),\\char-class([range(109,109)]),\\char-class([range(105,105)]),\\char-class([range(110,110)]),\\char-class([range(103,103)])],lit(\"Renaming\"),attrs([term(literal())]))", Factory.Production);
 	private static final IConstructor prod___lit___60_layouts_$QUOTES_$Pattern_layouts_$QUOTES_lit___62_ProtocolChars_attrs___term__cons_MetaVariable = (IConstructor) _read("prod([lit(\"\\<\"),layouts(\"$QUOTES\"),sort(\"Pattern\"),layouts(\"$QUOTES\"),lit(\"\\>\")],sort(\"ProtocolChars\"),attrs([term(cons(\"MetaVariable\"))]))", Factory.Production);
 	private static final IConstructor prod___lit___40_layouts_$QUOTES_lit_CommentChar_layouts_$QUOTES_lit___41_layouts_$QUOTES_lit___96_layouts_$QUOTES_CommentChar_layouts_$QUOTES_lit___96_$Pattern_attrs___term__cons_ConcreteTypedQuoted = (IConstructor) _read("prod([lit(\"(\"),layouts(\"$QUOTES\"),lit(\"CommentChar\"),layouts(\"$QUOTES\"),lit(\")\"),layouts(\"$QUOTES\"),lit(\"`\"),layouts(\"$QUOTES\"),sort(\"CommentChar\"),layouts(\"$QUOTES\"),lit(\"`\")],sort(\"Pattern\"),attrs([term(cons(\"ConcreteTypedQuoted\"))]))", Factory.Production);
@@ -3617,14 +3615,14 @@ public class MetaRascalRascal extends ObjectRascalRascal implements IParserInfo 
 		public static final AbstractStackNode prod___lit___60_layouts_$QUOTES_$Pattern_layouts_$QUOTES_lit___62_ProtocolChars_attrs___term__cons_MetaVariable_1 = new NonTerminalStackNode(5719, 1 , "layouts_$QUOTES");
 		public static final AbstractStackNode prod___lit___60_layouts_$QUOTES_$Pattern_layouts_$QUOTES_lit___62_ProtocolChars_attrs___term__cons_MetaVariable_0 = new LiteralStackNode(5717, 0, prod___char_class___range__60_60_lit___60_attrs___term__literal , new char[] {60});
 	}
-	private static class Mapping__parameter___84 {
-		
-		public static final AbstractStackNode prod___lit___60_layouts_$QUOTES_$Pattern_layouts_$QUOTES_lit___62_Mapping__parameter___84_attrs___term__cons_MetaVariable_4 = new LiteralStackNode(5735, 4, prod___char_class___range__62_62_lit___62_attrs___term__literal , new char[] {62});
-		public static final AbstractStackNode prod___lit___60_layouts_$QUOTES_$Pattern_layouts_$QUOTES_lit___62_Mapping__parameter___84_attrs___term__cons_MetaVariable_3 = new NonTerminalStackNode(5733, 3 , "layouts_$QUOTES");
-		public static final AbstractStackNode prod___lit___60_layouts_$QUOTES_$Pattern_layouts_$QUOTES_lit___62_Mapping__parameter___84_attrs___term__cons_MetaVariable_2 = new NonTerminalStackNode(5731, 2 , "$Pattern");
-		public static final AbstractStackNode prod___lit___60_layouts_$QUOTES_$Pattern_layouts_$QUOTES_lit___62_Mapping__parameter___84_attrs___term__cons_MetaVariable_1 = new NonTerminalStackNode(5729, 1 , "layouts_$QUOTES");
-		public static final AbstractStackNode prod___lit___60_layouts_$QUOTES_$Pattern_layouts_$QUOTES_lit___62_Mapping__parameter___84_attrs___term__cons_MetaVariable_0 = new LiteralStackNode(5727, 0, prod___char_class___range__60_60_lit___60_attrs___term__literal , new char[] {60});
-	}
+//	private static class Mapping__parameter___84 {
+//		
+//		public static final AbstractStackNode prod___lit___60_layouts_$QUOTES_$Pattern_layouts_$QUOTES_lit___62_Mapping__parameter___84_attrs___term__cons_MetaVariable_4 = new LiteralStackNode(5735, 4, prod___char_class___range__62_62_lit___62_attrs___term__literal , new char[] {62});
+//		public static final AbstractStackNode prod___lit___60_layouts_$QUOTES_$Pattern_layouts_$QUOTES_lit___62_Mapping__parameter___84_attrs___term__cons_MetaVariable_3 = new NonTerminalStackNode(5733, 3 , "layouts_$QUOTES");
+//		public static final AbstractStackNode prod___lit___60_layouts_$QUOTES_$Pattern_layouts_$QUOTES_lit___62_Mapping__parameter___84_attrs___term__cons_MetaVariable_2 = new NonTerminalStackNode(5731, 2 , "$Pattern");
+//		public static final AbstractStackNode prod___lit___60_layouts_$QUOTES_$Pattern_layouts_$QUOTES_lit___62_Mapping__parameter___84_attrs___term__cons_MetaVariable_1 = new NonTerminalStackNode(5729, 1 , "layouts_$QUOTES");
+//		public static final AbstractStackNode prod___lit___60_layouts_$QUOTES_$Pattern_layouts_$QUOTES_lit___62_Mapping__parameter___84_attrs___term__cons_MetaVariable_0 = new LiteralStackNode(5727, 0, prod___char_class___range__60_60_lit___60_attrs___term__literal , new char[] {60});
+//	}
 	private static class Formal {
 		
 		public static final AbstractStackNode prod___lit___60_layouts_$QUOTES_$Pattern_layouts_$QUOTES_lit___62_Formal_attrs___term__cons_MetaVariable_4 = new LiteralStackNode(5857, 4, prod___char_class___range__62_62_lit___62_attrs___term__literal , new char[] {62});
@@ -3761,14 +3759,14 @@ public class MetaRascalRascal extends ObjectRascalRascal implements IParserInfo 
 		public static final AbstractStackNode prod___lit___60_layouts_$QUOTES_$Pattern_layouts_$QUOTES_lit___62_Declarator_attrs___term__cons_MetaVariable_1 = new NonTerminalStackNode(6321, 1 , "layouts_$QUOTES");
 		public static final AbstractStackNode prod___lit___60_layouts_$QUOTES_$Pattern_layouts_$QUOTES_lit___62_Declarator_attrs___term__cons_MetaVariable_0 = new LiteralStackNode(6319, 0, prod___char_class___range__60_60_lit___60_attrs___term__literal , new char[] {60});
 	}
-	private static class RascalReservedKeywords {
-		
-		public static final AbstractStackNode prod___lit___60_layouts_$QUOTES_$Pattern_layouts_$QUOTES_lit___62_RascalReservedKeywords_attrs___term__cons_MetaVariable_4 = new LiteralStackNode(6337, 4, prod___char_class___range__62_62_lit___62_attrs___term__literal , new char[] {62});
-		public static final AbstractStackNode prod___lit___60_layouts_$QUOTES_$Pattern_layouts_$QUOTES_lit___62_RascalReservedKeywords_attrs___term__cons_MetaVariable_3 = new NonTerminalStackNode(6335, 3 , "layouts_$QUOTES");
-		public static final AbstractStackNode prod___lit___60_layouts_$QUOTES_$Pattern_layouts_$QUOTES_lit___62_RascalReservedKeywords_attrs___term__cons_MetaVariable_2 = new NonTerminalStackNode(6333, 2 , "$Pattern");
-		public static final AbstractStackNode prod___lit___60_layouts_$QUOTES_$Pattern_layouts_$QUOTES_lit___62_RascalReservedKeywords_attrs___term__cons_MetaVariable_1 = new NonTerminalStackNode(6331, 1 , "layouts_$QUOTES");
-		public static final AbstractStackNode prod___lit___60_layouts_$QUOTES_$Pattern_layouts_$QUOTES_lit___62_RascalReservedKeywords_attrs___term__cons_MetaVariable_0 = new LiteralStackNode(6329, 0, prod___char_class___range__60_60_lit___60_attrs___term__literal , new char[] {60});
-	}
+//	private static class RascalReservedKeywords {
+//		
+//		public static final AbstractStackNode prod___lit___60_layouts_$QUOTES_$Pattern_layouts_$QUOTES_lit___62_RascalReservedKeywords_attrs___term__cons_MetaVariable_4 = new LiteralStackNode(6337, 4, prod___char_class___range__62_62_lit___62_attrs___term__literal , new char[] {62});
+//		public static final AbstractStackNode prod___lit___60_layouts_$QUOTES_$Pattern_layouts_$QUOTES_lit___62_RascalReservedKeywords_attrs___term__cons_MetaVariable_3 = new NonTerminalStackNode(6335, 3 , "layouts_$QUOTES");
+//		public static final AbstractStackNode prod___lit___60_layouts_$QUOTES_$Pattern_layouts_$QUOTES_lit___62_RascalReservedKeywords_attrs___term__cons_MetaVariable_2 = new NonTerminalStackNode(6333, 2 , "$Pattern");
+//		public static final AbstractStackNode prod___lit___60_layouts_$QUOTES_$Pattern_layouts_$QUOTES_lit___62_RascalReservedKeywords_attrs___term__cons_MetaVariable_1 = new NonTerminalStackNode(6331, 1 , "layouts_$QUOTES");
+//		public static final AbstractStackNode prod___lit___60_layouts_$QUOTES_$Pattern_layouts_$QUOTES_lit___62_RascalReservedKeywords_attrs___term__cons_MetaVariable_0 = new LiteralStackNode(6329, 0, prod___char_class___range__60_60_lit___60_attrs___term__literal , new char[] {60});
+//	}
 	private static class Marker {
 		
 		public static final AbstractStackNode prod___lit___60_layouts_$QUOTES_$Pattern_layouts_$QUOTES_lit___62_Marker_attrs___term__cons_MetaVariable_4 = new LiteralStackNode(6347, 4, prod___char_class___range__62_62_lit___62_attrs___term__literal , new char[] {62});

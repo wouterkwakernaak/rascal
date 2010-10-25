@@ -249,31 +249,28 @@ syntax Expression
 	> left ( Addition   : Expression lhs "+" Expression rhs  
 		   | Subtraction: Expression lhs "-" Expression rhs 
 	       )
+	> non-assoc (  NotIn: Expression lhs "notin" Expression rhs  
+		        |  In: Expression lhs "in" Expression rhs 
+	)
+	> non-assoc ( GreaterThanOrEq: Expression lhs "\>=" Expression rhs  
+		        | LessThanOrEq   : Expression lhs "\<=" Expression rhs 
+		        | LessThan       : Expression lhs "\<" Expression rhs 
+		        | GreaterThan    : Expression lhs "\>" Expression rhs 
+	            )
+	> left IfThenElse: Expression condition "?" Expression thenExp ":" Expression elseExp
+	> non-assoc ( Equals         : Expression lhs "==" Expression rhs
+	            | NonEquals      : Expression lhs "!=" Expression rhs 
+	            )
+	> non-assoc IfDefinedOtherwise: Expression lhs "?" Expression rhs
 	> non-assoc ( NoMatch: Pattern pattern "!:=" Expression expression  
 		        | Match: Pattern pattern ":=" Expression expression 
 		        | /*prefer()*/ Enumerator: Pattern pattern "\<-" Expression expression 
-	            )
-	> non-assoc (  NotIn: Expression lhs "notin" Expression rhs
-		        |  In: Expression lhs "in" Expression rhs
-	            )
-	> non-assoc (  
-	            | GreaterThanOrEq: Expression lhs "\>=" Expression rhs
-		        | LessThanOrEq   : Expression lhs "\<=" Expression rhs
-		        | LessThan       : Expression lhs "\<" Expression rhs
-		        | GreaterThan    : Expression lhs "\>" Expression rhs
-	            )
-	> left (
-	       | Equals         : Expression lhs "==" Expression rhs
-	       | NonEquals      : Expression lhs "!=" Expression rhs
-	       | IfThenElse: Expression condition "?" Expression thenExp ":" Expression elseExp
-	       )
-	> non-assoc IfDefinedOtherwise: Expression lhs "?" Expression rhs
+	            ) 
 	> non-assoc ( Implication: Expression lhs "==\>" Expression rhs  
 		        | Equivalence: Expression lhs "\<==\>" Expression rhs 
 	            )
 	> left And: Expression lhs "&&" Expression rhs 
 	> left Or: Expression lhs "||" Expression rhs 
-	
 	; 
 
 syntax UserType
