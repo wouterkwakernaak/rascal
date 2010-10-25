@@ -31,11 +31,12 @@ public class Symbols {
 		if (type.isUser()) {
 			return Factory.Symbol_Sort.make(factory, factory.string(Names.name(Names.lastName(type.getUser().getName()))));
 		}
-		else if (type.isSymbol()) {
+		
+		if (type.isSymbol()) {
 			return symbolAST2SymbolConstructor(type.getSymbol());
 		}
-			
-	    return null;
+		
+		return null;
 	}
 
 	private static IValue symbolAST2SymbolConstructor(Symbol symbol) {
