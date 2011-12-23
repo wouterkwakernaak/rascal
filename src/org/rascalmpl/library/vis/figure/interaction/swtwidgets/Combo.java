@@ -12,6 +12,9 @@
  *******************************************************************************/
 package org.rascalmpl.library.vis.figure.interaction.swtwidgets;
 
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import org.eclipse.imp.pdb.facts.IValue;
 import org.eclipse.imp.pdb.facts.type.TypeFactory;
 import org.eclipse.swt.SWT;
@@ -24,10 +27,13 @@ import org.rascalmpl.values.ValueFactoryFactory;
 
 public class Combo extends SWTWidgetFigureWithSingleCallBack<org.eclipse.swt.widgets.Combo> {
 
+	private Queue<String> selectedValues;
+	
 	public Combo(IFigureConstructionEnv env, String[] choices, IValue cb,  PropertyManager properties) {
 		super(env, cb, properties);
 		widget = makeWidget(env.getSWTParent(), env,choices);
 		widget.setVisible(false);
+		selectedValues = new ConcurrentLinkedQueue<String>();
 	}
 
 
@@ -40,6 +46,8 @@ public class Combo extends SWTWidgetFigureWithSingleCallBack<org.eclipse.swt.wid
 		 combo.select(0);
 		combo.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
+				if (widget.getSelectionIndex() < 0) return;
+				selectedValues.add(widget.getItem(widget.getSelectionIndex()));
 				doCallback();
 			}
 		});
@@ -49,10 +57,7 @@ public class Combo extends SWTWidgetFigureWithSingleCallBack<org.eclipse.swt.wid
 
 	@Override
 	void executeCallback() {
-		int s = widget.getSelectionIndex();
-		if (s < 0)
-			return;
 		cbenv.executeRascalCallBackSingleArgument(callback, TypeFactory
-				.getInstance().stringType(), ValueFactoryFactory.getValueFactory().string(widget.getItem(s)));
+				.getInstance().stringType(), ValueFactoryFactory.getValueFactory().string(selectedValues.poll()));
 	}
 }

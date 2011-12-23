@@ -81,7 +81,7 @@ public class FigureSWTApplet extends Composite
 			fig = new WhiteSpace( fig, new PropertyManager());
 		}
 		this.figure = fig;
-		inputHandler = new InputHandler(this, overlapFigures);
+		inputHandler =  new InputHandlerUIThreadRedirector(env, new InputHandler(this, overlapFigures));
 		viewPortHandler = new ViewPortHandler(this,overlapFigures);
 
 		addPaintListener(viewPortHandler);

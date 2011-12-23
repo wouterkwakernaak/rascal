@@ -1,6 +1,9 @@
 package org.rascalmpl.library.vis.figure.interaction.swtwidgets;
 
 
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import org.eclipse.imp.pdb.facts.IValue;
 import org.eclipse.imp.pdb.facts.type.TypeFactory;
 import org.eclipse.swt.SWT;
@@ -19,6 +22,9 @@ public class Scale extends SWTWidgetFigureWithSingleCallBack<org.eclipse.swt.wid
 
 	int selection;
 	PropertyValue<Integer> low, high,selected;
+	
+	private Queue<Integer> selectedValues;
+	
 	public Scale(IFigureConstructionEnv env, Dimension major, PropertyValue<Integer> low, PropertyValue<Integer> high,  PropertyValue<Integer> selected,IValue callback,
 			PropertyManager properties) {
 		super(env, callback, properties);
@@ -27,6 +33,7 @@ public class Scale extends SWTWidgetFigureWithSingleCallBack<org.eclipse.swt.wid
 		this.high = high;
 		widget = makeWidget(env.getSWTParent(), major, env);
 		widget.setVisible(false);
+		selectedValues = new ConcurrentLinkedQueue<Integer>();
 
 	}
 	
@@ -42,6 +49,7 @@ public class Scale extends SWTWidgetFigureWithSingleCallBack<org.eclipse.swt.wid
 		result.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
+				selectedValues.add(widget.getSelection());
 				doCallback();
 			}
 		});
@@ -60,7 +68,7 @@ public class Scale extends SWTWidgetFigureWithSingleCallBack<org.eclipse.swt.wid
 	@Override
 	void executeCallback() {
 		cbenv.executeRascalCallBackSingleArgument(callback, TypeFactory
-				.getInstance().integerType(), ValueFactoryFactory.getValueFactory().integer(widget.getSelection()));
+				.getInstance().integerType(), ValueFactoryFactory.getValueFactory().integer(selectedValues.poll()));
 	}
 
 

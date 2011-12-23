@@ -11,6 +11,9 @@
  *******************************************************************************/
 package org.rascalmpl.library.vis.figure.interaction.swtwidgets;
 
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import org.eclipse.imp.pdb.facts.IValue;
 import org.eclipse.imp.pdb.facts.type.TypeFactory;
 import org.eclipse.swt.SWT;
@@ -22,7 +25,7 @@ import org.rascalmpl.library.vis.swt.IFigureConstructionEnv;
 import org.rascalmpl.values.ValueFactoryFactory;
 
 public class Choice extends SWTWidgetFigureWithSingleCallBack<org.eclipse.swt.widgets.List> {
-	
+	private final Queue<String> selectedValues = new ConcurrentLinkedQueue<String>();
 
 	public Choice(IFigureConstructionEnv env, String[] choices, IValue fun, PropertyManager properties) {
 		super(env, fun, properties);
@@ -41,6 +44,7 @@ public class Choice extends SWTWidgetFigureWithSingleCallBack<org.eclipse.swt.wi
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				if (widget.getSelectionCount()!=1) return;
+				selectedValues.add(widget.getItem(widget.getSelectionIndex()));
 				doCallback();
 			}
 		});
@@ -50,7 +54,7 @@ public class Choice extends SWTWidgetFigureWithSingleCallBack<org.eclipse.swt.wi
 
 	public void executeCallback() {
 		cbenv.executeRascalCallBackSingleArgument(callback, TypeFactory
-				.getInstance().stringType(), ValueFactoryFactory.getValueFactory().string(widget.getItem(widget.getSelectionIndex())));
+				.getInstance().stringType(), ValueFactoryFactory.getValueFactory().string(selectedValues.poll()));
 	}
 
 	

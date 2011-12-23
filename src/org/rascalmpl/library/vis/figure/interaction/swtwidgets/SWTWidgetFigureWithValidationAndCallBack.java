@@ -25,15 +25,25 @@ public abstract class SWTWidgetFigureWithValidationAndCallBack<WidgetType extend
 	
 	public void doValidate(){
 		if (validate != null) {
-			validated = ((IBool)(executeValidate()).getValue()).getValue();
+			cbenv.runOutsideUIThread(new Runnable() {
+				@Override
+				public void run() {
+					validated = ((IBool)(executeValidate()).getValue()).getValue();
+				}
+			});
 		}
 	}
 	
 	public void doCallback(){
-		if(validated || validate == null){
-			executeCallback();
-			cbenv.signalRecompute();
-		}
+		cbenv.runOutsideUIThread(new Runnable() {
+			@Override
+			public void run() {
+				if(validated || validate == null){
+					executeCallback();
+					cbenv.signalRecompute();
+				}
+			}
+		});
 	}
 	
 	abstract Result<IValue>  executeValidate();

@@ -17,4 +17,5 @@ public interface ICallbackEnv {
 	public Result<IValue> executeRascalCallBackWithoutArguments(IValue callback) ;
 	public Result<IValue> executeRascalCallBackSingleArgument(IValue callback, Type type, IValue arg) ;
 	public IConstructor executeRascalFigureCallBack(IValue callback, Type[] argTypes, IValue[] argVals);
+	public void runOutsideUIThread(Runnable toRun);
 }

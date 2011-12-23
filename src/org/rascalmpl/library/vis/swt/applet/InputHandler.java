@@ -202,7 +202,17 @@ public class InputHandler implements MouseListener,MouseMoveListener, MouseTrack
 	
 	@Override
 	public void mouseEnter(MouseEvent e) {
-		parent.forceFocus();
+		if (parent.getDisplay().getThread().equals(Thread.currentThread())) {
+			parent.forceFocus();
+		}
+		else {
+			parent.getDisplay().asyncExec(new Runnable() {
+				@Override
+				public void run() {
+					parent.forceFocus();
+				}
+			});
+		}
 	}
 
 	@Override
@@ -217,5 +227,12 @@ public class InputHandler implements MouseListener,MouseMoveListener, MouseTrack
 
 	public void dispose() {
 		
+	}
+
+	protected FigureSWTApplet getParent() {
+		return parent;
+	}
+	protected List<Overlap> getOverlapFigures() {
+		return overlapFigures;
 	}
 }

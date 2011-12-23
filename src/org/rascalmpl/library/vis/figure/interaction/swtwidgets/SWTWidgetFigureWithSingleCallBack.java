@@ -30,8 +30,13 @@ public abstract class SWTWidgetFigureWithSingleCallBack<WidgetType extends Contr
 	}
 
 	void doCallback(){
-		executeCallback();
-		cbenv.signalRecompute();
+		cbenv.runOutsideUIThread(new Runnable() {
+			@Override
+			public void run() {
+				executeCallback();
+				cbenv.signalRecompute();
+			}
+		});
 	}
 	
 	abstract void executeCallback();

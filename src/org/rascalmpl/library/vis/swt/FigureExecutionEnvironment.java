@@ -1,6 +1,8 @@
 package org.rascalmpl.library.vis.swt;
 
 import java.io.OutputStream;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.eclipse.imp.pdb.facts.IConstructor;
 import org.eclipse.imp.pdb.facts.IValue;
@@ -32,11 +34,13 @@ public class FigureExecutionEnvironment implements ICallbackEnv{
 	private long startTime = 0;
 	public static boolean profile = false;
 	private NameResolver resolver;
-	private int computeClock; 
+	private int computeClock;
+	private final ExecutorService executorService; 
 
 	
 	
 	public FigureExecutionEnvironment(Composite parent, IConstructor cfig,IEvaluatorContext ctx) {
+		executorService = Executors.newSingleThreadExecutor();
 		this.ctx = ctx;
 		// ctx.registerComputationFinishedListener(this)!!!!
 		callbackBatch = false;
@@ -185,6 +189,7 @@ public class FigureExecutionEnvironment implements ICallbackEnv{
 	
 	public void dispose(){
 		appletRoot.dispose();
+		executorService.shutdownNow();
 	}
 	
 
@@ -199,8 +204,13 @@ public class FigureExecutionEnvironment implements ICallbackEnv{
 
 	@Override
 	public void signalRecompute() {
-		computeClock++;
-		computeFigures();
+		swtRoot.getDisplay().asyncExec(new Runnable() {
+			@Override
+			public void run() {
+				computeClock++;
+				computeFigures();
+			}
+		});
 	}
 
 	@Override
@@ -212,6 +222,11 @@ public class FigureExecutionEnvironment implements ICallbackEnv{
 
 	public void writeScreenshot(OutputStream s){
 		appletRoot.writeScreenshot(s);
+	}
+
+	@Override
+	public void runOutsideUIThread(Runnable toRun) {
+		executorService.execute(toRun);
 	}
 
 }

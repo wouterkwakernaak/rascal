@@ -13,6 +13,8 @@
 package org.rascalmpl.library.vis.figure.interaction.swtwidgets;
 
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.eclipse.imp.pdb.facts.IValue;
 import org.eclipse.imp.pdb.facts.type.TypeFactory;
@@ -37,6 +39,7 @@ import org.rascalmpl.values.ValueFactoryFactory;
 public class TextField extends SWTWidgetFigureWithValidationAndCallBack<Text> {
 
 	private final Color falseColor;
+	private final Queue<String> lastValues = new ConcurrentLinkedQueue<String>();
 	
 
 	public TextField(IFigureConstructionEnv env, String text, IValue cb, IValue validate, PropertyManager properties) {
@@ -58,12 +61,14 @@ public class TextField extends SWTWidgetFigureWithValidationAndCallBack<Text> {
 		
 		textfield.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
+				lastValues.add(widget.getText());
 				doValidate();
 			}
 		});
 		textfield.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetDefaultSelected(SelectionEvent e) {
+				lastValues.add(widget.getText());
 				doCallback();
 			}
 		});
@@ -73,12 +78,12 @@ public class TextField extends SWTWidgetFigureWithValidationAndCallBack<Text> {
 
 	@Override
 	Result<IValue> executeValidate() {
-		return cbenv.executeRascalCallBackSingleArgument(validate, TypeFactory.getInstance().stringType(), ValueFactoryFactory.getValueFactory().string(widget.getText()));
+		return cbenv.executeRascalCallBackSingleArgument(validate, TypeFactory.getInstance().stringType(), ValueFactoryFactory.getValueFactory().string(lastValues.poll()));
 	}
 
 	@Override
 	void executeCallback() {
-		cbenv.executeRascalCallBackSingleArgument(callback, TypeFactory.getInstance().stringType(), ValueFactoryFactory.getValueFactory().string(widget.getText()));
+		cbenv.executeRascalCallBackSingleArgument(callback, TypeFactory.getInstance().stringType(), ValueFactoryFactory.getValueFactory().string(lastValues.poll()));
 		
 	}
 
