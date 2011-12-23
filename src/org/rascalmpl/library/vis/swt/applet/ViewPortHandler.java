@@ -5,7 +5,9 @@ import static org.rascalmpl.library.vis.util.vector.Dimension.HOR_VER;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.util.Collection;
 import java.util.List;
+import java.util.Queue;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlEvent;
@@ -50,7 +52,7 @@ public class ViewPortHandler implements SelectionListener, ControlListener, Pain
 	private ScrollBar horBar, verBar;
 	private Figure figure;
 	private FigureSWTApplet parent;
-	private List<Overlap> overlapFigures; // this is silently mutated by the FigureSWTApplet
+	private Collection<Overlap> overlapFigures; // this is silently mutated by the FigureSWTApplet
 	private Image backbuffer;
 	private SWTElementsVisibilityManager swtVisiblityMangager;
 	private SWTZOrderManager zorderManager;
@@ -58,7 +60,7 @@ public class ViewPortHandler implements SelectionListener, ControlListener, Pain
 	private TransformMatrix topLevel;
 	private Rectangle viewPortRectangle;
 	
-	public ViewPortHandler(FigureSWTApplet parent, List<Overlap> overlapFigures){
+	public ViewPortHandler(FigureSWTApplet parent, Collection<Overlap> overlapFigures){
 		this.parent = parent;
 		this.figure = parent.getFigure();
 		this.overlapFigures = overlapFigures;

@@ -1,8 +1,10 @@
 package org.rascalmpl.library.vis.swt.applet;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Queue;
 
 import org.eclipse.imp.pdb.facts.IBool;
 import org.eclipse.imp.pdb.facts.IMap;
@@ -39,10 +41,10 @@ public class InputHandler implements MouseListener,MouseMoveListener, MouseTrack
 	private Figure figure;
 	private Coordinate mouseLocation; // location on figure, not in viewport
 	private FigureExecutionEnvironment env;
-	private List<Overlap> overlapFigures; // this is silently mutated by the FigureSWTApplet
+	private Collection<Overlap> overlapFigures; // this is silently mutated by the FigureSWTApplet
 	private FigureSWTApplet parent;
 	
-	public InputHandler(FigureSWTApplet parent, List<Overlap> overlapFigures){
+	public InputHandler(FigureSWTApplet parent, Collection<Overlap> overlapFigures){
 		figuresUnderMouse = new ArrayList<Figure>();
 		figuresUnderMouseSorted = new ArrayList<Figure>();
 		figuresUnderMouseSortedPrev = new ArrayList<Figure>();
@@ -232,7 +234,7 @@ public class InputHandler implements MouseListener,MouseMoveListener, MouseTrack
 	protected FigureSWTApplet getParent() {
 		return parent;
 	}
-	protected List<Overlap> getOverlapFigures() {
+	protected Collection<Overlap> getOverlapFigures() {
 		return overlapFigures;
 	}
 }

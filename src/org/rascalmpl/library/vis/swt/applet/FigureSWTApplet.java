@@ -16,6 +16,8 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.eclipse.imp.pdb.facts.IConstructor;
 import org.eclipse.swt.SWT;
@@ -49,7 +51,7 @@ public class FigureSWTApplet extends Composite
 	private InputHandler inputHandler;
 	private ViewPortHandler viewPortHandler;
 	private RunTimePropertyAdjuster runTimePropertyAdjuster;
-	private List<Overlap> overlapFigures; // shared by inputhandler and viewport handler
+	private Queue<Overlap> overlapFigures; // shared by inputhandler and viewport handler
 	private boolean redrawRequested;
 	private boolean busy;
 	private int computeClock = -1;
@@ -74,7 +76,7 @@ public class FigureSWTApplet extends Composite
 		this.env = env;
 		runTimePropertyAdjuster = new RunTimePropertyAdjuster(this);
 		children = new ArrayList<FigureSWTApplet>();
-		overlapFigures = new LinkedList<Overlap>();
+		overlapFigures = new ConcurrentLinkedQueue<Overlap>();
 	
 		Figure fig = FigureFactory.make(this, cfig, null, null);
 		if(!fig.widthDependsOnHeight()){
@@ -98,17 +100,24 @@ public class FigureSWTApplet extends Composite
 	}
 	
 	public void triggerRecompute(){
-		redrawRequested = false;
-		busy = true;
-		viewPortHandler.beforeInitialise();
-		overlapFigures.clear();
-		for(FigureSWTApplet child : children){
-			child.triggerRecompute();
-		}
-		figure.registerIds(this, env.getNameResolver());
-		figure.registerConverts(env.getNameResolver());
-		figure.init(this, env.getNameResolver(), null, false, true);
-		viewPortHandler.notifyFigureChanged();  
+		final IFigureConstructionEnv thisRef = this;
+		getDisplay().asyncExec(new Runnable() {
+			
+			@Override
+			public void run() {
+				redrawRequested = false;
+				busy = true;
+				viewPortHandler.beforeInitialise();
+				overlapFigures.clear();
+				for(FigureSWTApplet child : children){
+					child.triggerRecompute();
+				}
+				figure.registerIds(thisRef, env.getNameResolver());
+				figure.registerConverts(env.getNameResolver());
+				figure.init(thisRef, env.getNameResolver(), null, false, true);
+				viewPortHandler.notifyFigureChanged();  
+			}
+		});
 	}
 
 	public void notifyLayoutChanged(){

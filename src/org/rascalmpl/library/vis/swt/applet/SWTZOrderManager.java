@@ -1,6 +1,7 @@
 package org.rascalmpl.library.vis.swt.applet;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -16,8 +17,8 @@ public class SWTZOrderManager implements IFigureChangedListener{
 	List<CoverSWTCanvas> covers;
 	FigureSWTApplet parent;
 	boolean firstDrawSinceFigureChanged;
-	List<Overlap> overlapFigures;
-	public SWTZOrderManager(FigureSWTApplet parent,List<Overlap> overlapFigures) {
+	Collection<Overlap> overlapFigures;
+	public SWTZOrderManager(FigureSWTApplet parent,Collection<Overlap> overlapFigures) {
 		swtZOrder = new LinkedList<Control>();
 		covers = new ArrayList<CoverSWTCanvas>();
 		this.parent = parent;
