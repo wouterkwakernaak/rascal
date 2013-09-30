@@ -1,4 +1,4 @@
-module experiments::Compiler::Tests::AllTests
+module experiments::Compiler::Tests::AllCompilerTests
 
 /*
  * A suite of tests for the Rascal compiler:

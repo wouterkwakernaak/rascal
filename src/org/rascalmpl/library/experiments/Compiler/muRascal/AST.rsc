@@ -103,6 +103,8 @@ public data MuExp =
           | muWhile(str label, MuExp cond, list[MuExp] body)	// While-Do expression
           | muDo(str label, list[MuExp] body, MuExp cond)		// Do-While expression
           
+          | muTypeSwitch(MuExp exp, list[MuTypeCase] cases, MuExp \default)		// switch over cases for specific type
+          
 		  | muBreak(str label)									// Break statement
 		  | muContinue(str label)								// Continue statement
 		  | muFail(str label)									// Fail statement
@@ -140,7 +142,9 @@ public data MuExp =
           | muTry(MuExp exp, MuCatch \catch, MuExp \finally)
           ;
  
- data MuCatch = muCatch(str id, Symbol \type, MuExp body);       	  
+data MuCatch = muCatch(str id, Symbol \type, MuExp body);    
+
+data MuTypeCase = muTypeCase(str name, MuExp exp);	  
        	  
 // Auxiliary constructors that are removed by the preprocessor: parse tree -> AST.
 // They will never be seen by later stages of the compiler.
@@ -163,11 +167,13 @@ public data MuExp =
             | preFunNN(str modName, str name, int nformals)
             | preFunN(lrel[str,int] funNames, str name, int nformals)
             | preList(list[MuExp] exps)
-            | preSubscript(MuExp lst, MuExp idx)
+            | preSubscriptArray(MuExp lst, MuExp idx)
+            | preSubscriptList(MuExp lst, MuExp idx)
+            | preSubscriptTuple(MuExp lst, MuExp idx)
             | preAssignLoc(str name, MuExp exp)
             | preAssign(lrel[str,int] funNames, str name, MuExp exp)
             | preAssignLocList(str name1, str name2, MuExp exp)
-            | preAssignSubscript(MuExp lst, MuExp idx, MuExp exp)
+            | preAssignSubscriptArray(MuExp lst, MuExp idx, MuExp exp)
             | preIfthen(MuExp cond, list[MuExp] thenPart)
             
             | preAddition(MuExp lhs, MuExp rhs)

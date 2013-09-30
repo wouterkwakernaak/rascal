@@ -863,7 +863,7 @@ public CheckResult checkExp(Expression exp:(Expression)`<Parameters ps> { <State
     // instead of in the surrounding environment.   
     rt = \void();
     Symbol funType = Symbol::\func(rt,[]);
-    cFun = addClosure(cFun, funType, exp@\loc);
+    cFun = addClosure(c, funType, exp@\loc);
     
     // Calculate the parameter types. This returns the parameters as a tuple. As
     // a side effect, names defined in the parameters are added to the environment.
@@ -2080,6 +2080,7 @@ public CheckResult checkExp(Expression exp:(Expression)`<Expression e1> o <Expre
 	if (isSetType(t1) && isVoidType(getSetElementType(t1))) t1 = makeRelType(makeVoidType(),makeVoidType());
 	if (isSetType(t2) && isVoidType(getSetElementType(t2))) t2 = makeRelType(makeVoidType(),makeVoidType());
 	
+	
     if (isMapType(t1) && isMapType(t2)) {
         if (subtype(getMapRangeType(t1),getMapDomainType(t2))) {
             return markLocationType(c, exp@\loc, makeMapType(stripLabel(getMapDomainType(t1)),stripLabel(getMapRangeType(t2))));
@@ -2207,12 +2208,19 @@ public CheckResult checkExp(Expression exp:(Expression)`<Expression e1> join <Ex
 	if (isSetType(t1) && isRelType(t2))
 		return markLocationType(c, exp@\loc, \rel( getSetElementType(t1) + [ stripLabel(t) | t <- getRelFields(t2) ] ));
 	
-	// TODO: Can we use join on list/lrel combinations?
+	if (isListRelType(t1) && isListType(t2))
+		return markLocationType(c, exp@\loc, \lrel( [ stripLabel(t) | t <- getListRelFields(t1) ] + getListElementType(t2) ));
+	
+	if (isListType(t1) && isListRelType(t2))
+		return markLocationType(c, exp@\loc, \lrel( getListElementType(t1) + [ stripLabel(t) | t <- getListRelFields(t2) ] ));
+	
+	if (isListType(t1) && isListType(t2))
+		return markLocationType(c, exp@\loc, \lrel([ getListElementType(t1), getListElementType(t2) ]));
 	
 	if (isSetType(t1) && isSetType(t2))
 		return markLocationType(c, exp@\loc, \rel([ getSetElementType(t1), getSetElementType(t2) ]));
 	
-    return markLocationFailed(c, exp@\loc, makeFailType("Composition not defined for <prettyPrintType(t1)> and <prettyPrintType(t2)>", exp@\loc));
+    return markLocationFailed(c, exp@\loc, makeFailType("Join not defined for <prettyPrintType(t1)> and <prettyPrintType(t2)>", exp@\loc));
 }
 
 @doc{Check the types of Rascal expressions: Remainder (DONE)}
@@ -2361,8 +2369,9 @@ public CheckResult computeSubtractionType(Configuration c, Symbol t1, Symbol t2,
 		return < c, t1 >;
     }
     
-    if (isListType(t1) && !comparable(getListElementType(t1),t2)) {
-		c = addScopeWarning(c, "<isListRelType(t1) ? "List Relation" : "List"> of type <prettyPrintType(t1)> could never contain elements of type <prettyPrintType(t2)>", l); 
+    if (isListType(t1)) {
+        if(!comparable(getListElementType(t1),t2))
+		   c = addScopeWarning(c, "<isListRelType(t1) ? "List Relation" : "List"> of type <prettyPrintType(t1)> could never contain elements of type <prettyPrintType(t2)>", l); 
 		return < c, t1 >;
     }
     
@@ -2372,8 +2381,9 @@ public CheckResult computeSubtractionType(Configuration c, Symbol t1, Symbol t2,
         return < c, t1 >;
     }
     
-    if (isSetType(t1)&& !comparable(getSetElementType(t1),t2)) {
-		c = addScopeWarning(c, "<isRelType(t1) ? "Relation" : "Set"> of type <prettyPrintType(t1)> could never contain elements of type <prettyPrintType(t2)>", l); 
+    if (isSetType(t1)) {
+        if(!comparable(getSetElementType(t1),t2))
+		   c = addScopeWarning(c, "<isRelType(t1) ? "Relation" : "Set"> of type <prettyPrintType(t1)> could never contain elements of type <prettyPrintType(t2)>", l); 
         return < c, t1 >;
     }
     
@@ -2383,8 +2393,9 @@ public CheckResult computeSubtractionType(Configuration c, Symbol t1, Symbol t2,
         return < c, t1 >;
     }
     
-    if (isBagType(t1)&& !comparable(getBagElementType(t1),t2)) {
-		c = addScopeWarning(c, "Bag of type <prettyPrintType(t1)> could never contain elements of type <prettyPrintType(t2)>", l); 
+    if (isBagType(t1)) {
+        if(!comparable(getBagElementType(t1),t2))
+		   c = addScopeWarning(c, "Bag of type <prettyPrintType(t1)> could never contain elements of type <prettyPrintType(t2)>", l); 
         return < c, t1 >;
     }
 
@@ -5280,7 +5291,12 @@ public Configuration checkDeclaration(Declaration decl:(Declaration)`<Tags tags>
         // TODO: Check for conversion errors
         < c, at > = convertAndExpandType(annoType,c);
         < c, ot > = convertAndExpandType(onType,c);
-        
+        if(isFailType(at)) {
+        	c.messages = c.messages + getFailures(at);
+        }
+        if(isFailType(ot)) {
+        	c.messages = c.messages + getFailures(ot);
+        }
         rn = convertName(n);
         c = addAnnotation(c,rn,at,ot,getVis(vis),decl@\loc);
     }
@@ -5428,6 +5444,9 @@ public Configuration checkFunctionDeclaration(FunctionDeclaration fd:(FunctionDe
     throwsTypes = [ ];
     for ( ttype <- getFunctionThrows(sig)) { 
         < c, ttypeC > = convertAndExpandType(ttype, c); 
+        if(isFailType(ttypeC)) {
+        	c.messages = c.messages + getFailures(ttypeC);
+        }
         throwsTypes += ttypeC; 
     }
     
@@ -5475,6 +5494,9 @@ public Configuration checkFunctionDeclaration(FunctionDeclaration fd:(FunctionDe
     throwsTypes = [ ];
     for ( ttype <- getFunctionThrows(sig)) { 
         < c, ttypeC > = convertAndExpandType(ttype, c); 
+        if(isFailType(ttypeC)) {
+        	c.messages = c.messages + getFailures(ttypeC);
+        }
         throwsTypes += ttypeC; 
     }
 
@@ -5524,6 +5546,9 @@ public Configuration checkFunctionDeclaration(FunctionDeclaration fd:(FunctionDe
     throwsTypes = [ ];
     for ( ttype <- getFunctionThrows(sig)) { 
         < c, ttypeC > = convertAndExpandType(ttype, c); 
+        if(isFailType(ttypeC)) {
+        	c.messages = c.messages + getFailures(ttypeC);
+        }
         throwsTypes += ttypeC; 
     }
 
@@ -5576,6 +5601,9 @@ public Configuration checkFunctionDeclaration(FunctionDeclaration fd:(FunctionDe
     throwsTypes = [ ];
     for ( ttype <- getFunctionThrows(sig)) { 
         < c, ttypeC > = convertAndExpandType(ttype, c); 
+        if(isFailType(ttypeC)) {
+        	c.messages = c.messages + getFailures(ttypeC);
+        }
         throwsTypes += ttypeC; 
     }
 
@@ -5713,12 +5741,20 @@ public Configuration importFunction(RName functionName, Signature sig, loc at, V
     throwsTypes = [ ];
     for ( ttype <- getFunctionThrows(sig)) { 
         < c, ttypeC > = convertAndExpandType(ttype, c); 
+        if(isFailType(ttypeC)) {
+        	c.messages = c.messages + getFailures(ttypeC);
+        }
         throwsTypes += ttypeC; 
     }
     set[Modifier] modifiers = getModifiers(sig);
-    cFun = c[fcvEnv = ( ename : c.fcvEnv[ename] | ename <- c.fcvEnv<0>, constructor(_,_,_,_) := c.store[c.fcvEnv[ename]] )];
+    cFun = c[fcvEnv = ( ename : c.fcvEnv[ename] | ename <- c.fcvEnv<0>, constructor(_,_,_,_) := c.store[c.fcvEnv[ename]]
+    																	// constructor names may be overloaded 
+    																	|| overload(_,_) := c.store[c.fcvEnv[ename]] )];
     cFun = addFunction(cFun, functionName, Symbol::\func(\void(),[]), modifiers, isVarArgs(sig), vis, throwsTypes, at);
     < cFun, tFun > = processSignature(sig, cFun);
+    if(isFailType(tFun)) {
+    	c.messages = c.messages + getFailures(tFun);
+    }
     c = addFunction(c, functionName, tFun, modifiers, isVarArgs(sig), vis, throwsTypes, at);
     return c;
 }
@@ -5788,6 +5824,12 @@ public Configuration importAnnotation(RName annName, Type annType, Type onType, 
     // NOTE: We also do not descend here. We just process these once, after all the types have been added.
     < c, atype > = convertAndExpandType(annType,c);
     < c, otype > = convertAndExpandType(onType,c);
+    if(isFailType(atype)) {
+        	c.messages = c.messages + getFailures(atype);
+        }
+    if(isFailType(otype)) {
+        c.messages = c.messages + getFailures(otype);
+    }
     return addAnnotation(c,annName,atype,otype,vis,at);
 }
 

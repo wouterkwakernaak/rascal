@@ -58,7 +58,9 @@ public enum Opcode {
 	OCALL           	(41,    3),
 	OCALLDYN	    	(42,	2),
 	CALLJAVA        	(43,    4),
-	THROW           	(44,    1)
+	THROW           	(44,    1),
+	JMPSWITCH			(45,	2),
+	UNWRAPTHROWN        (46,    2)
 	;
 	
 	private final int op;
@@ -118,6 +120,8 @@ public enum Opcode {
 	static public final int OP_OCALLDYN = 42;
 	static public final int OP_CALLJAVA = 43;
 	static public final int OP_THROW = 44;
+	static public final int OP_JMPSWITCH = 45;
+	static public final int OP_UNWRAPTHROWN = 46;
 	
 	 Opcode(int op, int pc_incr){
 		this.op = op;
@@ -268,6 +272,12 @@ public enum Opcode {
 			
 		case THROW:
 			return "THROW";
+			
+		case JMPSWITCH:
+			return "JMPSWITCH " + cb.getConstantValue(cb.finalCode[pc + 1]);
+			
+		case UNWRAPTHROWN:
+			return "UNWRAPTHROWN " + cb.finalCode[pc + 1];
 		
 		default:
 			break;

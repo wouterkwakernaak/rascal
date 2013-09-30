@@ -1,4 +1,4 @@
-module experiments::Compiler::Tests::CompileRascalLibs
+module experiments::Compiler::Tests::AllRascalLibs
 
 import Prelude;
 import experiments::Compiler::Compile;
@@ -24,31 +24,31 @@ list[str] libs = [
 //"DateTime"			/* Issue: caused by import of List 
                          */
 //"Exception", 			// OK
-//"Grammar", 			/* |rascal://experiments::Compiler::Rascal2muRascal::TypeUtils|(13601,5,<349,56>,<349,61>): NoSuchField("parameters")
-                    	   Caused by associativity in ParseTree
-						 */
+//"Grammar", 			// |rascal://experiments::Compiler::Rascal2muRascal::TypeUtils|(13601,5,<349,56>,<349,61>): NoSuchField("parameters")
+                    	 //  Caused by associativity in ParseTree
+						//
 //"IO", 				// OK
-//"List", 				/* |rascal://experiments::Compiler::Rascal2muRascal::RascalType|(2860,5,<55,29>,<55,34>): Undeclared variable: type
-						   Caused by:
-							public map[&K, &V] mapper(map[&K, &V] M, &L (&K) F, &W (&V) G)
-							{
-  								return (F(key) : G(M[key]) | &K key <- M);
+//"List", 				// |rascal://experiments::Compiler::Rascal2muRascal::RascalType|(2860,5,<55,29>,<55,34>): Undeclared variable: type
+						//  Caused by:
+						//	public map[&K, &V] mapper(map[&K, &V] M, &L (&K) F, &W (&V) G)
+						//	{
+  						//		return (F(key) : G(M[key]) | &K key <- M);
 							}
-						 */
+						// 
 
-//"ListRelation",		/* 	error("Field ran does not exist",|rascal:///ListRelation.rsc|(9146,3,<380,23>,<380,26>))
-							error("Field dom does not exist",|rascal:///ListRelation.rsc|(9151,3,<380,28>,<380,31>))
-							Caused by:
+//"ListRelation",		// 	error("Field ran does not exist",|rascal:///ListRelation.rsc|(9146,3,<380,23>,<380,26>))
+						//	error("Field dom does not exist",|rascal:///ListRelation.rsc|(9151,3,<380,28>,<380,31>))
+						/*	Caused by:
 							public set[list[&U]] groupDomainByRange(lrel[&U dom, &T ran] input) {
    								return ( i : (input<ran, dom>)[i] | i <- input.ran )<1>;
 							}
-							error("Multiple functions found which could be applied",|rascal:///ListRelation.rsc|(5082,9,<209,10>,<209,19>))
+							//error("Multiple functions found which could be applied",|rascal:///ListRelation.rsc|(5082,9,<209,10>,<209,19>))
 							Caused by:
 							public lrel[&T0, &T1] complement(lrel[&T0, &T1] R)
 							{
   								return (domain(R) * range(R)) - R;
 							}
-							error("Invalid return type set[set[&T \<: value ran]], expected return type set[list[&T \<: value]]",|rascal:///ListRelation.rsc|(9600,44,<394,3>,<394,47>))
+							//error("Invalid return type set[set[&T \<: value ran]], expected return type set[list[&T \<: value]]",|rascal:///ListRelation.rsc|(9600,44,<394,3>,<394,47>))
 							Caused by:
 							public set[list[&T]] groupRangeByDomain(lrel[&U dom, &T ran] input) {
    								return ( i : input[i] | i <- input.dom )<1>;
@@ -117,7 +117,7 @@ list[str] libs = [
 							|rascal://experiments::Compiler::Rascal2muRascal::TypeUtils|(13652,5,<351,27>,<351,32>): NoSuchField("parameters")
 						 */
 //"util::ShellExec",	// OK
-//"util::Webserver",	/* 	These errors seem justified, I have asked Davy to review this.
+"util::Webserver",	/* 	These errors seem justified, I have asked Davy to review this.
                             error("Constructor of type Response response : (Status status, str mimeType, map[str, str] header, str content) cannot be built with argument types (Status)",|rascal:///util/Webserver.rsc|(2032,22,<65,13>,<65,35>))
 							error("Function of type fun Response(str) cannot be called with argument types (Status)",|rascal:///util/Webserver.rsc|(2032,22,<65,13>,<65,35>))
 							error("Function of type fun Response(Status, str) cannot be called with argument types (Status)",|rascal:///util/Webserver.rsc|(2032,22,<65,13>,<65,35>))

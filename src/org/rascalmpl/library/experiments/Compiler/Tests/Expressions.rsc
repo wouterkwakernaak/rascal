@@ -1,5 +1,6 @@
 module experiments::Compiler::Tests::Expressions
 
+import Exception;
 extend  experiments::Compiler::Tests::TestUtils;
 
 // Booleans, see separate files Booleans.rsc
@@ -61,6 +62,8 @@ test bool tst() = run("$2013-01-01T08:15:30.055+0100$.timezoneOffsetMinutes") ==
 // Location
 
 // Many issues here where field access should generate an exception
+
+test bool tst() = run("|file:///home/paulk/pico.trm|(0,1,\<2,3\>,\<4,5\>)") == |file:///home/paulk/pico.trm|(0,1,<2,3>,<4,5>);
 test bool tst() = run("|http://www.rascal-mpl.org| == |http://www.rascal-mpl.org|") == (|http://www.rascal-mpl.org| == |http://www.rascal-mpl.org|);
 test bool tst() = run("|http://www.rascal-mpl.org| == |std://demo/basic/Hello.rsc|") == (|http://www.rascal-mpl.org| == |std://demo/basic/Hello.rsc|);
 
@@ -118,8 +121,13 @@ test bool tst() = run("[1, 2, 3] \>= [1, 2]") == [1, 2, 3] >= [1, 2];
 
 test bool tst() = run("[1, 2, 3] * [1, 2, 3]") == [1, 2, 3] * [1, 2, 3];
 
-// Typechecker:
-/*fails*///test bool tst() = run("[1, 2, 3] join [1, 2, 3]") == [1, 2, 3] join [1, 2, 3];
+// Returns the same tuples but in different order:
+//  [ <1,1>, <1,2>, <1,3>, <2,1>, <2,2>, <2,3>, <3,1>, <3,2>, <3,3> ]
+// versus
+// [ <3,3>, <3,2>, <3,1>, <2,3>, <2,2>, <2,1>, <1,3>, <1,2>, <1,1> ]
+// I prefer the first one (as given by the compiler)
+
+/*fails*/ //test bool tst() = run("[1, 2, 3] join [1, 2, 3]") == [1, 2, 3] join [1, 2, 3];
 
 test bool tst() = run("[\<1,10\>, \<2,20\>] join [\<300, 2000\>]") == [<1,10>, <2,20>] join [<300, 2000>];
 
@@ -164,6 +172,10 @@ test bool tst() = run("1 notin (1 : 10, 2 : 20)") == 1 notin (1 : 10, 2 : 20);
 // Node
 test bool tst() = run("\"abc\"(1, true, 3.5)") == "abc"(1, true, 3.5);
 
+// ADT
+
+test bool tst() = run("d1(3, \"a\") \>= d1(2, \"a\")") == d1(3, "a") >= d1(2, "a");
+
 
 // Enumerator
 
@@ -197,6 +209,9 @@ test bool tst() = run("res = []; for(x \<- [1, 0 .. 10]) res = res + [x];", "res
 
 test bool tst() = run("res = []; for(x \<- [10, 8 .. 0]) res = res + [x];", "res") == {res = []; for(x <- [10, 8 .. 0]) res = res + [x]; res;};
 test bool tst() = run("res = []; for(x \<- [10, 11 .. 0]) res = res + [x];", "res") == {res = []; for(x <- [10, 11 .. 0]) res = res + [x]; res;};
+
+// For now, we do not support ranges outside enumerators.
+/*fails*/ //test bool tst() = run("[1 .. 10];") == [1..10];
 
 // List Comprehension
 
@@ -240,6 +255,16 @@ test bool tst() = run("{x = \<1, 2, 3\>; x [1];}") ==  {x = <1, 2, 3>; x [1];};
 test bool tst() = run("{x = \"abc\"; x [1];}") ==  {x = "abc"; x [1];};
 test bool tst() = run("{x = \"f\"(1, 2, 3); x [1];}") ==  {x = "f"(1, 2, 3); x [1];};
 test bool tst() = run("{x = d1(1, \"a\"); x [1];}") ==  {x = d1(1, "a"); x [1];};
+
+// Subscript (IndexOutOfBounds)
+test bool tst() = run("{x = [1, 2, 3]; int elem = 0; try { elem = x[5]; } catch IndexOutOfBounds(int index): { elem = 100 + index; } elem; }", ["Exception"]) 
+					== {x = [1, 2, 3]; int elem = 0; try { elem = x[5]; } catch IndexOutOfBounds(int index): { elem = 100 + index; } elem; };
+test bool tst() = run("{x = \"abc\"; str elem = \"\"; try { elem = x[6]; } catch IndexOutOfBounds(int index): { s = \"\<index\>\"; elem = \"100\" + s; } elem; }", ["Exception"]) 
+					== {x = "abc";   str elem = "";   try { elem = x[6]; } catch IndexOutOfBounds(int index): { s = "<index>";     elem = "100" + s; }   elem; };
+test bool tst() = run("{x = \"f\"(1, 2, 3); value elem = 0; try { elem = x[7]; } catch IndexOutOfBounds(int index): { elem = 100 + index; } elem; }", ["Exception"]) 
+				   ==  {x = "f"(1, 2, 3);   value elem = 0; try { elem = x[7]; } catch IndexOutOfBounds(int index): { elem = 100 + index; } elem; };
+test bool tst() = run("{x = d1(1, \"a\"); value elem = 0; try { x[8]; } catch IndexOutOfBounds(int index): { elem = 100 + index; } elem; }", ["Exception"]) 
+				   ==  {x = d1(1, "a");   value elem = 0; try { x[8]; } catch IndexOutOfBounds(int index): { elem = 100 + index; } elem; };
 
 test bool tst() = run("{x = [[1, 2, 3], [10, 20, 30], [100, 200, 300]]; x[1][0];}") == {x = [[1, 2, 3], [10, 20, 30], [100, 200, 300]]; x[1][0];};
 test bool tst() = run("{x = [[1, 2, 3], [10, 20, 30], [100, 200, 300]]; x[1][0] = 1000; x[1][0];}") == {x = [[1, 2, 3], [10, 20, 30], [100, 200, 300]]; x[1][0] = 1000; x[1][0];};
