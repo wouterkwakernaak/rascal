@@ -132,11 +132,15 @@ MuExp translate (e:(Expression) `<Pattern pat> \<- [ <Expression first> , <Expre
 
 // Range
 
-MuExp translate (e:(Expression) `[ <Expression first> .. <Expression last> ]`) =
-    muCallPrim("range_create", [translate(first), translate(last)]);
+MuExp translate (e:(Expression) `[ <Expression first> .. <Expression last> ]`) {
+   kind = (getOuterType(first) == "int" && getOuterType(last) == "int") ? "int" : "real";
+   return muCallPrim("range_create_<kind>", [translate(first), translate(last)]);
+}
 
-MuExp translate (e:(Expression) `[ <Expression first> , <Expression second> .. <Expression last> ]`) =
-   muCallPrim("range_step_create", [translate(first),  translate(second), translate(last)]);
+MuExp translate (e:(Expression) `[ <Expression first> , <Expression second> .. <Expression last> ]`) {
+   kind = (getOuterType(first) == "int" && getOuterType(second) == "int" && getOuterType(last) == "int") ? "int" : "real";
+   return muCallPrim("range_step_create_<kind>", [translate(first),  translate(second), translate(last)]);
+}
 
 // Visit
 MuExp translate (e:(Expression) `<Label label> <Visit \visit>`) = translateVisit(label, \visit);
@@ -294,12 +298,14 @@ MuExp translate (e:(Expression) `<Expression expression> \< <{Field ","}+ fields
 }
 
 // setAnnotation
-MuExp translate (e:(Expression) `<Expression expression> [ @ <Name name> = <Expression \value> ]`) =
-    muCallPrim("annotation_set", [translate(expression), muCon("<name>"), translate(\value)]);
+MuExp translate (e:(Expression) `<Expression expression> [ @ <Name name> = <Expression val> ]`) =
+    muCallPrim("annotation_set", [translate(expression), muCon("<name>"), translate(val)]);
 
 // getAnnotation
-MuExp translate (e:(Expression) `<Expression expression> @ <Name name>`) =
-    muCallPrim("annotation_get", [translate(expression), muCon("<name>")]);
+MuExp translate (e:(Expression) `<Expression expression> @ <Name name>`) {
+println("getAnnotation: <e>");
+    return muCallPrim("annotation_get", [translate(expression), muCon("<name>")]);
+    }
 
 // Is
 MuExp translate (e:(Expression) `<Expression expression> is <Name name>`) =
