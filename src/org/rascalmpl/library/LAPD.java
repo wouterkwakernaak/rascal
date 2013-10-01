@@ -1,6 +1,7 @@
 package org.rascalmpl.library;
 
 import java.io.IOException;
+import java.util.UUID;
 
 import org.eclipse.imp.pdb.facts.IConstructor;
 import org.eclipse.imp.pdb.facts.IString;
@@ -31,6 +32,10 @@ public class LAPD {
 	public IValue read(IString id, IValue reifiedType) throws GraphDbMappingException  {
 		org.eclipse.imp.pdb.facts.type.Type type = typeReifier.valueToType((IConstructor)reifiedType);
 		return graphDbValueIO.read(id.toString(), type);
+	}
+	
+	public IString getRandomId() {
+		return valueFactory.string(UUID.randomUUID().toString());
 	}
 
 }
