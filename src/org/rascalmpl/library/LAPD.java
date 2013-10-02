@@ -34,7 +34,7 @@ public class LAPD {
 		return graphDbValueIO.read(id.toString(), type);
 	}
 	
-	public IString getRandomId() {
+	public IString generateRandomId() {
 		return valueFactory.string(UUID.randomUUID().toString());
 	}
 

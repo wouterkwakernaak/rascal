@@ -7,4 +7,4 @@ public java void write(str id, value v);
 public java &T read(str id, type[&T] v);
 
 @javaClass{org.rascalmpl.library.LAPD}
-public java str getRandomId();
+public java str generateRandomId();
