@@ -7,8 +7,8 @@ import org.eclipse.imp.pdb.facts.IConstructor;
 import org.eclipse.imp.pdb.facts.IString;
 import org.eclipse.imp.pdb.facts.IValue;
 import org.eclipse.imp.pdb.facts.IValueFactory;
+import org.eclipse.imp.pdb.facts.type.TypeStore;
 import org.rascalmpl.interpreter.TypeReifier;
-
 import lapd.neo4j.GraphDbMappingException;
 import lapd.neo4j.GraphDbValueIO;
 
@@ -30,8 +30,9 @@ public class LAPD {
 	}
 
 	public IValue read(IString id, IValue reifiedType) throws GraphDbMappingException  {
-		org.eclipse.imp.pdb.facts.type.Type type = typeReifier.valueToType((IConstructor)reifiedType);
-		return graphDbValueIO.read(id.toString(), type);
+		TypeStore typeStore = new TypeStore();
+		org.eclipse.imp.pdb.facts.type.Type type = typeReifier.valueToType((IConstructor)reifiedType, typeStore);
+		return graphDbValueIO.read(id.toString(), type, typeStore);
 	}
 	
 	public IString generateRandomId() {
