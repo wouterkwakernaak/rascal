@@ -164,8 +164,7 @@ RVMProgram mu2rvm(muModule(str module_name, list[loc] imports, map[str,Symbol] t
   
   funMap += (module_init_fun : FUNCTION(module_init_fun, ftype, "" /*in the root*/, 1, size(variables) + 1, defaultStackSize, 
   									[*tr(initializations), 
-  									 //LOADLOC(0), 
-  									 //CALL(main_fun,1), // No overloading of main
+  									 LOADCON(true),
   									 RETURN1(),
   									 HALT()
   									],
@@ -255,6 +254,7 @@ INS tr(muVarDeref(str name, str fuid, int pos)) = [ fuid == functionScope ? LOAD
 
 INS tr(muLocRef(str name, int pos)) = [ LOADLOCREF(pos) ];
 INS tr(muVarRef(str name, str fuid, int pos)) = [ fuid == functionScope ? LOADLOCREF(pos) : LOADVARREF(fuid, pos) ];
+INS tr(muTmpRef(str name)) = [ LOADLOCREF(getTmp(name)) ];
 
 INS tr(muAssignLocDeref(str id, int pos, MuExp exp)) = [ *tr(exp), STORELOCDEREF(pos) ];
 INS tr(muAssignVarDeref(str id, str fuid, int pos, MuExp exp)) = [ *tr(exp), fuid == functionScope ? STORELOCDEREF(pos) : STOREVARDEREF(fuid, pos) ];
@@ -278,13 +278,10 @@ INS tr(muCall(MuExp fun, list[MuExp] args)) = [*tr(args), *tr(fun), CALLDYN(size
 // Rascal functions
 
 INS tr(muOCall(muOFun(str fuid), list[MuExp] args)) = [*tr(args), OCALL(fuid, size(args))];
-INS tr(muOCall(MuExp fun, set[Symbol] types, list[MuExp] args)) 
-	= { list[MuExp] targs = [ muTypeCon(t) | t <- types ]; 
-		[ *tr(targs), CALLMUPRIM("make_array",size(targs)), // this order is to optimize the stack size
-		  *tr(args), 
-		  *tr(fun), 
-		  OCALLDYN(size(args))]; 
-	  };
+INS tr(muOCall(MuExp fun, Symbol types, list[MuExp] args)) 
+	= [ *tr(args), 
+		*tr(fun), 
+		OCALLDYN(types, size(args))];
 
 INS tr(muCallPrim(str name, list[MuExp] args)) = (name == "println") ? [*tr(args), PRINTLN(size(args))] : [*tr(args), CALLPRIM(name, size(args))];
 
@@ -303,6 +300,8 @@ INS tr(muReturn(MuExp exp)) {
 	return [*tr(exp), RETURN1()];
 }
 INS tr(muFailReturn()) = [ FAILRETURN() ];
+
+INS tr(muFilterReturn()) = [ FILTERRETURN() ];
 
 // Coroutines
 
@@ -434,7 +433,8 @@ void trMuCatch(muCatch(str id, Symbol \type, MuExp exp), str from, str fromAsPar
 		
 }
 
-INS trMuFinally(MuExp \finally) = tr(\finally);
+// TODO: Re-think the way empty 'finally' blocks are translated
+INS trMuFinally(MuExp \finally) = (muBlock([]) := \finally) ? [ LOADCON(666), POP() ] : tr(\finally);
 
 void inlineMuFinally() {
 	
@@ -477,7 +477,7 @@ void inlineMuFinally() {
 	
 	finallyBlock = [ LABEL(finally_from) ];
 	for(int i <- [0..size(finallyStack)]) {
-		finallyBlock = [ *finallyBlock, *tr(finallyStack[i]), LABEL(finally_to + "_<i>") ];
+		finallyBlock = [ *finallyBlock, *trMuFinally(finallyStack[i]), LABEL(finally_to + "_<i>") ];
 		if(i < size(finallyStack) - 1) {
 			EEntry currentTry = topTry();
 			// Fill in the 'catch' block entry into the current exception table

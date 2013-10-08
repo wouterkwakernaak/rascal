@@ -8,6 +8,7 @@ import experiments::Compiler::Rascal2muRascal::TmpAndLabel;
 import experiments::Compiler::Rascal2muRascal::RascalModule;
 import experiments::Compiler::Rascal2muRascal::RascalExpression;
 import experiments::Compiler::Rascal2muRascal::RascalPattern;
+import experiments::Compiler::Rascal2muRascal::RascalType;
 
 import experiments::Compiler::muRascal::AST;
 import experiments::Compiler::Rascal2muRascal::TypeUtils;
@@ -184,7 +185,7 @@ MuExp translate(s: (Statement) `break <Target target> ;`) = muBreak(target is em
 
 MuExp translate(s: (Statement) `continue <Target target> ;`) = muContinue(target is empty ? currentLoop() : "<target.name>");
 
-MuExp translate(s: (Statement) `filter ;`) { throw("filter"); }
+MuExp translate(s: (Statement) `filter ;`) = muFilterReturn();
 
 MuExp translate(s: (Statement) `solve ( <{QualifiedName ","}+ variables> <Bound bound> ) <Statement body>`) = translateSolve(s);
 
@@ -236,8 +237,20 @@ MuExp translateCatches(str varname, list[Catch] catches, bool hasDefault) {
   if(c is binding) {
       ifname = nextLabel();
       enterBacktrackingScope(ifname);
-      conds = [ muMulti(muCreate(mkCallToLibFun("Library","MATCH",2), [translatePat(c.pattern), muTmp(asUnwrapedThrown(varname))])) ];
-      exp = muIfelse(ifname, muAll(conds), [translate(c.body)], [translateCatches(varname, tail(catches), hasDefault)]);
+      list[MuExp] conds = [];
+      list[MuExp] then = [];
+      if(c.pattern is literal) {
+          conds = [ muCallMuPrim("equal", [ muTmp(asUnwrapedThrown(varname)), translate(c.pattern.literal) ]) ];
+          then = [ translate(c.body) ];
+      } else if(c.pattern is typedVariable) {
+          conds = [ muCallMuPrim("check_arg_type", [ muTmp(asUnwrapedThrown(varname)), muTypeCon(translateType(c.pattern.\type)) ]) ];
+          <fuid,pos> = getVariableScope("<c.pattern.name>", c.pattern.name@\loc);
+          then = [ muAssign("<c.pattern.name>", fuid, pos, muTmp(asUnwrapedThrown(varname))), translate(c.body) ];
+      } else {
+          conds = [ muMulti(muCreate(mkCallToLibFun("Library","MATCH",2), [translatePat(c.pattern), muTmp(asUnwrapedThrown(varname))])) ];
+          then = [ translate(c.body) ];
+      }
+      exp = muIfelse(ifname, muAll(conds), then, [translateCatches(varname, tail(catches), hasDefault)]);
       leaveBacktrackingScope();
       return exp;
   }
@@ -269,7 +282,7 @@ MuExp translate(s: (Statement) `return <Statement statement>`) {
 
 MuExp translate(s: (Statement) `throw <Statement statement>`) = muThrow(translate(statement));
 
-MuExp translate(s: (Statement) `insert <DataTarget dataTarget> <Statement statement>`) { throw("insert"); }
+MuExp translate(s: (Statement) `insert <DataTarget dataTarget> <Statement statement>`) = translate(statement);
 
 MuExp translate(s: (Statement) `append <DataTarget dataTarget> <Statement statement>`) =
    muCallPrim("listwriter_add", [muTmp(asTmp(currentLoop())), translate(statement)]);
@@ -362,7 +375,12 @@ MuExp translateAssignment(s: (Statement) `<Assignable assignable> <Assignment op
 MuExp applyAssignmentOperator(str operator, assignable, statement) {
     if(operator == "=")
     	return translate(statement);
-    op1 = ("+=" : "add", "-=" : "subtract", "*=" : "product", "/=" : "divide", "&=" : "intersect")[operator];  // missing ?=
+    if(operator == "?="){
+        oldval = getValues(assignable);
+        assert size(oldval) == 1;	
+        return generateIfDefinedOtherwise(oldval[0], translate(statement));
+    }
+    op1 = ("+=" : "add", "-=" : "subtract", "*=" : "product", "/=" : "divide", "&=" : "intersect")[operator]; 
     op2 = "<getOuterType(assignable)>_<op1>_<getOuterType(statement)>";
     oldval = getValues(assignable);
     assert size(oldval) == 1;
@@ -384,11 +402,11 @@ MuExp assignTo(a: (Assignable) `<Assignable receiver> [ <OptionalExpression optF
 MuExp assignTo(a: (Assignable) `<Assignable receiver> [ <OptionalExpression optFirst> , <Expression second> .. <OptionalExpression optLast> ]`) =
      assignTo(receiver, muCallPrim("<getOuterType(receiver)>_replace", [*getValues(receiver), translateOpt(optFirst), translate(second), translateOpt(optLast), rhs]));
 
-MuExp assignTo(a: (Assignable) `<Assignable receiver> . <Name field>`, MuExp rhs){
-    return assignTo(receiver, muCallPrim("<getOuterType(receiver)>_update", [*getValues(receiver), muCon("<field>"), rhs]) );
-}
+MuExp assignTo(a: (Assignable) `<Assignable receiver> . <Name field>`, MuExp rhs) =
+     assignTo(receiver, muCallPrim("<getOuterType(receiver)>_field_update", [*getValues(receiver), muCon("<field>"), rhs]) );
 
-// ifdefined
+MuExp assignTo(a: (Assignable) `<Assignable receiver> ? <Expression defaultExpression>`, MuExp rhs) = 
+	assignTo(receiver,  rhs);
 
 MuExp assignTo(a: (Assignable) `\<  <{Assignable ","}+ elements> \>`, MuExp rhs) {
 	nelems = size_assignables(elements);
@@ -413,7 +431,7 @@ MuExp assignTo(a: (Assignable) `<Name name> ( <{Assignable ","}+ arguments> )`, 
 }
 
 MuExp assignTo(a: (Assignable) `<Assignable receiver> @ <Name annotation>`,  MuExp rhs) =
-     assignTo(receiver, muCallPrim("annotation_setupdate", [*getValues(receiver), muCon("<field>"), rhs]));
+     assignTo(receiver, muCallPrim("annotation_set", [*getValues(receiver), muCon("<annotation>"), rhs]));
 
 // getValues: get the current value(s) of an assignable
 
@@ -438,14 +456,15 @@ list[MuExp] getValues(a: (Assignable) `<Assignable receiver> [ <OptionalExpressi
 list[MuExp] getValues(a:(Assignable) `<Assignable receiver> . <Name field>`) = 
     [ muCallPrim("<getOuterType(receiver)>_field_access", [ *getValues(receiver), muCon("<field>")]) ];
 
-// ifdefined
+list[MuExp] getValues(a: (Assignable) `<Assignable receiver> ? <Expression defaultExpression>`) = 
+     [ generateIfDefinedOtherwise(getValues(receiver)[0], translate(defaultExpression)) ];
 
 list[MuExp] getValues(a:(Assignable) `\<  <{Assignable ","}+ elements > \>` ) = [ *getValues(elm) | elm <- elements ];
 
 list[MuExp] getValues(a:(Assignable) `<Name name> ( <{Assignable ","}+ arguments> )` ) = [ *getValues(arg) | arg <- arguments ];
 
 list[MuExp] getValues(a: (Assignable) `<Assignable receiver> @ <Name annotation>`) = 
-    [ muCallPrim("annotation_get", [ *getValues(receiver), muCon("<field>")]) ];
+    [ muCallPrim("annotation_get", [ *getValues(receiver), muCon("<annotation>")]) ];
 
 // getReceiver: get the final receiver of an assignable
 
@@ -454,7 +473,7 @@ Assignable getReceiver(a: (Assignable) `<Assignable receiver> [ <Expression subs
 Assignable getReceiver(a: (Assignable) `<Assignable receiver> [ <OptionalExpression optFirst> .. <OptionalExpression optLast> ]`) = getReceiver(receiver);
 Assignable getReceiver(a: (Assignable) `<Assignable receiver> [ <OptionalExpression optFirst>, <Expression second> .. <OptionalExpression optLast> ]`) = getReceivers(receiver);  
 Assignable getReceiver(a: (Assignable) `<Assignable receiver> . <Name field>`) = getReceiver(receiver); 
-Assignable getReceives(a: (Assignable) `<Assignable receiver> ? <Expression defaultExpression>`) = getReceiver(receiver); 
+Assignable getReceiver(a: (Assignable) `<Assignable receiver> ? <Expression defaultExpression>`) = getReceiver(receiver); 
 Assignable getReceiver(a: (Assignable) `<Name name> ( <{Assignable ","}+ arguments> )`) = a;
 Assignable getReceiver(a: (Assignable) `\< <{Assignable ","}+ elements> \>`) =  a;
 Assignable getReceiver(a: (Assignable) `<Assignable receiver> @ <Name annotation>`) = getReceiver(receiver); 

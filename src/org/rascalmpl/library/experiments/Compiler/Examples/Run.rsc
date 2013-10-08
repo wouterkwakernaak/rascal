@@ -20,6 +20,7 @@ import experiments::Compiler::Examples::Overloading2;
 import experiments::Compiler::Examples::Overloading3;
 import experiments::Compiler::Examples::OverloadingMatch;
 import experiments::Compiler::Examples::OverloadingPlusBacktracking;
+import experiments::Compiler::Examples::OverloadingDynamicCall;
 import experiments::Compiler::Examples::ExceptionHandling1;
 import experiments::Compiler::Examples::ExceptionHandling2;
 import experiments::Compiler::Examples::ExceptionHandling3;
@@ -33,6 +34,8 @@ import experiments::Compiler::Examples::ExceptionHandlingFinally7;
 import experiments::Compiler::Examples::ExceptionHandlingFinally8;
 import experiments::Compiler::Examples::RascalRuntimeExceptions;
 import experiments::Compiler::Examples::IsDefined;
+import experiments::Compiler::Examples::UninitializedVariables;
+import experiments::Compiler::Examples::IfDefinedOtherwise;
 
 loc base = |std:///experiments/Compiler/Examples/|;
 
@@ -57,6 +60,7 @@ test bool tst() = demo("Overloading2") == experiments::Compiler::Examples::Overl
 test bool tst() = demo("Overloading3") == experiments::Compiler::Examples::Overloading3::main([]);
 test bool tst() = demo("OverloadingMatch") == experiments::Compiler::Examples::OverloadingMatch::main([]);
 test bool tst() = demo("OverloadingPlusBacktracking") == experiments::Compiler::Examples::OverloadingPlusBacktracking::main([]);
+test bool tst() = demo("OverloadingDynamicCall") == experiments::Compiler::Examples::OverloadingDynamicCall::main([]);
 test bool tst() = demo("ExceptionHandling1") == experiments::Compiler::Examples::ExceptionHandling1::main([]);
 test bool tst() = demo("ExceptionHandling2") == experiments::Compiler::Examples::ExceptionHandling2::main([]);
 test bool tst() = demo("ExceptionHandling3") == experiments::Compiler::Examples::ExceptionHandling3::main([]);
@@ -70,3 +74,5 @@ test bool tst() = demo("ExceptionHandlingFinally7") == experiments::Compiler::Ex
 test bool tst() = demo("ExceptionHandlingFinally8") == experiments::Compiler::Examples::ExceptionHandlingFinally8::main([]);
 test bool tst() = demo("RascalRuntimeExceptions") == experiments::Compiler::Examples::RascalRuntimeExceptions::main([]);
 test bool tst() = demo("IsDefined") == experiments::Compiler::Examples::IsDefined::main([]);
+test bool tst() = demo("UninitializedVariables") == experiments::Compiler::Examples::UninitializedVariables::expectedResult;
+test bool tst() = demo("IfDefinedOtherwise") == experiments::Compiler::Examples::IfDefinedOtherwise::expectedResult;

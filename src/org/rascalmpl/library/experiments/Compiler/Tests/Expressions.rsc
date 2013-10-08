@@ -57,6 +57,22 @@ test bool tst() = run("$2013-01-01T08:15:30.055+0100$.second") == $2013-01-01T08
 test bool tst() = run("$2013-01-01T08:15:30.055+0100$.millisecond") == $2013-01-01T08:15:30.055+0100$.millisecond;
 test bool tst() = run("$2013-01-01T08:15:30.055+0100$.timezoneOffsetHours") == $2013-01-01T08:15:30.055+0100$.timezoneOffsetHours;
 test bool tst() = run("$2013-01-01T08:15:30.055+0100$.timezoneOffsetMinutes") == $2013-01-01T08:15:30.055+0100$.timezoneOffsetMinutes;
+test bool tst() = run("$2013-01-01T08:15:30.055+0100$.justTime") == $2013-01-01T08:15:30.055+0100$.justTime;
+test bool tst() = run("$2013-01-01T08:15:30.055+0100$.justDate") == $2013-01-01T08:15:30.055+0100$.justDate;
+
+// field update
+
+
+
+test bool tst() = run("{DT = $2013-01-01T08:15:30.055+0100$; DT.year += 1; DT;}") == {DT = $2013-01-01T08:15:30.055+0100$; DT.year += 1; DT;};
+test bool tst() = run("{DT = $2013-01-01T08:15:30.055+0100$; DT.month += 1; DT;}") == {DT = $2013-01-01T08:15:30.055+0100$; DT.month += 1; DT;};
+test bool tst() = run("{DT = $2013-01-01T08:15:30.055+0100$; DT.day += 1; DT;}") == {DT = $2013-01-01T08:15:30.055+0100$; DT.day += 1; DT;};
+test bool tst() = run("{DT = $2013-01-01T08:15:30.055+0100$; DT.hour += 1; DT;}") == {DT = $2013-01-01T08:15:30.055+0100$; DT.hour += 1; DT;};
+test bool tst() = run("{DT = $2013-01-01T08:15:30.055+0100$; DT.minute += 1; DT;}") == {DT = $2013-01-01T08:15:30.055+0100$; DT.minute += 1; DT;};
+test bool tst() = run("{DT = $2013-01-01T08:15:30.055+0100$; DT.second += 1; DT;}") == {DT = $2013-01-01T08:15:30.055+0100$; DT.second += 1; DT;};
+test bool tst() = run("{DT = $2013-01-01T08:15:30.055+0100$; DT.millisecond += 1; DT;}") == {DT = $2013-01-01T08:15:30.055+0100$; DT.millisecond += 1; DT;};
+test bool tst() = run("{DT = $2013-01-01T08:15:30.055+0100$; DT.timezoneOffsetHours +=1; DT;}") == {DT = $2013-01-01T08:15:30.055+0100$; DT.timezoneOffsetHours +=1; DT;};
+test bool tst() = run("{DT = $2013-01-01T08:15:30.055+0100$; DT.timezoneOffsetMinutes += 1; DT; }") == {DT = $2013-01-01T08:15:30.055+0100$; DT.timezoneOffsetMinutes += 1; DT; };
 
 
 // Location
@@ -70,19 +86,43 @@ test bool tst() = run("|http://www.rascal-mpl.org| == |std://demo/basic/Hello.rs
 test bool tst() = run("|std:///experiments/Compiler/Benchmarks/|.uri") == |std:///experiments/Compiler/Benchmarks/|.uri;
 test bool tst() = run("|std:///experiments/Compiler/Benchmarks/|.scheme") == |std:///experiments/Compiler/Benchmarks/|.scheme;
 test bool tst() = run("|std:///experiments/Compiler/Benchmarks/|.authority") == |std:///experiments/Compiler/Benchmarks/|.authority;
-/*fails*/ //test bool tst() = run("|std:///experiments/Compiler/Benchmarks/|.host") == |std:///experiments/Compiler/Benchmarks/|.host;
-/*fails*/ //test bool tst() = run("|std:///experiments/Compiler/Benchmarks/|.port") == |std:///experiments/Compiler/Benchmarks/|.port;
+test bool tst() = run("|http://www.rascal-mpl.org|.host") == |http://www.rascal-mpl.org|.host;
+test bool tst() = run("|http://www.rascal-mpl.org|.port") == |http://www.rascal-mpl.org|.port;
 test bool tst() = run("|std:///experiments/Compiler/Benchmarks/|.path") == |std:///experiments/Compiler/Benchmarks/|.path;
 test bool tst() = run("|std:///experiments/Compiler/Benchmarks/|.extension") == |std:///experiments/Compiler/Benchmarks/|.extension;
 test bool tst() = run("|std:///experiments/Compiler/Benchmarks/|.fragment") == |std:///experiments/Compiler/Benchmarks/|.fragment;
-/*fails*/ //test bool tst() = run("|std:///experiments/Compiler/Benchmarks/|.parent") == |std:///experiments/Compiler/Benchmarks/|.parent;
-/*fails*/ //test bool tst() = run("|std:///experiments/Compiler/Benchmarks/|.file") == |std:///experiments/Compiler/Benchmarks/|.file;
-/*fails*/ //test bool tst() = run("|std:///experiments/Compiler/Benchmarks/|.ls") == |std:///experiments/Compiler/Benchmarks/|.ls;
-/*fails*/ //test bool tst() = run("|std:///experiments/Compiler/Benchmarks/|.offset") == |file://-|(11,37,<1,11>,<1,48>).offset;
-/*fails*/ //test bool tst() = run("|std:///experiments/Compiler/Benchmarks/|.begin.line") == |file://-|(11,37,<1,11>,<1,48>).begin.line;
-/*fails*/ //test bool tst() = run("|std:///experiments/Compiler/Benchmarks/|.begin.column") == |file://-|(11,37,<1,11>,<1,48>).begin.column;
-/*fails*/ //test bool tst() = run("|std:///experiments/Compiler/Benchmarks/|.end.line") == |file://-|(11,37,<1,11>,<1,48>).end.line;
-/*fails*/ //test bool tst() = run("|std:///experiments/Compiler/Benchmarks/|.end.column") == |file://-|(11,37,<1,11>,<1,48>).end.column;
+test bool tst() = run("|std:///experiments/Compiler/Benchmarks|.parent") == |std:///experiments/Compiler/Benchmarks|.parent;
+test bool tst() = run("|std:///experiments/Compiler/Benchmarks/Bottles.rsc|.file") == |std:///experiments/Compiler/Benchmarks/Bottles.rsc|.file;
+test bool tst() = run("|home:///|.ls") == |home:///|.ls;
+test bool tst() = run("|file://-|(11,37,\<1,11\>,\<1,48\>).offset") == |file://-|(11,37,<1,11>,<1,48>).offset;
+test bool tst() = run("|file://-|(11,37,\<1,11\>,\<1,48\>).begin.line") == |file://-|(11,37,<1,11>,<1,48>).begin.line;
+test bool tst() = run("|file://-|(11,37,\<1,11\>,\<1,48\>).begin.column") == |file://-|(11,37,<1,11>,<1,48>).begin.column;
+test bool tst() = run("|file://-|(11,37,\<1,11\>,\<1,48\>).end.line") == |file://-|(11,37,<1,11>,<1,48>).end.line;
+test bool tst() = run("|file://-|(11,37,\<1,11\>,\<1,48\>).end.column") == |file://-|(11,37,<1,11>,<1,48>).end.column;
+
+// field update
+test bool tst() = run("{L = |std:///experiments/Compiler/Benchmarks/|; L.uri = \"xxx\"; L;}") == {L = |std:///experiments/Compiler/Benchmarks/|; L.uri = "xxx"; L;};
+test bool tst() = run("{L = |std:///experiments/Compiler/Benchmarks/|; L.scheme= \"xxx\"; L;}") == {L = |std:///experiments/Compiler/Benchmarks/|; L.scheme = "xxx"; L;};
+test bool tst() = run("{L = |std:///experiments/Compiler/Benchmarks/|; L.authority= \"xxx\"; L;}") == {L = |std:///experiments/Compiler/Benchmarks/|; L.authority= "xxx"; L;};
+test bool tst() = run("{L = |http://www.rascal-mpl.org|; L.host = \"xxx\"; L;}") == {L = |http://www.rascal-mpl.org|; L.host = "xxx"; L;};
+test bool tst() = run("{L = |http://www.rascal-mpl.org|; L.port=123; L;}") =={L = |http://www.rascal-mpl.org|; L.port=123; L;};
+test bool tst() = run("{L = |std:///experiments/Compiler/Benchmarks/|; L.path = \"xxx\"; L;}") == {L = |std:///experiments/Compiler/Benchmarks/|; L.path = "xxx"; L;};
+test bool tst() = run("{L = |std:///experiments/Compiler/Benchmarks/|; L.extension=\"xxx\"; L;}") == {L = |std:///experiments/Compiler/Benchmarks/|; L.extension="xxx"; L;};
+test bool tst() = run("{L = |std:///experiments/Compiler/Benchmarks/|; L.fragment= \"xxx\"; L;}") == {L = |std:///experiments/Compiler/Benchmarks/|; L.fragment= "xxx"; L;};
+test bool tst() = run("{L = |std:///experiments/Compiler/Benchmarks/Bottles.rsc|; L.file = \"xxx\"; L;}") == {L = |std:///experiments/Compiler/Benchmarks/Bottles.rsc|; L.file = "xxx"; L;};
+
+test bool tst() = run("{L = |file://-|(11,37,\<1,11\>,\<1,48\>); L.offset = 100; L;}") == {L = |file://-|(11,37,<1,11>,<1,48>); L.offset = 100; L;};
+// Mysterious case: gives true when executed manually.
+/*fails*/ //test bool tst() = run("{loc L = |file://-|(11,37,\<1,11\>,\<1,48\>);L.begin = \<1,20\>; L;}") == { loc L =|file://-|(11,37,<1,11>,<1,48>); L.begin= <1,20>; L;};
+
+test bool tst() = run("{L = |file://-|(11,37,\<1,11\>,\<1,48\>); L.end = \<10,20\>; L;}") == {L = |file://-|(11,37,<1,11>,<1,48>); L.end = <10,20>; L;};
+
+
+
+// Location templates
+
+test bool tst() = run("{str h = \"home\"; |file:///\<h\>/paulk/pico.trm|;}") == {str h = "home"; |file:///<h>/paulk/pico.trm|;};
+test bool tst() = run("{str f = \"file\"; str h = \"home\"; |\<f\>:///\<h\>/paulk/pico.trm|;}") == 	{str f = "file"; str h = "home"; |<f>:///<h>/paulk/pico.trm|;};
 
 // List
 
@@ -180,10 +220,14 @@ test bool tst() = run("d1(3, \"a\") \>= d1(2, \"a\")") == d1(3, "a") >= d1(2, "a
 // Enumerator
 
 test bool tst() = run("x \<- []") == x <- [];
+test bool tst() = run("int x \<- []") == int x <- [];
 test bool tst() = run("x \<- [1,2,3]") == x <- [1,2,3];
+test bool tst() = run("int x \<- [1,2,3]") == int x <- [1,2,3];
 
 test bool tst() = run("res = []; for(x \<- [1,2,3]) res = res +[x];", "res") == {res = []; for(x <- [1,2,3]) res = res +[x]; res;};
+test bool tst() = run("res = []; for(int x \<- [1,2,3]) res = res +[x];", "res") == {res = []; for(int x <- [1,2,3]) res = res +[x]; res;};
 test bool tst() = run("res = []; for(x \<- [1,2,3], x != 2) res = res +[x];", "res") == {res = []; for(x <- [1,2,3], x != 2) res = res +[x]; res;};
+test bool tst() = run("res = []; for(int x \<- [1,2,3], x != 2) res = res +[x];", "res") == {res = []; for(int x <- [1,2,3], x != 2) res = res +[x]; res;};
 
 test bool tst() = run("res = []; for([int x, 5] \<- [[1,5], [2,5], [3, 5]], x != 2) res = res +[x];", "res") == {res = []; for([int x, 5] <- [[1,5], [2,5], [3, 5]], x != 2) res = res +[x]; res;};
 test bool tst() = run("res = []; for([int x, 5] \<- [[1,6], [2,5], [3, 5]], x != 2) res = res +[x];", "res") == {res = []; for([int x, 5] <- [[1,6], [2,5], [3, 5]], x != 2) res = res +[x]; res;};
@@ -192,12 +236,16 @@ test bool tst() = run("res = []; for(int x \<- \<1,2,3,4\>) res = res +[x];", "r
 // Any
 
 test bool tst() = run("any(x \<- [1,2,13,3], x \> 3)") == any(x <- [1,2,13,3], x > 3);
+test bool tst() = run("any(int x \<- [1,2,13,3], x \> 3)") == any(int x <- [1,2,13,3], x > 3);
 test bool tst() = run("any(x \<- [1,2,13,3], x \> 20)") == any(x <- [1,2,13,3], x > 20);
+test bool tst() = run("any(int x \<- [1,2,13,3], x \> 20)") == any(int x <- [1,2,13,3], x > 20);
 
 // All
 
 test bool tst() = run("all(x \<- [1,2,13,3], x \> 0)") == all(x <- [1,2,13,3], x > 0);
+test bool tst() = run("all(int x \<- [1,2,13,3], x \> 0)") == all(int x <- [1,2,13,3], x > 0);
 test bool tst() = run("all(x \<- [1,2,13,3], x \> 20)") == all(x <- [1,2,13,3], x > 20);
+test bool tst() = run("all(int x \<- [1,2,13,3], x \> 20)") == all(int x <- [1,2,13,3], x > 20);
 
 // Range
 
@@ -211,7 +259,7 @@ test bool tst() = run("res = []; for(x \<- [10, 8 .. 0]) res = res + [x];", "res
 test bool tst() = run("res = []; for(x \<- [10, 11 .. 0]) res = res + [x];", "res") == {res = []; for(x <- [10, 11 .. 0]) res = res + [x]; res;};
 
 // For now, we do not support ranges outside enumerators.
-/*fails*/ //test bool tst() = run("[1 .. 10];") == [1..10];
+test bool tst() = run("[1 .. 10]") == [1..10];
 
 // List Comprehension
 
@@ -275,8 +323,7 @@ test bool tst() = run("{x = (\"a\" : [0,1,2]); x[\"b\"] = [1000,2000]; x[\"b\"][
 
 test bool tst() = run("\<1,2,3,4\>\<1,3\>") == <1,2,3,4><1,3>;
 test bool tst() = run("{tuple[int a, str b, int c] x= \<1, \"x\", 2\>; x\<2,1\>;}") == {tuple[int a, str b, int c] x= <1, "x", 2>; x<2,1>;};
-// Issue in type checker:
-/*fails*/ //test bool tst() = run("{tuple[int a, str b, int c] x= \<1, \"x\", 2\>; x\<b,1\>;}") == {tuple[int a, str b, int c] x= <1, "x", 2>; x<b,1>;};
+test bool tst() = run("{tuple[int a, str b, int c] x= \<1, \"x\", 2\>; x\<b,1\>;}") == {tuple[int a, str b, int c] x= <1, "x", 2>; x<b,1>;};
 
 test bool tst() = run("{{\<1, \"x\", 2\>, \<10, \"xx\", 20\>}\<2,1\>;}") == {<1, "x", 2>, <10, "xx", 20>}<2,1>;
 test bool tst() = run("{[\<1, \"x\", 2\>, \<10, \"xx\", 20\>]\<2,1\>;}") == [<1, "x", 2>, <10, "xx", 20>]<2,1>;
@@ -303,4 +350,15 @@ test bool tst() = run("{rel[int a, str b, int c] x= {\<1, \"x\", 2\>}; x has a;}
 // is
 test bool tst() = run("d1(3, \"a\") is d1")  == d1(3, "a") is d1;
 test bool tst() = run("\"abc\"(1,2,3,4,5,6,7,8,9) is abc") == "abc"(1,2,3,4,5,6,7,8,9) is abc;
+
+// equality
+
+test bool tst() = run("{ value n = 1; n == 1; }") == { value n = 1; n == 1; };
+test bool tst() =  run("{ value n = 1; 1 == n; }") == { value n = 1; 1 == n; };
+
+test bool tst() = run(" 1 == 1.0") == (1 == 1.0);
+
+test bool tst() = run("{\<1,2\>} == {}") == ( {<1,2>} == {} );
+
+
 

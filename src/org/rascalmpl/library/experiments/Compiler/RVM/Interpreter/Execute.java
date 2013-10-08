@@ -53,7 +53,7 @@ public class Execute {
 		
 		PrintWriter stdout = ctx.getStdOut();
 		
-		RVM rvm = new RVM(vf, stdout, debug.getValue());
+		RVM rvm = new RVM(vf, ctx, debug.getValue());
 		
 		ArrayList<String> initializers = new ArrayList<String>();  	// initializers of imported modules
 		ArrayList<String> testsuites =  new ArrayList<String>();	// testsuites of imported modules
@@ -134,6 +134,10 @@ public class Execute {
 					//tst_name = tst_name.replaceAll("/", "::");
 					
 					boolean passed = ((IBool) outcome.get(1)).getValue();
+					String exception = ((IString) outcome.get(2)).getValue();
+					if(!exception.isEmpty()){
+						exception = "; Unexpected exception: " + exception;
+					}
 					
 					if(passed){
 						number_of_successes++;
@@ -141,7 +145,7 @@ public class Execute {
 						number_of_failures++;
 					}
 					if(!passed)
-						stdout.println(tst_name + ": FALSE");
+						stdout.println(tst_name + ": FALSE" + exception);
 				}
 			}
 			int number_of_tests = number_of_successes + number_of_failures;
@@ -379,7 +383,7 @@ public class Execute {
 				break;
 
 			case "OCALLDYN" :
-				codeblock.OCALLDYN(getIntField(instruction, "arity"));
+				codeblock.OCALLDYN(rvm.symbolToType((IConstructor) instruction.get("types")), getIntField(instruction, "arity"));
 				break;
 
 			case "CALLJAVA":
@@ -397,6 +401,10 @@ public class Execute {
 				
 			case "UNWRAPTHROWN":
 				codeblock.UNWRAPTHROWN(getIntField(instruction, "pos"));
+				break;
+				
+			case "FILTERRETURN":
+				codeblock.FILTERRETURN();
 				break;
 				
 			default:
