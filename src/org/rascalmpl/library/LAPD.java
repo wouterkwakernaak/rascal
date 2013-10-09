@@ -38,7 +38,7 @@ public class LAPD {
 		return graphDbValueIO.read(id.toString(), type, typeStore);
 	}
 	
-	public IString generateRandomId() {
+	public IString generateUniqueId() {
 		return valueFactory.string(UUID.randomUUID().toString());
 	}
 
