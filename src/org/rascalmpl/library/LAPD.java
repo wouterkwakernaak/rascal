@@ -12,8 +12,8 @@ import org.eclipse.imp.pdb.facts.type.TypeStore;
 import org.rascalmpl.eclipse.console.RascalScriptInterpreter;
 import org.rascalmpl.interpreter.TypeReifier;
 
-import lapd.neo4j.GraphDbMappingException;
-import lapd.neo4j.GraphDbValueIO;
+import lapd.databases.neo4j.GraphDbMappingException;
+import lapd.databases.neo4j.GraphDbValueIO;
 
 public class LAPD {
 	
