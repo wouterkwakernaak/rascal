@@ -101,7 +101,6 @@ Import-Package: javax.servlet,
  org.objectweb.asm,
  org.osgi.framework,
  org.osgi.service.prefs,
- org.rascalmpl.eclipse.console,
  org.rascalmpl.library.vis,
  org.rascalmpl.values
 Bundle-ClassPath: lib/snakeyaml-1.11.jar,
