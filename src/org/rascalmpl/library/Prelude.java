@@ -3158,7 +3158,7 @@ public class Prelude {
 	 */
 	
 	public IValue readBinaryValueFile(IValue type, ISourceLocation loc, IEvaluatorContext ctx){
-		TypeStore store = new TypeStore();
+		TypeStore store = ctx.getEvaluator().__getRootScope().getStore();
 		Type start = tr.valueToType((IConstructor) type, store);
 		loc = ctx.getHeap().resolveSourceLocation(loc);
 		
@@ -3184,8 +3184,7 @@ public class Prelude {
 	
 	public IValue readTextValueFile(IValue type, ISourceLocation loc, IEvaluatorContext ctx){
 	  loc = ctx.getHeap().resolveSourceLocation(loc);
-	  
-		TypeStore store = new TypeStore();
+	  TypeStore store = ctx.getEvaluator().__getRootScope().getStore();
 		Type start = tr.valueToType((IConstructor) type, store);
 		
 		InputStream in = null;
