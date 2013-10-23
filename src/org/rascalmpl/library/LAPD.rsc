@@ -8,3 +8,6 @@ public java &T read(str id, type[&T] t);
 
 @javaClass{org.rascalmpl.library.LAPD}
 public java str generateUniqueId();
+
+@javaClass{org.rascalmpl.library.LAPD}
+public java loc getDbDirectoryPath();

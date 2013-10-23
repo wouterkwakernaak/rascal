@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.eclipse.core.internal.jobs.Worker;
 import org.eclipse.imp.pdb.facts.IConstructor;
+import org.eclipse.imp.pdb.facts.ISourceLocation;
 import org.eclipse.imp.pdb.facts.IString;
 import org.eclipse.imp.pdb.facts.IValue;
 import org.eclipse.imp.pdb.facts.IValueFactory;
@@ -40,6 +41,10 @@ public class LAPD {
 	
 	public IString generateUniqueId() {
 		return valueFactory.string(UUID.randomUUID().toString());
+	}
+	
+	public ISourceLocation getDbDirectoryPath() {
+		return valueFactory.sourceLocation(graphDbValueIO.getDbDirectoryPath());
 	}
 
 }
