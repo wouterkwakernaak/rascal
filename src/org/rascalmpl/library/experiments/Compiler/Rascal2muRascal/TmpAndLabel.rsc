@@ -141,14 +141,22 @@ void leaveFunctionScope() {
 	functionScopes = tail(functionScopes); 
 }
 
-private list[int] visits = [];
+private list[Symbol] visits = [];
 
-int topVisit() = top(visits);
+Symbol topCaseType() = top(visits);
 
-void enterVisit(int strategy) {
-	visits = strategy + visits;
+void enterVisit() {
+	visits = Symbol::\void() + visits;
 }
 
 void leaveVisit() {
 	visits = tail(visits);
+}
+
+void fillCaseType(Symbol t) {
+	visits = t + tail(visits);
+}
+
+void clearCaseType() {
+	visits = Symbol::\void() + tail(visits);
 }

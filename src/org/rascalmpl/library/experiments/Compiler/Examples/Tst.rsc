@@ -1,7 +1,7 @@
 module experiments::Compiler::Examples::Tst
 
-data M = message(str txt);
+syntax AB = ("a" | "b")+ ;
 
-public anno M node@message;
+syntax CD = ("c" | "d")+ ;
 
-value main(list[value] args) { return "f"()@message("abc"); }
+value main(list[value] args) = < [AB] "ababababab", [CD] "cdcdcdcdcdc" >;

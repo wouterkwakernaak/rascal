@@ -20,15 +20,17 @@ import experiments::Compiler::muRascal::Implode;
 import experiments::Compiler::Rascal2muRascal::TypeUtils;
 import experiments::Compiler::Rascal2muRascal::TypeReifier;
 
+public str module_name;
 public list[loc] imported_modules = [];
 public list[MuFunction] functions_in_module = [];
 public list[MuVariable] variables_in_module = [];
 public list[MuExp] variable_initializations = [];
 public list[MuExp] tests = [];
 
-public loc Library = |std:///experiments/Compiler/muRascal2RVM/Library.mu|;
+public loc Library = |rascal:///experiments/Compiler/muRascal2RVM/Library.mu|;
 
 public void resetR2mu() {
+ 	module_name = "** undefined **";
     imported_modules = [];
 	functions_in_module = [];
 	variables_in_module = [];
@@ -36,6 +38,8 @@ public void resetR2mu() {
 	tests = [];
 	resetTmpAndLabel();
 }
+
+public str getModuleName() = module_name;
 
 @doc{Compile a Rascal source module (given as string) to muRascal}
 MuModule r2mu(str moduleStr){
@@ -71,17 +75,20 @@ MuModule r2mu(lang::rascal::\syntax::Rascal::Module M){
    	  		println(w);
    	  	}
    	  }
+   	  module_name = "<M.header.name>";
    	  imported_modules = [];
    	  functions_in_module = [];
    	  variables_in_module = [];
    	  variable_initializations = [];
    	  map[str,Symbol] types = ( fuid2str[uid] : \type | int uid <- config.store, 
    	  									   					constructor(name, Symbol \type, containedIn, at) := config.store[uid]
-   	  													 || production(name, Symbol \type, containedIn, at) := config.store[uid]
+   	  									   				 || production(name, Symbol \type, containedIn, at) := config.store[uid]
    	  						  );
    	  translate(M);
    	 
-   	  generate_tests("<M.header.name>");
+   	  modName = replaceAll("<M.header.name>","\\","");
+   	 
+   	  generate_tests(modName);
    	  
    	  // Overloading resolution...	  
    	  lrel[str,list[str],list[str]] overloaded_functions = [ < (of.scopeIn in moduleNames) ? "" : of.scopeIn, 
@@ -91,7 +98,7 @@ MuModule r2mu(lang::rascal::\syntax::Rascal::Module M){
    	  											  			 > 
    	  															| tuple[str scopeIn,set[int] fuids] of <- overloadedFunctions ];
    	  
-   	  return muModule("<M.header.name>", imported_modules, types, functions_in_module, variables_in_module, variable_initializations, overloadingResolver, overloaded_functions);
+   	  return muModule(modName, imported_modules, types, functions_in_module, variables_in_module, variable_initializations, overloadingResolver, overloaded_functions, getGrammar(config));
    	}
    } catch Java("ParseError","Parse error"): {
    	   throw "Syntax errors in module <moduleLoc>";
@@ -111,16 +118,24 @@ void translate(m: (Module) `<Header header> <Body body>`) {
 
 void importModule((Import) `import <QualifiedName qname> ;`){
     name = replaceAll("<qname>", "::", "/");
+    name = replaceAll(name, "\\","");
     //println("name = <name>");
-    imported_modules += |std:///| + ("<name>" + ".rsc");
+    imported_modules += |rascal:///| + ("<name>" + ".rsc");
     //println("imported_modules = <imported_modules>");
 }
 
 void importModule((Import) `extend <QualifiedName qname> ;`){  // TODO implement extend properly
     name = replaceAll("<qname>", "::", "/");
+    name = replaceAll(name, "\\","");
     //println("name = <name>");
-    imported_modules += |std:///| + ("<name>" + ".rsc");
+    imported_modules += |rascal:///| + ("<name>" + ".rsc");
     //println("imported_modules = <imported_modules>");
+}
+
+void importModule((Import) `<SyntaxDefinition syntaxdef>`){ /* nothing to do */ }
+
+default void importModule(Import imp){
+    throw "Unimplemented import: <imp>";
 }
 	
 void translate(t: (Toplevel) `<Declaration decl>`) = translate(decl);
@@ -236,13 +251,14 @@ void translate(fd: (FunctionDeclaration) `<Tags tags>  <Visibility visibility> <
   nformals = size(ftype.parameters);
   bool isVarArgs = (varArgs(_,_) := signature.parameters);
   //TODO: keyword parameters
-  MuExp tbody = translateFunction(signature.parameters.formals.formals, body.statements, []);
-  tmods = translateModifiers(signature.modifiers);
-  ttags =  translateTags(tags);
   uid = loc2uid[fd@\loc];
   fuid = uid2str(uid);
   
   enterFunctionScope(fuid);
+  
+  MuExp tbody = translateFunction(signature.parameters.formals.formals, body.statements, []);
+  tmods = translateModifiers(signature.modifiers);
+  ttags =  translateTags(tags);
   
   tuple[str fuid,int pos] addr = uid2addr[uid];
   functions_in_module += muFunction(fuid, ftype, (addr.fuid in moduleNames) ? "" : addr.fuid, 

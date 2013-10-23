@@ -2763,7 +2763,7 @@ public class Prelude {
 			return values.string(intValue);
 		}
 		else {
-			throw RuntimeExceptionFactory.illegalCharacter(i, null, null);
+			throw RuntimeExceptionFactory.illegalArgument(i, null, null);
 		}
 	}
 	
@@ -2773,7 +2773,7 @@ public class Prelude {
 		for (int i = 0; i < lst.length(); i ++) {
 			chars[i] = ((IInteger) lst.get(i)).intValue();
 			if (!Character.isValidCodePoint(chars[i])) {
-				throw RuntimeExceptionFactory.illegalCharacter(values.integer(chars[i]), null, null);
+				throw RuntimeExceptionFactory.illegalArgument(values.integer(chars[i]), null, null);
 			}
 		}
 		
@@ -3183,10 +3183,9 @@ public class Prelude {
 	}
 	
 	public IValue readTextValueFile(IValue type, ISourceLocation loc, IEvaluatorContext ctx){
-	  loc = ctx.getHeap().resolveSourceLocation(loc);
-	  TypeStore store = ctx.getEvaluator().__getRootScope().getStore();
-		Type start = tr.valueToType((IConstructor) type, store);
-		
+		loc = ctx.getHeap().resolveSourceLocation(loc);
+	  	TypeStore store = ctx.getEvaluator().__getRootScope().getStore();
+		Type start = tr.valueToType((IConstructor) type, store);		
 		InputStream in = null;
 		try{
 			in = new BufferedInputStream(ctx.getResolverRegistry().getInputStream(loc.getURI()));
@@ -3204,8 +3203,13 @@ public class Prelude {
 		}
 	}
 	
-	public IValue readTextValueString(IValue type, IString input) {
+	public IValue readTextValueString(IValue type, IString input, IEvaluatorContext ctx) {
+//		TypeStore store = ctx.getCurrentEnvt().getStore();
 		TypeStore store = new TypeStore();
+		ModuleEnvironment pt = ctx.getHeap().getModule("ParseTree");
+		if(pt != null){
+			store.importStore(pt.getStore());
+		}
 		Type start = tr.valueToType((IConstructor) type, store);
 		
 		StringReader in = new StringReader(input.getValue());

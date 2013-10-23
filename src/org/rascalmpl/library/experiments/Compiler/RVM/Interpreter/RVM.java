@@ -64,10 +64,12 @@ public class RVM {
 	
 	private final ArrayList<Type> constructorStore;
 	private final Map<String, Integer> constructorMap;
+	private IMap grammars;
 	
 	
 	private final Map<IValue, IValue> moduleVariables;
 	PrintWriter stdout;
+	PrintWriter stderr;
 	
 	// Management of active coroutines
 	Stack<Coroutine> activeCoroutines = new Stack<>();
@@ -81,7 +83,8 @@ public class RVM {
 		this.vf = vf;
 		
 		this.ctx = ctx;
-		this.stdout = ctx.getStdOut();	
+		this.stdout = ctx.getStdOut();
+		this.stderr = ctx.getStdErr();
 		this.debug = debug;
 		this.finalized = false;
 		
@@ -166,6 +169,14 @@ public class RVM {
 			}
 			this.overloadedStore.add(new OverloadedFunction(funs, constrs, scopeIn));
 		}
+	}
+	
+	public void setGrammars(IMap grammer){
+		this.grammars = grammars;
+	}
+	
+	public IMap getGrammars(){
+		return grammars;
 	}
 	
 	/**
@@ -338,18 +349,14 @@ public class RVM {
 	// Execute a function instance, i.e., a function in its environment
 	// Note: the root frame is the environment of the non-nested functions, which enables access to the global variables
 	// Note: the return type is 'Object' as this method is used to implement call to overloaded functions, its alternatives may fail
-	public Object executeFunction(Frame root, FunctionInstance func, IValue[] args){
+	private Object executeFunction(Frame root, FunctionInstance func, IValue[] args){
 		Frame cf = new Frame(func.function.scopeId, null, func.env, func.function.maxstack, func.function);
 		
 		// Pass the program argument to main
 		for(int i = 0; i < args.length; i++){
 			cf.stack[i] = args[i]; 
 		}
-		Object o = executeProgram(root, cf);
-		if(o != null && o instanceof Thrown){
-			throw (Thrown) o;
-		}
-		return o;
+		return executeProgram(root, cf);
 	}
 	
 	private String trace = "";
@@ -392,8 +399,7 @@ public class RVM {
 		return res;
 	}
 	
-	// TODO: Need to re-consider management of active coroutines
-	public Object executeProgram(Frame root, Frame cf) {
+	private Object executeProgram(Frame root, Frame cf) {
 		Object[] stack = cf.stack;		                              		// current stack
 		int sp = cf.function.nlocals;				                  	// current stack pointer
 		int [] instructions = cf.function.codeblock.getInstructions(); 	// current instruction sequence
@@ -438,7 +444,13 @@ public class RVM {
 					
 				case Opcode.OP_JMPSWITCH:
 					IValue val = (IValue) stack[--sp];
-					int labelIndex = ToplevelType.getToplevelType(val.getType());
+					Type t = null;
+					if(val instanceof IConstructor) {
+						t = ((IConstructor) val).getConstructorType();
+					} else {
+						t = val.getType();
+					}
+					int labelIndex = ToplevelType.getToplevelTypeAsInt(t);
 					IList labels = (IList) cf.function.constantStore[instructions[pc++]];
 					pc = ((IInteger) labels.get(labelIndex)).intValue();
 					continue;
@@ -964,10 +976,14 @@ public class RVM {
 						throw new RuntimeException("unexpected argument type for INIT: " + src.getClass() + ", " + src);
 					}
 					
+					if(coroutine.isInitialized()) {
+						throw new RuntimeException("Trying to initialize a coroutine, which has been already initialized: " + fun.getName() + " (corounine's main), called in " + cf.function.getName());
+					}
 					// the main function of coroutine may have formal parameters,
 					// therefore, INIT may take a number of arguments == formal parameters - arguments already passed to CREATE
-					if(arity != fun.nformals - coroutine.frame.sp)
-						throw new RuntimeException("Too many or too few arguments to INIT, the expected number: " + (fun.nformals - coroutine.frame.sp));
+					if(arity != fun.nformals - coroutine.frame.sp) {
+						throw new RuntimeException("Too many or too few arguments to INIT, the expected number: " + (fun.nformals - coroutine.frame.sp) + "; coroutine's main: " + fun.getName() + ", called in " + cf.function.getName());
+					}
 					Coroutine newCoroutine = coroutine.copy();
 					for (int i = arity - 1; i >= 0; i--) {
 						newCoroutine.frame.stack[coroutine.frame.sp + i] = stack[sp - arity + i];
@@ -1155,10 +1171,12 @@ public class RVM {
 				}
 			}
 		} catch (Exception e) {
-			stdout.println("PANIC: (instruction execution): " + e.getMessage());
-			e.printStackTrace();
+			e.printStackTrace(stderr);
+			throw new RuntimeException("PANIC: (instruction execution): " + e.getMessage());
+			//stdout.println("PANIC: (instruction execution): " + e.getMessage());
+			//e.printStackTrace();
+			//stderr.println(e.getStackTrace());
 		}
-		return Rascal_FALSE;
 	}
 	
 	int callJavaMethod(String methodName, String className, Type parameterTypes, Object[] stack, int sp){
