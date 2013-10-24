@@ -93,7 +93,7 @@ public abstract class JavaToRascalConverter extends ASTVisitor {
 	protected ISourceLocation resolveBinding(CompilationUnit node) {
 		ISourceLocation compilationUnit = new BindingsResolver(typeStore, true) {
 			public ISourceLocation resolveBinding(CompilationUnit node) {
-				return convertBinding("java+compilationUnit", loc.getAuthority(), loc.getURI().getPath());
+				return convertBinding("java+compilationUnit", null, loc.getPath());
 			}
 		}.resolveBinding(node);
 		
@@ -282,6 +282,6 @@ public abstract class JavaToRascalConverter extends ASTVisitor {
 			}
 			result.add(values.constructor(constr, values.string(problems[i].getMessage()), pos));
 		}
-		setAnnotation("messages", result);
+		setAnnotation("messages", result.asList());
 	}
 }
