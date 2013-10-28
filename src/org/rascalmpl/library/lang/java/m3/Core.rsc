@@ -109,7 +109,7 @@ M3 includeJarRelations(M3 project, set[M3] jarRels = {}) {
   return composeJavaM3(project.id, rels);
 }
 
-private set[loc] getPaths(loc dir, str suffix) { 
+public set[loc] getPaths(loc dir, str suffix) { 
    bool containsFile(loc d) = isDirectory(d) ? (x <- d.ls && x.extension == suffix) : false;
    return find(dir, containsFile);
 }

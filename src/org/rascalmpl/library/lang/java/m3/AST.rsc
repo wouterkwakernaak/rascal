@@ -3,6 +3,7 @@ module lang::java::m3::AST
 extend analysis::m3::AST;
 import util::FileSystem;
 import lang::java::m3::TypeSymbol;
+import lang::java::m3::Core;
  
 data Declaration
     = \compilationUnit(list[Declaration] imports, list[Declaration] types)
