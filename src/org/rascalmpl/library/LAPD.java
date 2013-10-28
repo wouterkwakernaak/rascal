@@ -30,13 +30,27 @@ public class LAPD {
 	}
 
 	public void write(IString id, IValue value) throws GraphDbMappingException {
-		graphDbValueIO.write(id.toString(), value);
+		graphDbValueIO.write(id.getValue(), value);
 	}
 
 	public IValue read(IString id, IValue reifiedType) throws GraphDbMappingException  {
-		TypeStore typeStore = ((RascalScriptInterpreter)((Worker)Thread.currentThread()).currentJob()).getEval().__getRootScope().getStore();
+		TypeStore typeStore = getTypeStore();
 		org.eclipse.imp.pdb.facts.type.Type type = typeReifier.valueToType((IConstructor)reifiedType, typeStore);
-		return graphDbValueIO.read(id.toString(), type, typeStore);
+		return graphDbValueIO.read(id.getValue(), type, typeStore);
+	}
+	
+	public IValue read(IString id) throws GraphDbMappingException  {		
+		return graphDbValueIO.read(id.getValue(), getTypeStore());
+	}
+	
+	public IValue executeQuery(IString query, IValue reifiedType) throws GraphDbMappingException {
+		TypeStore typeStore = getTypeStore();
+		org.eclipse.imp.pdb.facts.type.Type type = typeReifier.valueToType((IConstructor)reifiedType, typeStore);
+		return graphDbValueIO.executeQuery(query.getValue(), type, typeStore);
+	}
+	
+	public IValue executeQuery(IString query) throws GraphDbMappingException {		
+		return graphDbValueIO.executeQuery(query.getValue(), getTypeStore());
 	}
 	
 	public IString generateUniqueId() {
@@ -45,6 +59,10 @@ public class LAPD {
 	
 	public ISourceLocation getDbDirectoryPath() {
 		return valueFactory.sourceLocation(graphDbValueIO.getDbDirectoryPath());
+	}
+	
+	private TypeStore getTypeStore() {
+		return ((RascalScriptInterpreter)((Worker)Thread.currentThread()).currentJob()).getEval().__getRootScope().getStore();
 	}
 
 }
