@@ -13,6 +13,7 @@ import util::Benchmark;
 import util::Math;
 import experiments::Compiler::Execute;
 
+import experiments::Compiler::Benchmarks::BasType;
 import experiments::Compiler::Benchmarks::BBottles;
 import experiments::Compiler::Benchmarks::BCompareFor;
 import experiments::Compiler::Benchmarks::BCompareIf;
@@ -36,6 +37,14 @@ import experiments::Compiler::Benchmarks::BVisit1;
 import experiments::Compiler::Benchmarks::BVisit2;
 import experiments::Compiler::Benchmarks::BVisit3;
 import experiments::Compiler::Benchmarks::BVisit4;
+
+import experiments::Compiler::Benchmarks::BVisit6a;
+import experiments::Compiler::Benchmarks::BVisit6b;
+import experiments::Compiler::Benchmarks::BVisit6c;
+import experiments::Compiler::Benchmarks::BVisit6d;
+import experiments::Compiler::Benchmarks::BVisit6e;
+import experiments::Compiler::Benchmarks::BVisit6f;
+import experiments::Compiler::Benchmarks::BVisit6g;
 
 
 loc base = |rascal:///experiments/Compiler/Benchmarks/|;
@@ -92,6 +101,7 @@ void report(){
 
 void main(){
   measurements = ();
+  run("BasType", experiments::Compiler::Benchmarks::BasType::main);
   run("BBottles", experiments::Compiler::Benchmarks::BBottles::main);
   run("BCompareFor", experiments::Compiler::Benchmarks::BCompareFor::main);
   run("BCompareIf", experiments::Compiler::Benchmarks::BCompareIf::main);
@@ -115,6 +125,13 @@ void main(){
   run("BVisit2", experiments::Compiler::Benchmarks::BVisit2::main);
   run("BVisit3", experiments::Compiler::Benchmarks::BVisit3::main);
   run("BVisit4", experiments::Compiler::Benchmarks::BVisit4::main);
+  run("BVisit6a", experiments::Compiler::Benchmarks::BVisit6a::main);
+  run("BVisit6b", experiments::Compiler::Benchmarks::BVisit6b::main);
+  run("BVisit6c", experiments::Compiler::Benchmarks::BVisit6c::main);
+  run("BVisit6d", experiments::Compiler::Benchmarks::BVisit6d::main);
+  run("BVisit6e", experiments::Compiler::Benchmarks::BVisit6e::main);
+  run("BVisit6f", experiments::Compiler::Benchmarks::BVisit6f::main);
+  run("BVisit6g", experiments::Compiler::Benchmarks::BVisit6g::main);
   
   report();
 }
