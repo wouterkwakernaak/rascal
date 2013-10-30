@@ -3,14 +3,13 @@ package org.rascalmpl.library;
 import java.io.IOException;
 import java.util.UUID;
 
-import org.eclipse.core.internal.jobs.Worker;
 import org.eclipse.imp.pdb.facts.IConstructor;
 import org.eclipse.imp.pdb.facts.ISourceLocation;
 import org.eclipse.imp.pdb.facts.IString;
 import org.eclipse.imp.pdb.facts.IValue;
 import org.eclipse.imp.pdb.facts.IValueFactory;
 import org.eclipse.imp.pdb.facts.type.TypeStore;
-import org.rascalmpl.eclipse.console.RascalScriptInterpreter;
+import org.rascalmpl.interpreter.IEvaluatorContext;
 import org.rascalmpl.interpreter.TypeReifier;
 
 import lapd.databases.neo4j.GraphDbMappingException;
@@ -33,24 +32,24 @@ public class LAPD {
 		graphDbValueIO.write(id.getValue(), value);
 	}
 
-	public IValue read(IString id, IValue reifiedType) throws GraphDbMappingException  {
-		TypeStore typeStore = getTypeStore();
+	public IValue read(IString id, IValue reifiedType, IEvaluatorContext ctx) throws GraphDbMappingException  {
+		TypeStore typeStore = getTypeStore(ctx);
 		org.eclipse.imp.pdb.facts.type.Type type = typeReifier.valueToType((IConstructor)reifiedType, typeStore);
 		return graphDbValueIO.read(id.getValue(), type, typeStore);
 	}
 	
-	public IValue read(IString id) throws GraphDbMappingException  {		
-		return graphDbValueIO.read(id.getValue(), getTypeStore());
+	public IValue read(IString id, IEvaluatorContext ctx) throws GraphDbMappingException  {		
+		return graphDbValueIO.read(id.getValue(), getTypeStore(ctx));
 	}
 	
-	public IValue executeQuery(IString query, IValue reifiedType) throws GraphDbMappingException {
-		TypeStore typeStore = getTypeStore();
+	public IValue executeQuery(IString query, IValue reifiedType, IEvaluatorContext ctx) throws GraphDbMappingException {
+		TypeStore typeStore = getTypeStore(ctx);
 		org.eclipse.imp.pdb.facts.type.Type type = typeReifier.valueToType((IConstructor)reifiedType, typeStore);
 		return graphDbValueIO.executeQuery(query.getValue(), type, typeStore);
 	}
 	
-	public IValue executeQuery(IString query) throws GraphDbMappingException {		
-		return graphDbValueIO.executeQuery(query.getValue(), getTypeStore());
+	public IValue executeQuery(IString query, IEvaluatorContext ctx) throws GraphDbMappingException {		
+		return graphDbValueIO.executeQuery(query.getValue(), getTypeStore(ctx));
 	}
 	
 	public IString generateUniqueId() {
@@ -61,8 +60,8 @@ public class LAPD {
 		return valueFactory.sourceLocation(graphDbValueIO.getDbDirectoryPath());
 	}
 	
-	private TypeStore getTypeStore() {
-		return ((RascalScriptInterpreter)((Worker)Thread.currentThread()).currentJob()).getEval().__getRootScope().getStore();
+	private TypeStore getTypeStore(IEvaluatorContext ctx) {
+		return ctx.getEvaluator().__getRootScope().getStore();
 	}
-
+	
 }
