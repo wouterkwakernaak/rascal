@@ -39,6 +39,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import lapd.databases.neo4j.GraphDbMappingException;
 import lapd.databases.neo4j.GraphDbValueIO;
+import lapd.databases.neo4j.IdNotFoundException;
 
 import org.eclipse.imp.pdb.facts.IConstructor;
 import org.eclipse.imp.pdb.facts.IInteger;
@@ -723,13 +724,12 @@ public class Evaluator implements IEvaluator<Result<IValue>>, IRascalSuspendTrig
 		GraphDbValueIO graphDbValueIO = GraphDbValueIO.getInstance();
 		graphDbValueIO.init(vf);
 		String id = location.toString() + "ParseTreePlusRandomStuffge5wu56shaegz4z4g";
-		if (graphDbValueIO.idExists(id))
-			try {
-				return (IConstructor) graphDbValueIO.read(id, __getRootScope().getStore());
-			} catch (GraphDbMappingException e) {
-				return null;
-			}
-		
+		try {
+			return (IConstructor) graphDbValueIO.read(id, __getRootScope().getStore());
+		} catch (IdNotFoundException e) {
+		} catch (GraphDbMappingException e) {
+			throw RuntimeExceptionFactory.io(vf.string(e.getMessage()), getCurrentAST(), getStackTrace());
+		}		
 		IGTD<IConstructor, IConstructor, ISourceLocation> parser = getObjectParser(location);
 		String name = "";
 		if (SymbolAdapter.isStartSort(startSort)) {
@@ -752,7 +752,7 @@ public class Evaluator implements IEvaluator<Result<IValue>>, IRascalSuspendTrig
 		try {
 			graphDbValueIO.write(id, parseTree);
 		} catch (GraphDbMappingException e) {
-			e.printStackTrace();
+			throw RuntimeExceptionFactory.io(vf.string(e.getMessage()), getCurrentAST(), getStackTrace());
 		}
 		return parseTree;
 	}
