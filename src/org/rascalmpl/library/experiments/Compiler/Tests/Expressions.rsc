@@ -100,6 +100,10 @@ test bool tst() = run("|file://-|(11,37,\<1,11\>,\<1,48\>).begin.column") == |fi
 test bool tst() = run("|file://-|(11,37,\<1,11\>,\<1,48\>).end.line") == |file://-|(11,37,<1,11>,<1,48>).end.line;
 test bool tst() = run("|file://-|(11,37,\<1,11\>,\<1,48\>).end.column") == |file://-|(11,37,<1,11>,<1,48>).end.column;
 
+test bool tst() = run("{tuple[int a, str b, int c] x= \<1, \"x\", 2\>; x.b;}") == {tuple[int a, str b, int c] x= <1, "x", 2>; x.b;};
+test bool tst() = run("{lrel[int a, str b, int c]  x= [ \<1, \"x\", 2\>, \<3, \"y\", 4\> ]; x.b;}") == {lrel[int a, str b, int c]  x= [ <1, "x", 2>, <3, "y", 4> ]; x.b;};
+
+
 // field update
 test bool tst() = run("{L = |std:///experiments/Compiler/Benchmarks/|; L.uri = \"http://www.rascal-mpl.org\"; L;}") == {L = |std:///experiments/Compiler/Benchmarks/|; L.uri = "http://www.rascal-mpl.org"; L;};
 test bool tst() = run("{L = |std:///experiments/Compiler/Benchmarks/|; L.scheme= \"xxx\"; L;}") == {L = |std:///experiments/Compiler/Benchmarks/|; L.scheme = "xxx"; L;};
@@ -185,6 +189,7 @@ test bool tst() = run("1 in {1,2,3}") == 1 in {1,2,3};
 test bool tst() = run("1 notin {1,2,3}") == 1 notin {1,2,3};
 
 test bool tst() = run("{1, 2} \< {1, 2, 3}") == ({1, 2} < {1, 2, 3});
+test bool tst() = run("{1} \< {1}") == ({1} < {1});
 test bool tst() = run("{1, 2} \<= {1, 2, 3}") == ({1, 2} <= {1, 2, 3});
 test bool tst() = run("{1, 2} \> {1, 2, 3}") == ({1, 2} > {1, 2, 3});
 test bool tst() = run("{1, 2} \>= {1, 2, 3}") == ({1, 2} >= {1, 2, 3});
@@ -345,14 +350,31 @@ test bool tst() = run("{x = [[1, 2, 3], [10, 20, 30], [100, 200, 300]]; x[1][0] 
 test bool tst() = run("{x = (\"a\" : [0,1,2], \"b\" : [10, 20, 30]); x[\"b\"][1] = 1000; x[\"b\"][1];}") == {x = ("a" : [0,1,2], "b" : [10,20,30]); x["b"][1] = 1000; x["b"][1];};
 test bool tst() = run("{x = (\"a\" : [0,1,2]); x[\"b\"] = [1000,2000]; x[\"b\"][1];}") == {x = ("a" : [0,1,2]); x["b"] = [1000,2000]; x["b"][1];};
 
+test bool tst() = run("{{\<1, \"x\", 2\>, \<10, \"xx\", 20\>}[10];}") == {<1, "x", 2>, <10, "xx", 20>}[10];
+test bool tst() = run("{{\<1, \"x\", 2\>, \<10, \"xx\", 20\>}[7];}") == {<1, "x", 2>, <10, "xx", 20>}[7];
+test bool tst() = run("{{\<1, \"x\", 2\>, \<10, \"xx\", 20\>}[10, \"xx\"];}") == {<1, "x", 2>, <10, "xx", 20>}[10, "xx"];
+test bool tst() = run("{{\<1, \"x\", 2\>, \<10, \"x\", 20\>}[_, \"x\"];}") == {<1, "x", 2>, <10, "x", 20>}[_, "x"];
+
+// Error in interpreter
+/*fails*/ //test bool tst() = run("{[\<1, \"x\", 2\>, \<10, \"xx\", 20\>][10];}") == [<1, "x", 2>, <10, "xx", 20>][10];
+/*fails*///test bool tst() = run("{[\<1, \"x\", 2\>, \<10, \"xx\", 20\>][7];}") == [<1, "x", 2>, <10, "xx", 20>][7];
+test bool tst() = run("{[\<1, \"x\", 2\>, \<10, \"xx\", 20\>][10, \"xx\"];}") == [<1, "x", 2>, <10, "xx", 20>][10, "xx"];
+test bool tst() = run("{[\<1, \"x\", 2\>, \<10, \"x\", 20\>][_, \"x\"];}") == [<1, "x", 2>, <10, "x", 20>][_, "x"];
+
+
 // Projection
 
 test bool tst() = run("\<1,2,3,4\>\<1,3\>") == <1,2,3,4><1,3>;
 test bool tst() = run("{tuple[int a, str b, int c] x= \<1, \"x\", 2\>; x\<2,1\>;}") == {tuple[int a, str b, int c] x= <1, "x", 2>; x<2,1>;};
 test bool tst() = run("{tuple[int a, str b, int c] x= \<1, \"x\", 2\>; x\<b,1\>;}") == {tuple[int a, str b, int c] x= <1, "x", 2>; x<b,1>;};
 
+test bool tst() = run("{tuple[int a, str b, int c] x= \<1, \"x\", 2\>; x\<2\>;}") == {tuple[int a, str b, int c] x= <1, "x", 2>; x<2>;};
+test bool tst() = run("{tuple[int a, str b, int c] x= \<1, \"x\", 2\>; x\<b\>;}") == {tuple[int a, str b, int c] x= <1, "x", 2>; x<b>;};
+
 test bool tst() = run("{{\<1, \"x\", 2\>, \<10, \"xx\", 20\>}\<2,1\>;}") == {<1, "x", 2>, <10, "xx", 20>}<2,1>;
 test bool tst() = run("{[\<1, \"x\", 2\>, \<10, \"xx\", 20\>]\<2,1\>;}") == [<1, "x", 2>, <10, "xx", 20>]<2,1>;
+test bool tst() = run("{{\<1, \"x\", 2\>, \<10, \"xx\", 20\>}\<1\>;}") == {<1, "x", 2>, <10, "xx", 20>}<1>;
+test bool tst() = run("{[\<1, \"x\", 2\>, \<10, \"xx\", 20\>]\<1\>;}") == [<1, "x", 2>, <10, "xx", 20>]<1>;
 
 test bool tst() = run("{(\"a\" : 1, \"b\" : 2, \"c\" : 3)\<1,0,1\>;}") == ("a" : 1, "b" : 2, "c" : 3)<1,0,1>;
 

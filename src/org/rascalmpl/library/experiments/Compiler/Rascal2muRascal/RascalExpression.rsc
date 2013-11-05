@@ -8,6 +8,8 @@ import lang::rascal::types::TestChecker;
 import lang::rascal::types::CheckTypes;
 import lang::rascal::types::AbstractName;
 import lang::rascal::types::AbstractType;
+import lang::rascal::types::TypeInstantiation;
+import lang::rascal::types::TypeExceptions;
 
 import experiments::Compiler::Rascal2muRascal::TmpAndLabel;
 import experiments::Compiler::Rascal2muRascal::RascalModule;
@@ -44,7 +46,7 @@ bool areCompatibleContainerTypes({str c}) = true;
 default bool areCompatibleContainerTypes(set[str] s) = false;
 
 
-str typedInfixOp(str lot, str op, str rot) {
+str typedBinaryOp(str lot, str op, str rot) {
   if(lot == "value" || rot == "value" || lot == "parameter" || rot == "parameter"){
      return op;
   }
@@ -55,7 +57,7 @@ str typedInfixOp(str lot, str op, str rot) {
 }
 
 MuExp infix(str op, Expression e) = 
-  muCallPrim(typedInfixOp(getOuterType(e.lhs), op, getOuterType(e.rhs)), 
+  muCallPrim(typedBinaryOp(getOuterType(e.lhs), op, getOuterType(e.rhs)), 
              [*translate(e.lhs), *translate(e.rhs)]);
 
 MuExp infix_elm_left(str op, Expression e){
@@ -70,10 +72,14 @@ MuExp infix_rel_lrel(str op, Expression e){
   if(rot == "set") rot = "rel"; else if (rot == "list") rot = "lrel";
   return muCallPrim("<lot>_<op>_<rot>", [*translate(e.lhs), *translate(e.rhs)]);
 }
- 
-MuExp prefix(str op, Expression arg) = muCallPrim("<op>_<getOuterType(arg)>", [translate(arg)]);
 
-MuExp postfix(str op, Expression arg) = muCallPrim("<getOuterType(arg)>_<op>", [translate(arg)]);
+str typedUnaryOp(str ot, str op) = (ot == "value" || ot == "parameter") ? op : "<op>_<ot>";
+ 
+MuExp prefix(str op, Expression arg) {
+  return muCallPrim(typedUnaryOp(getOuterType(arg), op), [translate(arg)]);
+}
+
+MuExp postfix(str op, Expression arg) = muCallPrim(typedUnaryOp(getOuterType(arg), op), [translate(arg)]);
 
 MuExp postfix_rel_lrel(str op, Expression arg) {
   ot = getOuterType(arg);
@@ -250,10 +256,37 @@ MuExp translate(e:(Expression) `<Expression expression> ( <{Expression ","}* arg
        set[int] resolved = {};
        
        bool matches(Symbol t) {
-           if(isFunctionType(ftype) || isConstructorType(ftype)) { 
+           if(isFunctionType(ftype) || isConstructorType(ftype)) {
+               if(/parameter(_,_) := t) { // In case of polymorphic function types
+                   try {
+                       bindings = match(\tuple(t.parameters),\tuple(ftype.parameters),());
+                       return instantiate(t.ret,bindings) == ftype.ret;
+                   } catch invalidMatch(_,_,_): { 
+                       return false;
+                   } catch invalidMatch(_,_): { 
+                       return false; 
+                   } catch err: {
+                       println("WARNING: Cannot match <ftype> against <t> for location: <expression@\loc>! <err>");
+                   }
+               }
                return t == ftype;
            }           
            if(isOverloadedType(ftype)) {
+               if(/parameter(_,_) := t) { // In case of polymorphic function types
+                   for(Symbol alt <- (getNonDefaultOverloadOptions(ftype) + getDefaultOverloadOptions(ftype))) {
+                       try {
+           	               bindings = match(\tuple(t.parameters),\tuple(alt.parameters),());
+           	               return instantiate(t.ret,bindings) == alt.ret;
+           	           } catch invalidMatch(_,_,_): { 
+                           ;
+                       } catch invalidMatch(_,_): { 
+                           ; 
+                       } catch err: {
+                           println("WARNING: Cannot match <alt> against <t> for location: <expression@\loc>! <err>");
+                       }
+                   }
+                   return false;
+           	   }
                return t in (getNonDefaultOverloadOptions(ftype) + getDefaultOverloadOptions(ftype));
            }
            throw "Ups, unexpected type of the call receiver expression!";
@@ -328,10 +361,10 @@ MuExp translate((Name) `<Name name>`) = mkVar("<name>", name@\loc);
 MuExp translate(Expression e:(Expression) `<Expression exp> [ <{Expression ","}+ subscripts> ]`){
     ot = getOuterType(exp);
     op = "<ot>_subscript";
-    if(ot notin {"map"}) {
-    	op = "<getOuterType(exp)>_subscript_<intercalate("-", [getOuterType(s) | s <- subscripts])>";
+    if(ot notin {"map", "rel", "lrel"}) {
+    	   op = "<getOuterType(exp)>_subscript_<intercalate("-", [getOuterType(s) | s <- subscripts])>";
     }
-    return muCallPrim(op, translate(exp) + [translate(s) | s <- subscripts]);
+    return muCallPrim(op, translate(exp) + ["<s>" == "_" ? muCon("_") : translate(s) | s <- subscripts]);
 }
 
 // Slice
@@ -342,8 +375,13 @@ MuExp translate (e:(Expression) `<Expression expression> [ <OptionalExpression o
 	translateSlice(expression, optFirst, second, optLast);
 
 // Field access
-MuExp translate (e:(Expression) `<Expression expression> . <Name field>`) =
-    muCallPrim("<getOuterType(expression)>_field_access", [ translate(expression), muCon("<field>") ]);
+MuExp translate (e:(Expression) `<Expression expression> . <Name field>`) {
+   tp = getType(expression@\loc);
+   if(isTupleType(tp) || isRelType(tp) || isListRelType(tp) || isMapType(tp)) {
+       return translate((Expression)`<Expression expression> \< <Name field> \>`);
+   }
+   return muCallPrim("<getOuterType(expression)>_field_access", [ translate(expression), muCon("<field>") ]);
+}
 
 // Field update
 MuExp translate (e:(Expression) `<Expression expression> [ <Name key> = <Expression replacement> ]`) =
@@ -819,10 +857,10 @@ MuExp translatePathTail((PathTail) `<PostPathChars post>`) = muCon("<post>"[1..-
 	bool isVarArgs = (varArgs(_,_) := parameters);
   	// TODO: keyword parameters
     
-    MuExp body = translateFunction(parameters.formals.formals, statements, []);
+    MuExp body = translateFunction(parameters.formals.formals, isVarArgs, statements, []);
     tuple[str fuid,int pos] addr = uid2addr[uid];
     functions_in_module += muFunction(fuid, ftype, (addr.fuid in moduleNames) ? "" : addr.fuid, 
-  									  nformals, nlocals, e@\loc, [], (), body);
+  									  nformals, nlocals, isVarArgs, e@\loc, [], (), body);
   	
   	leaveFunctionScope();								  
   	
@@ -963,7 +1001,7 @@ MuExp translateVisit(label,\visit) {
 	Symbol phi_ftype = Symbol::func(Symbol::\value(), [Symbol::\value(),Symbol::\value()]);
 	
 	enterVisit();	
-	functions_in_module += muFunction(phi_fuid, phi_ftype, scopeId, 3, 3, \visit@\loc, [], (), 
+	functions_in_module += muFunction(phi_fuid, phi_ftype, scopeId, 3, 3, false, \visit@\loc, [], (), 
 										translateVisitCases([ c | Case c <- \visit.cases ]));
 	leaveVisit();
 	
@@ -979,7 +1017,7 @@ MuExp translateVisit(label,\visit) {
 						  						[ muAssignLoc("iSubject",0, muLoc("val",4)) ] )]);
 		body += muReturn(muLoc("iSubject",0));
 		
-		functions_in_module += muFunction(phi_fixpoint_fuid, phi_ftype, scopeId, 3, 5, \visit@\loc, [], (), muBlock(body));
+		functions_in_module += muFunction(phi_fixpoint_fuid, phi_ftype, scopeId, 3, 5, false, \visit@\loc, [], (), muBlock(body));
 	
 		str hasMatch = asTmp(nextLabel());
 		str beenChanged = asTmp(nextLabel());
@@ -1014,10 +1052,14 @@ MuExp translateVisitCases(list[Case] cases) {
 		enterBacktrackingScope(ifname);
 		if(c.patternWithAction is replacing) {
 			replacement = translate(c.patternWithAction.replacement.replacementExpression);
+			list[MuExp] conditions = [];
+			if(c.patternWithAction.replacement is conditional) {
+				conditions = [ translate(e) | Expression e <- c.patternWithAction.replacement.conditions ];
+			}
 			replacementType = getType(c.patternWithAction.replacement.replacementExpression@\loc);
 			tcond = muCallPrim("subtype", [ muTypeCon(replacementType), muCallPrim("typeOf", [ muLoc("iSubject",0) ]) ]);
 			list[MuExp] cbody = [ muAssignLocDeref("matched",1,muBool(true)), muAssignLocDeref("hasInsert",2,muBool(true)), replacement ];
-        	exp = muIfelse(ifname, muAll([cond,tcond]), [ muReturn(muBlock(cbody)) ], [ translateVisitCases(tail(cases)) ]);
+        	exp = muIfelse(ifname, muAll([cond,tcond,*conditions]), [ muReturn(muBlock(cbody)) ], [ translateVisitCases(tail(cases)) ]);
         	leaveBacktrackingScope();
         	return exp;
 		} else {

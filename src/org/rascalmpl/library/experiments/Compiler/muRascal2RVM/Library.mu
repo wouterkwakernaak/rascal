@@ -26,7 +26,7 @@ coroutine ENUM_LIST[2, iLst, rVal, len, j]{
    guard len > 0;
    j = 0;
    while(j < len) {
-      yield get_list iLst[j];
+      yield get_list(iLst, j);
       j = j + 1;
    };
 }
@@ -37,7 +37,7 @@ coroutine ENUM_SET[2, iSet, rVal, iLst, len, j]{
    guard len > 0;
    j = 0;
    while(j < len) {
-      yield get_list iLst[j];
+      yield get_list(iLst, j);
       j = j + 1;
    };
 }
@@ -48,7 +48,7 @@ coroutine ENUM_MAP[2, iMap, rVal, iKlst, len, j]{
    guard len > 0;
    j = 0;
    while(j < len) {
-      yield get_list iKlst[j];
+      yield get_list(iKlst, j);
       j = j + 1;
    };
 }
@@ -59,7 +59,7 @@ coroutine ENUM_NODE[2, iNd, rVal, len, j, array]{
    guard len > 1;
    j = 1;  // skip name
    while(j < len) {
-      yield get_array array[j];
+      yield get_array(array, j);
       j = j + 1;
    };
 }
@@ -69,7 +69,7 @@ coroutine ENUM_TUPLE[2, iTup, rVal, len, j]{
    guard len > 0;
    j = 0;
    while(j < len) {
-      yield get_tuple iTup[j];
+      yield get_tuple(iTup, j);
       j = j + 1;
    };
 }
@@ -204,13 +204,13 @@ coroutine MATCH_N[2, pats, subjects, ipats, plen, slen, p, pat]{
    guard plen == slen;
    p = 0;
    ipats = make_array(plen);
-   set_array ipats[p] = init(get_array pats[p], get_array subjects[p]);
+   put_array(ipats, p, init(get_array(pats, p), get_array(subjects, p)));
    while((p >= 0) && (p < plen)) {
-       pat = get_array ipats[p];
+       pat = get_array(ipats, p);
        if(next(pat)) {
            if(p < (plen - 1)) {
                p = p + 1;
-               set_array ipats[p] = init(get_array pats[p], get_array subjects[p]);
+               put_array(ipats, p, init(get_array(pats, p), get_array(subjects, p)));
            } else {
                yield;
            };
@@ -231,8 +231,8 @@ coroutine MATCH_CALL_OR_TREE[2, pats, iSubject, cpats]{
 coroutine MATCH_REIFIED_TYPE[2, pat, iSubject, nc, konstructor, symbol]{
     guard iSubject is node;
     nc = get_name_and_children(iSubject);
-    konstructor = get_array nc[0];
-    symbol = get_array nc[1];
+    konstructor = get_array(nc, 0);
+    symbol = get_array(nc, 1);
     if(equal(konstructor, "type") && equal(symbol, pat)) { // NOTE: the second equal? Should not it be a match?
         return;
     };
@@ -252,15 +252,24 @@ coroutine MATCH_LITERAL[2, pat, iSubject]{
     return;
 }
 
-coroutine MATCH_VAR[2, rVar, iSubject]{
-   return iSubject;
+coroutine MATCH_VAR[2, rVar, iSubject, iVal]{
+   if(is_defined(rVar)){
+      iVal = deref rVar;
+      if(subtype(typeOf(iSubject), typeOf(iVal)) && equal(iSubject, iVal)){
+         return iSubject;
+      };
+      exhaust;
+   };
+   yield iSubject;
+   undefine(rVar);
+   exhaust;
 }
 
 coroutine MATCH_ANONYMOUS_VAR[1, iSubject]{
    return;
 }
 
-coroutine MATCH_TYPED_VAR[3, typ, rVar, iSubject]{
+coroutine MATCH_TYPED_VAR[3, typ, rVar, iSubject, iVal]{
    guard subtype(typeOf(iSubject), typ);
    return iSubject;  
 }
@@ -321,9 +330,9 @@ coroutine MATCH_LIST[2,
      sublen   = size_list(iSubject);
      p        = 0; 
      cursor   = 0;
-     matcher  = init(get_array pats[p], iSubject, cursor, ref nextCursor, sublen);
+     matcher  = init(get_array(pats, p), iSubject, cursor, ref nextCursor, sublen);
      matchers = make_array(patlen);
-     set_array matchers[0] = matcher;
+     put_array(matchers, 0, matcher);
      
      while(true) {
      	   // Move forward
@@ -334,15 +343,15 @@ coroutine MATCH_LIST[2,
             } else {
                 if(p < patlen1){
                     p = p + 1;
-                    matcher  = init(get_array pats[p], iSubject, cursor, ref nextCursor, sublen - cursor);
-                    set_array matchers[p] = matcher;
+                    matcher  = init(get_array(pats, p), iSubject, cursor, ref nextCursor, sublen - cursor);
+                    put_array(matchers, p, matcher);
                 };  
             };
          }; 
          // If possible, move backward
          if(p > 0) {
              p        = p - 1;
-             matcher  = get_array matchers[p];
+             matcher  = get_array(matchers, p);
          } else {
              exhaust;
          };
@@ -358,27 +367,44 @@ coroutine MATCH_LIST[2,
 
 coroutine MATCH_PAT_IN_LIST[5, pat, iSubject, start, rNext, available, cpat]{ 
     guard available > 0;
-    cpat = init(pat, get_list iSubject[start]);
+    cpat = init(pat, get_list(iSubject, start));
     
     while(next(cpat)) {
        yield start + 1;   
     };
 } 
-
-coroutine MATCH_VAR_IN_LIST[5, rVar, iSubject, start, rNext, available]{
+/*
+coroutine MATCH_VAR_IN_LIST[5, rVar, iSubject, start, rNext, available, iVal, iElem]{
+   println("MATCH_VAR_IN_LIST", iSubject, start, available);
    guard available > 0;
-   // NOTE: an example of multi argument 'return'! (could not have been replaced with one reference due to the create-init design)
-   return(get_list iSubject[start], start + 1);
+   iElem = get_list(iSubject, start);
+   if(is_defined(rVar)){
+      iVal = deref rVar;
+      if(subtype(typeOf(iElem), typeOf(iVal)) && equal(iElem, iVal)){
+         return(iElem, start + 1);
+      };
+      exhaust;
+   };
+   return(iElem, start + 1);
 }
 
 coroutine MATCH_ANONYMOUS_VAR_IN_LIST[4, iSubject, start, rNext, available]{
    guard available > 0;
    return start + 1;
 }
+*/
 
-coroutine MATCH_MULTIVAR_IN_LIST[6, rVar, iLookahead, iSubject, start, rNext, available, len]{
+coroutine MATCH_MULTIVAR_IN_LIST[6, rVar, iLookahead, iSubject, start, rNext, available, len, iVal]{
     len = 0;
     available = available - mint(iLookahead);
+    if(is_defined(rVar)){
+      iVal = deref rVar;
+      if(/*subtype(typeOf(iElem), typeOf(iVal)) && */ occurs(iVal, iSubject, start)){
+         yield(iVal, start + size_list(iVal));
+         undefine(rVar);
+      };
+      exhaust;
+    };
     // Note: an example of multi argument 'yield'! (could not have been replaced with one reference due to the create-init design)
     while(len <= available) {
         yield(sublist(iSubject, start, len), start + len);
@@ -386,9 +412,18 @@ coroutine MATCH_MULTIVAR_IN_LIST[6, rVar, iLookahead, iSubject, start, rNext, av
     };
 }
 
-coroutine MATCH_LAST_MULTIVAR_IN_LIST[6, rVar, iLookahead, iSubject, start, rNext, available, len]{
+coroutine MATCH_LAST_MULTIVAR_IN_LIST[6, rVar, iLookahead, iSubject, start, rNext, available, len, iVal]{
     len = available - mint(iLookahead);
     guard(len >= 0);
+    if(is_defined(rVar)){
+      iVal = deref rVar;
+      if(/*subtype(typeOf(iElem), typeOf(iVal)) &&*/ occurs(iVal, iSubject, start)){
+         yield(iVal, start + size_list(iVal));
+         undefine(rVar);
+      };
+      exhaust;
+    };
+    
     // Note: an example of multi argument 'yield'! (could not have been replaced with one reference due to the create-init design)
     while(len <= available) {
         yield(sublist(iSubject, start, len), start + len);
@@ -415,7 +450,7 @@ coroutine MATCH_LAST_ANONYMOUS_MULTIVAR_IN_LIST[5, iLookahead, iSubject, start, 
 }
 
 coroutine MATCH_TYPED_MULTIVAR_IN_LIST[7, typ, rVar, iLookahead, iSubject, start, rNext, available, len]{
-	    guard subtype(typeOf(iSubject), typ);
+	guard subtype(typeOf(iSubject), typ);
     len = 0;
     available = available - mint(iLookahead);
     // Note: an example of multi argument 'yield'! (could not have been replaced with one reference due to the create-init design)
@@ -427,7 +462,7 @@ coroutine MATCH_TYPED_MULTIVAR_IN_LIST[7, typ, rVar, iLookahead, iSubject, start
 
 coroutine MATCH_LAST_TYPED_MULTIVAR_IN_LIST[7, typ, rVar, iLookahead, iSubject, start, rNext, available, len]{
     len = available - mint(iLookahead);
-	    guard subtype(typeOf(iSubject), typ) && len >= 0;
+	guard subtype(typeOf(iSubject), typ) && len >= 0;
     // Note: an example of multi argument 'yield'! (could not have been replaced with one reference due to the create-init design)
     while(len <= available){
         yield(sublist(iSubject, start, len), start + len);
@@ -436,7 +471,7 @@ coroutine MATCH_LAST_TYPED_MULTIVAR_IN_LIST[7, typ, rVar, iLookahead, iSubject, 
 }
 
 coroutine MATCH_TYPED_ANONYMOUS_MULTIVAR_IN_LIST[6, typ, iLookahead, iSubject, start, rNext, available, len]{
-    	guard subtype(typeOf(iSubject), typ);
+    guard subtype(typeOf(iSubject), typ);
     len = 0;
     available = available - mint(iLookahead);
     while(len <= available){
@@ -447,7 +482,7 @@ coroutine MATCH_TYPED_ANONYMOUS_MULTIVAR_IN_LIST[6, typ, iLookahead, iSubject, s
 
 coroutine MATCH_LAST_TYPED_ANONYMOUS_MULTIVAR_IN_LIST[6, typ, iLookahead, iSubject, start, rNext, available, len]{
     len = available - mint(iLookahead);
-    	guard subtype(typeOf(iSubject), typ) && len >= 0;
+    guard subtype(typeOf(iSubject), typ) && len >= 0;
     while(len <= available){
         yield start + len;
         len = len + 1;
@@ -473,8 +508,8 @@ coroutine MATCH_SET[2,
 					    ]{
 	    guard iSubject is set;
 	  
-      iLiterals = get_array pair[0];
-      pats      = get_array pair[1];
+      iLiterals = get_array(pair, 0);
+      pats      = get_array(pair, 1);
       
       if(subset(iLiterals, iSubject)) {
           // continue
@@ -495,9 +530,9 @@ coroutine MATCH_SET[2,
       
       patlen1   =  patlen - 1;
       p         = 0;
-      matcher   = init(get_array pats[p], subject1, ref remaining);
+      matcher   = init(get_array(pats, p), subject1, ref remaining);
       matchers  = make_array(patlen);
-      set_array matchers[0] = matcher;
+      put_array(matchers, 0, matcher);
      	
       while(true){
           // Move forward
@@ -508,15 +543,15 @@ coroutine MATCH_SET[2,
               } else {
                   if(p < patlen1){
                       p = p + 1;
-                      matcher  = init(get_array pats[p], current, ref remaining);
-                      set_array matchers[p] = matcher;
+                      matcher  = init(get_array(pats, p), current, ref remaining);
+                      put_array(matchers, p, matcher);
                   };  
               };
           }; 
           // If possible, move backward
           if(p > 0){
                p       = p - 1;
-               matcher = get_array matchers[p];
+               matcher = get_array(matchers, p);
            } else {
                exhaust;
            };
@@ -529,7 +564,7 @@ coroutine ENUM_MSET[2, set, rElm, iLst, len, j]{
     len = size_list(iLst);
     j = 0;
     while(j < len) {
-        yield get_list iLst[j];
+        yield get_list(iLst, j);
         j = j + 1;
     };
 }
@@ -554,8 +589,15 @@ coroutine MATCH_PAT_IN_SET[3, pat, available, rRemaining, gen, cpat, elm]{
 }
 
 coroutine MATCH_VAR_IN_SET[3, rVar, available, rRemaining, gen, elm]{
-	    guard size_mset(available) > 0;
- 
+	guard size_mset(available) > 0;
+ 	if(is_defined(rVar)){
+      elm = deref rVar;
+      if(is_element_mset(elm, available)){
+         yield(elm, mset_destructive_subtract_elm(available, elm));
+         undefine(rVar);
+      };
+      exhaust;
+    };
     gen = init(create(ENUM_MSET, available, ref elm));
     while(next(gen)) {
 	          yield(elm, mset_destructive_subtract_elm(available, elm));
@@ -564,7 +606,7 @@ coroutine MATCH_VAR_IN_SET[3, rVar, available, rRemaining, gen, elm]{
 }
 
 coroutine MATCH_ANONYMOUS_VAR_IN_SET[2, available, rRenaming, gen, elm]{
-	    guard size_set(available) > 0;
+	guard size_set(available) > 0;
     
     gen = init(create(ENUM_MSET, available, ref elm));
     while(next(gen)) { 
@@ -574,11 +616,31 @@ coroutine MATCH_ANONYMOUS_VAR_IN_SET[2, available, rRenaming, gen, elm]{
 }
 
 coroutine MATCH_MULTIVAR_IN_SET[3, rVar, available, rRemaining, gen, subset]{
+    if(is_defined(rVar)){
+      subset = deref rVar;
+      if(subset_set_mset(subset, available)){
+         yield(subset, mset_destructive_subtract_set(available, subset));
+         undefine(rVar);
+      };
+      exhaust;
+    };
     gen = init(create(ENUM_SUBSETS, available, ref subset));
     while(next(gen)) {
 	          yield(set(subset), mset_destructive_subtract_mset(available, subset));
 	          available = mset_destructive_add_mset(available, subset);
     };
+}
+
+coroutine MATCH_LAST_MULTIVAR_IN_SET[3, rVar, available, rRemaining, subset]{
+    if(is_defined(rVar)){
+      subset = deref rVar;
+      if(equal_set_mset(subset, available)){
+         return(subset,  mset_empty());
+      };
+      exhaust;
+    };
+
+    return(set(available), mset_empty());
 }
 
 coroutine MATCH_ANONYMOUS_MULTIVAR_IN_SET[2, available, rRemaining, gen, subset]{
@@ -589,8 +651,11 @@ coroutine MATCH_ANONYMOUS_MULTIVAR_IN_SET[2, available, rRemaining, gen, subset]
     };
 }
 
-coroutine MATCH_TYPED_MULTIVAR_IN_SET[4, typ, rVar, available, rRemaining, gen, subset]{
+coroutine MATCH_LAST_ANONYMOUS_MULTIVAR_IN_SET[2, available, rRemaining]{
+    return mset_empty();
+}
 
+coroutine MATCH_TYPED_MULTIVAR_IN_SET[4, typ, rVar, available, rRemaining, gen, subset]{
 	    guard subtype(typeOf(available), typ);
     
     gen = init(create(ENUM_SUBSETS, available, ref subset));
@@ -600,8 +665,12 @@ coroutine MATCH_TYPED_MULTIVAR_IN_SET[4, typ, rVar, available, rRemaining, gen, 
     	};
 }
 
-coroutine MATCH_TYPED_ANONYMOUS_MULTIVAR_IN_SET[3, typ, available, rRemaining, gen, subset]{
+coroutine MATCH_LAST_TYPED_MULTIVAR_IN_SET[4, typ, rVar, available, rRemaining]{
+	    guard subtype(typeOf(available), typ);
+    return(set(available), mset_empty());
+}
 
+coroutine MATCH_TYPED_ANONYMOUS_MULTIVAR_IN_SET[3, typ, available, rRemaining, gen, subset]{
     	guard subtype(typeOf(available), typ);
     
     gen = init(create(ENUM_SUBSETS, available));
@@ -609,6 +678,11 @@ coroutine MATCH_TYPED_ANONYMOUS_MULTIVAR_IN_SET[3, typ, available, rRemaining, g
           yield mset_destructive_subtract_mset(available, subset);
 	          available = mset_destructive_add_mset(available, subset);
 	    };
+}
+
+coroutine MATCH_LAST_TYPED_ANONYMOUS_MULTIVAR_IN_SET[3, typ, available, rRemaining, gen, subset]{
+    	guard subtype(typeOf(available), typ);
+    return mset_empty();
 }
 
 // The power set of a set of size n has 2^n-1 elements 
@@ -627,7 +701,7 @@ coroutine ENUM_SUBSETS[2, set, rSubset, lst, k, j, last, elIndex, sub]{
         sub = make_mset();
         while(j > 0) {
            if(j mod 2 == 1){
-              sub = mset_destructive_add_elm(sub, get_list lst[elIndex]);
+              sub = mset_destructive_add_elm(sub, get_list(lst, elIndex));
            };
            elIndex = elIndex + 1;
            j = j / 2;
@@ -677,8 +751,8 @@ coroutine MATCH_AND_DESCENT_LIST[2, pat, iLst, last, j]{
    last = size_list(iLst);
    j = 0;
    while(j < last){
-      DO_ALL(pat, get_list iLst[j]);
-      DO_ALL(create(MATCH_AND_DESCENT, pat),  get_list iLst[j]);
+      DO_ALL(pat, get_list(iLst, j));
+      DO_ALL(create(MATCH_AND_DESCENT, pat),  get_list(iLst, j));
       j = j + 1;
    };
 }
@@ -688,8 +762,8 @@ coroutine MATCH_AND_DESCENT_SET[2, pat, iSet, iLst, last, j]{
    last = size_list(iLst);
    j = 0;
    while(j < last){
-      DO_ALL(pat, get_list iLst[j]);
-      DO_ALL(create(MATCH_AND_DESCENT, pat),  get_list iLst[j]);
+      DO_ALL(pat, get_list(iLst, j));
+      DO_ALL(create(MATCH_AND_DESCENT, pat),  get_list(iLst, j));
       j = j + 1;
    };
 }
@@ -700,10 +774,10 @@ coroutine MATCH_AND_DESCENT_MAP[2, pat, iMap, iKlst, iVlst, last, j]{
    last = size_list(iKlst);
    j = 0;
    while(j < last){
-      DO_ALL(pat, get_list iKlst[j]);
-      DO_ALL(pat, get_list iVlst[j]);
-      DO_ALL(create(MATCH_AND_DESCENT, pat),  get_list iKlst[j]);
-      DO_ALL(create(MATCH_AND_DESCENT, pat),  get_list iVlst[j]);
+      DO_ALL(pat, get_list(iKlst, j));
+      DO_ALL(pat, get_list(iVlst, j));
+      DO_ALL(create(MATCH_AND_DESCENT, pat),  get_list(iKlst, j));
+      DO_ALL(create(MATCH_AND_DESCENT, pat),  get_list(iVlst, j));
       j = j + 1;
    };
 }
@@ -713,8 +787,8 @@ coroutine MATCH_AND_DESCENT_NODE[2, pat, iNd, last, j, ar]{
    last = size_array(ar);
    j = 0; 
    while(j < last){
-      DO_ALL(pat, get_array ar[j]);
-      DO_ALL(create(MATCH_AND_DESCENT, pat),  get_array ar[j]);
+      DO_ALL(pat, get_array(ar, j));
+      DO_ALL(create(MATCH_AND_DESCENT, pat),  get_array(ar, j));
       j = j + 1;
    };
 }
@@ -723,8 +797,8 @@ coroutine MATCH_AND_DESCENT_TUPLE[2, pat, iTup, last, j]{
    last = size_tuple(iTup);
    j = 0;
    while(j < last){
-      DO_ALL(pat, get_tuple iTup[j]);
-      DO_ALL(create(MATCH_AND_DESCENT, pat),  get_tuple iTup[j]);
+      DO_ALL(pat, get_tuple(iTup, j));
+      DO_ALL(create(MATCH_AND_DESCENT, pat),  get_tuple(iTup, j));
       j = j + 1;
    };
 }
@@ -736,7 +810,7 @@ coroutine MATCH_REGEXP[3, iRegexp, varrefs, iSubject, matcher, j, rVar]{
    while(muprim("regexp_find", matcher)){
      j = 0; 
      while(j < size_array(varrefs)){
-        rVar = get_array varrefs[j];
+        rVar = get_array(varrefs, j);
         deref rVar = muprim("regexp_group", matcher, j + 1);
         j = j + 1;
      };
@@ -850,7 +924,7 @@ function VISIT_NOT_MAP[6, iSubject, traverse_fun, phi, rHasMatch, rBeenChanged, 
 		childHasMatch = false;
 		childBeenChanged = false;
 		iChild = traverse_fun(phi, iChild, ref childHasMatch, ref childBeenChanged, rebuild);
-		set_array iarray[j] = iChild;
+		put_array(iarray, j, iChild);
 		j = j + 1;
 		deref rHasMatch = childHasMatch || deref rHasMatch;
 		deref rBeenChanged = childBeenChanged || deref rBeenChanged;

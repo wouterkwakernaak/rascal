@@ -25,6 +25,8 @@ import experiments::Compiler::Examples::Overloading3;
 import experiments::Compiler::Examples::OverloadingMatch;
 import experiments::Compiler::Examples::OverloadingPlusBacktracking;
 import experiments::Compiler::Examples::OverloadingDynamicCall;
+import experiments::Compiler::Examples::OverloadingPlusVarArgs;
+import experiments::Compiler::Examples::OverloadingPlusVarArgsSpecialCase;
 import experiments::Compiler::Examples::ExceptionHandling1;
 import experiments::Compiler::Examples::ExceptionHandling2;
 import experiments::Compiler::Examples::ExceptionHandling3;
@@ -55,6 +57,7 @@ import experiments::Compiler::Examples::Visit8;
 import experiments::Compiler::Examples::Visit9;
 import experiments::Compiler::Examples::Visit10;
 import experiments::Compiler::Examples::Visit11;
+import experiments::Compiler::Examples::VisitWithWhen;
 
 import experiments::Compiler::Examples::IMP3;
 
@@ -86,6 +89,8 @@ test bool tst() = demo("Overloading3") == experiments::Compiler::Examples::Overl
 test bool tst() = demo("OverloadingMatch") == experiments::Compiler::Examples::OverloadingMatch::main([]);
 test bool tst() = demo("OverloadingPlusBacktracking") == experiments::Compiler::Examples::OverloadingPlusBacktracking::main([]);
 test bool tst() = demo("OverloadingDynamicCall") == experiments::Compiler::Examples::OverloadingDynamicCall::main([]);
+test bool tst() = demo("OverloadingPlusVarArgs") == experiments::Compiler::Examples::OverloadingPlusVarArgs::main([]);
+test bool tst() = demo("OverloadingPlusVarArgsSpecialCase") == experiments::Compiler::Examples::OverloadingPlusVarArgsSpecialCase::main([]);
 test bool tst() = demo("ExceptionHandling1") == experiments::Compiler::Examples::ExceptionHandling1::main([]);
 test bool tst() = demo("ExceptionHandling2") == experiments::Compiler::Examples::ExceptionHandling2::main([]);
 test bool tst() = demo("ExceptionHandling3") == experiments::Compiler::Examples::ExceptionHandling3::main([]);
@@ -119,6 +124,7 @@ test bool tst8()  = demo("Visit8")  == experiments::Compiler::Examples::Visit8::
 test bool tst9()  = demo("Visit9")  == experiments::Compiler::Examples::Visit9::main([]);
 test bool tst10() = demo("Visit10") == experiments::Compiler::Examples::Visit10::expectedResult;
 test bool tst11() = demo("Visit11") == experiments::Compiler::Examples::Visit11::main([]);
+test bool tst12() = demo("VisitWithWhen") == experiments::Compiler::Examples::VisitWithWhen::main([]);
 
 // Overloading resolution & imports
 test bool tst() = demo("IMP3") == experiments::Compiler::Examples::IMP3::main([]);

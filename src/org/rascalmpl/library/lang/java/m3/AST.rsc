@@ -1,3 +1,6 @@
+@doc{
+Synopsis: defines AST node types for Java
+}
 module lang::java::m3::AST
 
 extend analysis::m3::AST;
@@ -19,7 +22,7 @@ data Declaration
     | \initializer(Statement initializerBody)
     | \method(Type \return, str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl)
     | \method(Type \return, str name, list[Declaration] parameters, list[Expression] exceptions)
-    | \method(str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl)
+    | \constructor(str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl)
     | \import(str name)
     | \package(str name)
     | \package(Declaration parentPackage, str name)
@@ -41,12 +44,12 @@ data Expression
     | \arrayInitializer(list[Expression] elements)
     | \assignment(Expression lhs, str operator, Expression rhs)
     | \cast(Type \type, Expression expression)
-    | \char(str charValue)
+    | \characterLiteral(str charValue)
     | \newObject(Expression expr, Type \type, list[Expression] args, Declaration class)
     | \newObject(Expression expr, Type \type, list[Expression] args)
     | \newObject(Type \type, list[Expression] args, Declaration class)
     | \newObject(Type \type, list[Expression] args)
-    | \qualifier(Expression qualifier, Expression expression)
+    | \qualifiedName(Expression qualifier, Expression expression)
     | \conditional(Expression expression, Expression thenBranch, Expression elseBranch)
     | \fieldAccess(bool isSuper, Expression expression, str name)
     | \fieldAccess(bool isSuper, str name)
@@ -55,8 +58,8 @@ data Expression
     | \methodCall(bool isSuper, Expression receiver, str name, list[Expression] arguments)
     | \null()
     | \number(str numberValue)
-    | \boolean(bool boolValue)
-    | \string(str stringValue)
+    | \booleanLiteral(bool boolValue)
+    | \stringLiteral(str stringValue)
     | \type(Type \type)
     | \variable(str name, int extraDimensions)
     | \variable(str name, int extraDimensions, Expression \initializer)
@@ -96,7 +99,7 @@ data Statement
     | \switch(Expression expression, list[Statement] statements)
     | \case(Expression expression)
     | \defaultCase()
-    | \synchronized(Expression lock, Statement body)
+    | \synchronizedStatement(Expression lock, Statement body)
     | \throw(Expression expression)
     | \try(Statement body, list[Statement] catchClauses)
     | \try(Statement body, list[Statement] catchClauses, Statement \finally)                                        
@@ -111,9 +114,8 @@ data Statement
 data Type 
     = arrayType(Type \type)
     | parameterizedType(Type \type)
-    // just str or expression?
-    | qualifier(Type qualifier, Expression simpleName)
-    | simpleType(str name)
+    | qualifiedType(Type qualifier, Expression simpleName)
+    | simpleType(Expression name)
     | unionType(list[Type] types)
     | wildcard()
     | upperbound(Type \type)
@@ -161,7 +163,11 @@ void setEnvironmentOptions(loc directory) {
     setEnvironmentOptions(getPaths(directory, "class") + find(directory, "jar"), getPaths(directory, "java"));
 }
       
-@doc{Creates AST from a file}
+@doc{
+Synopsis: Creates AST from a file
+
+Description: useful for analyzing raw source code on disk, but if you have an Eclipse project you should have a look at [lang/java/jdt/m3] instead.
+}
 @javaClass{org.rascalmpl.library.lang.java.m3.internal.EclipseJavaCompiler}
 @reflect
 public java Declaration createAstFromFile(loc file, bool collectBindings, str javaVersion = "1.7");

@@ -261,7 +261,7 @@ public class SourceConverter extends M3Converter {
 	private ISourceLocation getParent(ISourceLocation sourceLoc) {
 		File file = new File(sourceLoc.getPath());
 		String parent = file.getParent();
-		if (parent != null) {
+		if (parent != null && !parent.equals("/")) {
 			parent = parent.replaceAll(Matcher.quoteReplacement("\\"), "/");
 			String authority = null;
 			if (sourceLoc.hasAuthority())
@@ -278,15 +278,12 @@ public class SourceConverter extends M3Converter {
 	public boolean visit(PackageDeclaration node) {
 		IPackageBinding binding = node.resolveBinding();
 		
-		if (binding == null) {
-		  // TODO
+		if (binding != null) {
+		  generatePackageDecls(getParent((ISourceLocation) ownValue), (ISourceLocation) ownValue, getParent(loc));
+		  insert(containment, ownValue, getParent());
+		} else {
 		  System.err.println("Unresolved binding for: "+ node);
-		  return true;
 		}
-		
-		generatePackageDecls(getParent((ISourceLocation) ownValue), (ISourceLocation) ownValue, getParent(loc));
-	
-		insert(containment, ownValue, getParent());
 		
 		scopeManager.push((ISourceLocation) ownValue);
 		return true;

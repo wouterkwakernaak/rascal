@@ -35,6 +35,7 @@ import org.eclipse.imp.pdb.facts.type.ITypeVisitor;
 import org.eclipse.imp.pdb.facts.type.Type;
 import org.eclipse.imp.pdb.facts.type.TypeStore;
 import org.rascalmpl.interpreter.IEvaluatorContext;
+import org.rascalmpl.interpreter.types.FunctionType;
 import org.rascalmpl.library.experiments.Compiler.RVM.Interpreter.Instructions.Opcode;
 
 
@@ -124,6 +125,9 @@ public class RVM {
 	
 	public void declareConstructor(String name, IConstructor symbol) {
 		Type constr = types.symbolToType(symbol, typeStore);
+		if(constructorMap.get(name) != null) {
+			throw new RuntimeException("PANIC: Double declaration of constructor: " + name);
+		}
 		constructorMap.put(name, constructorStore.size());
 		constructorStore.add(constr);
 	}
@@ -352,9 +356,26 @@ public class RVM {
 	private Object executeFunction(Frame root, FunctionInstance func, IValue[] args){
 		Frame cf = new Frame(func.function.scopeId, null, func.env, func.function.maxstack, func.function);
 		
-		// Pass the program argument to main
-		for(int i = 0; i < args.length; i++){
-			cf.stack[i] = args[i]; 
+		// Pass function arguments and account for the case of a variable number of parameters
+		if(func.function.isVarArgs) {
+			for(int i = 0; i < func.function.nformals - 1; i++) {
+				cf.stack[i] = args[i];
+			}
+			Type argTypes = ((FunctionType) func.function.ftype).getArgumentTypes();
+			if(args.length == func.function.nformals
+					&& args[func.function.nformals - 1].getType().isSubtypeOf(argTypes.getFieldType(func.function.nformals - 1))) {
+				cf.stack[func.function.nformals - 1] = args[func.function.nformals - 1];
+			} else {
+				IListWriter writer = vf.listWriter();
+				for(int i = func.function.nformals - 1; i < args.length; i++) {
+					writer.append(args[i]);
+				}
+				cf.stack[func.function.nformals - 1] = writer.done();
+			}
+		} else {
+			for(int i = 0; i < args.length; i++){
+				cf.stack[i] = args[i]; 
+			}
 		}
 		return executeProgram(root, cf);
 	}
@@ -776,7 +797,8 @@ public class RVM {
 							this.appendToTrace("		" + getFunctionName(index));
 						}
 					}
-					
+					// TODO: Re-think of the cases of polymorphic and var args function alternatives
+					// The most straightforward solution would be to check the arity and let pattern matching on formal parameters do the rest
 					NEXT_FUNCTION: 
 					for(int index : of_instance.functions) {
 						fun = functionStore.get(index);
@@ -931,7 +953,7 @@ public class RVM {
 								arity = instructions[pc++];
 								int[] refs = cf.function.refs;
 								if(arity != refs.length) {
-									throw new RuntimeException("The return within a coroutine has to take the same number of arguments as the number of its reference parameters; arity: " + arity + "; reference parameter number: " + refs.length);
+									throw new RuntimeException("Coroutine " + cf.function.name + ": arity of return (" + arity  + ") unequal to number of reference parameters (" +  refs.length + ")");
 								}
 								for(int i = 0; i < arity; i++) {
 									ref = (Reference) stack[refs[arity - 1 - i]];
@@ -971,8 +993,9 @@ public class RVM {
 					String methodName =  ((IString) cf.function.constantStore[instructions[pc++]]).getValue();
 					String className =  ((IString) cf.function.constantStore[instructions[pc++]]).getValue();
 					Type parameterTypes = cf.function.typeConstantStore[instructions[pc++]];
+					int reflect = instructions[pc++];
 					arity = parameterTypes.getArity();
-					sp = callJavaMethod(methodName, className, parameterTypes, stack, sp);
+					sp = callJavaMethod(methodName, className, parameterTypes, reflect, stack, sp);
 					continue;
 					
 				case Opcode.OP_INIT:
@@ -988,11 +1011,11 @@ public class RVM {
 						Frame frame = new Frame(fun.scopeId, null, fun_instance.env, fun.maxstack, fun);
 						coroutine = new Coroutine(frame);
 					} else {
-						throw new RuntimeException("unexpected argument type for INIT: " + src.getClass() + ", " + src);
+						throw new RuntimeException("Unexpected argument type for INIT: " + src.getClass() + ", " + src);
 					}
 					
 					if(coroutine.isInitialized()) {
-						throw new RuntimeException("Trying to initialize a coroutine, which has been already initialized: " + fun.getName() + " (corounine's main), called in " + cf.function.getName());
+						throw new RuntimeException("Trying to initialize a coroutine, which has already been initialized: " + fun.getName() + " (corounine's main), called in " + cf.function.getName());
 					}
 					// the main function of coroutine may have formal parameters,
 					// therefore, INIT may take a number of arguments == formal parameters - arguments already passed to CREATE
@@ -1292,26 +1315,46 @@ public class RVM {
 		}
 	}
 	
-	int callJavaMethod(String methodName, String className, Type parameterTypes, Object[] stack, int sp){
-		Class<?> clazz;
+	int callJavaMethod(String methodName, String className, Type parameterTypes, int reflect, Object[] stack, int sp){
+		Class<?> clazz = null;
 		try {
-			clazz = this.getClass().getClassLoader().loadClass(className);
+			try {
+				clazz = this.getClass().getClassLoader().loadClass(className);
+			} catch(ClassNotFoundException e1) {
+				// If the class is not found, try other class loaders
+				for(ClassLoader loader : ctx.getEvaluator().getClassLoaders()) {
+					try {
+						clazz = loader.loadClass(className);
+						break;
+					} catch(ClassNotFoundException e2) {
+						;
+					}
+				}
+			}
+			
+			if(clazz == null) {
+				throw new RuntimeException("Class not found: " + className);
+			}
+			
 			Constructor<?> cons;
 			cons = clazz.getConstructor(IValueFactory.class);
 			Object instance = cons.newInstance(vf);
-
-			Method m = clazz.getMethod(methodName, makeJavaTypes(parameterTypes));
+			Method m = clazz.getMethod(methodName, makeJavaTypes(parameterTypes, reflect));
 			int nformals = parameterTypes.getArity();
-			Object[] parameters = new Object[nformals];
+			Object[] parameters = new Object[nformals + reflect];
 			for(int i = 0; i < nformals; i++){
 				parameters[i] = stack[sp - nformals + i];
 			}
+			if(reflect == 1) {
+				parameters[nformals] = this.ctx;
+			}
 			stack[sp - nformals] =  m.invoke(instance, parameters);
 			return sp - nformals + 1;
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		} 
+//		catch (ClassNotFoundException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 		catch (NoSuchMethodException | SecurityException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -1331,12 +1374,20 @@ public class RVM {
 		return sp;
 	}
 	
-	Class<?>[] makeJavaTypes(Type parameterTypes){
+	Class<?>[] makeJavaTypes(Type parameterTypes, int reflect){
 		JavaClasses javaClasses = new JavaClasses();
-		Class<?>[] jtypes = new Class<?>[parameterTypes.getArity()];
+		int arity = parameterTypes.getArity() + reflect;
+		Class<?>[] jtypes = new Class<?>[arity];
 		
 		for(int i = 0; i < parameterTypes.getArity(); i++){
 			jtypes[i] = parameterTypes.getFieldType(i).accept(javaClasses);
+		}
+		if(reflect == 1) {
+			try {
+				jtypes[arity - 1] = this.getClass().getClassLoader().loadClass("org.rascalmpl.interpreter.IEvaluatorContext");
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			}
 		}
 		return jtypes;
 	}

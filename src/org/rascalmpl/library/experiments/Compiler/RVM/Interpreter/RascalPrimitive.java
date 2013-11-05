@@ -50,7 +50,6 @@ import org.rascalmpl.library.cobra.TypeParameterVisitor;
 import org.rascalmpl.library.experiments.Compiler.Rascal2muRascal.RandomValueTypeVisitor;
 import org.rascalmpl.uri.URIUtil;
 import org.rascalmpl.values.ValueFactoryFactory;
-import org.rascalmpl.library.Prelude;
 
 /*
  * The primitives that can be called via the CALLPRIM instruction.
@@ -453,6 +452,9 @@ public enum RascalPrimitive {
 	real_notequal_real,
 	real_notequal_rat,
 	
+	//reified
+	reified_field_access,
+	
 	// notin
 	
 	notin,
@@ -530,6 +532,10 @@ public enum RascalPrimitive {
 	setwriter_close,
 	setwriter_open,
 	setwriter_splice,
+	
+	// subscript
+	lrel_subscript,
+	rel_subscript,
 	
 	// str
 	
@@ -654,10 +660,11 @@ public enum RascalPrimitive {
 		vf = fact;
 		if(usedRVM != null){
 			stdout = usedRVM.stdout;
+			rvm = usedRVM;
+			parsingTools = new ParsingTools(fact, rvm.ctx);
+		} else {
+			System.err.println("No RVM found");
 		}
-		rvm = usedRVM;
-		
-		parsingTools = new ParsingTools(fact, rvm.ctx);
 		tf = TypeFactory.getInstance();
 		lineColumnType = tf.tupleType(new Type[] {tf.integerType(), tf.integerType()},
 									new String[] {"line", "column"});
@@ -2425,6 +2432,14 @@ public enum RascalPrimitive {
 		return sp - 1;
 	}
 	
+	public static int reified_field_access(Object[] stack, int sp, int arity) {
+		assert arity == 2;
+		IConstructor reified = (IConstructor) stack[sp - 2];
+		String field = ((IString) stack[sp - 1]).getValue();
+		stack[sp - 1] = reified.get(field);
+		return sp - 1;
+	}
+	
 	
 	/*
 	 * Annotations
@@ -2473,7 +2488,7 @@ public enum RascalPrimitive {
 			newFields[i] = field.getType().isInteger() ? tup.get(((IInteger) field).intValue())
 												       : tup.get(((IString) field).getValue());
 		}
-		stack[sp - arity] = vf.tuple(newFields);
+		stack[sp - arity] = (arity - 1 > 1) ? vf.tuple(newFields) : newFields[0];
 		return sp - arity + 1;
 	}
 	
@@ -2493,6 +2508,8 @@ public enum RascalPrimitive {
 	public static int rel_field_project(Object[] stack, int sp, int arity) {
 		assert arity >= 2;
 		ISet rel = (ISet) stack[sp - arity];
+		int indexArity = arity - 1;
+		assert indexArity <= rel.getElementType().getArity();
 		int[] fields = new int[arity - 1];
 		for(int i = 1; i < arity; i++){
 			fields[i - 1] = ((IInteger)stack[sp - arity + i]).intValue();
@@ -2504,7 +2521,7 @@ public enum RascalPrimitive {
 			for(int j = 0; j < fields.length; j++){
 				elems[j] = tup.get(fields[j]);
 			}
-			w.insert(vf.tuple(elems));
+			w.insert((indexArity > 1) ? vf.tuple(elems) : elems[0]);
 		}
 		stack[sp - arity] = w.done();
 		return sp - arity + 1;
@@ -2513,6 +2530,8 @@ public enum RascalPrimitive {
 	public static int lrel_field_project(Object[] stack, int sp, int arity) {
 		assert arity >= 2;
 		IList lrel = (IList) stack[sp - arity];
+		int indexArity = arity - 1;
+		assert indexArity <= lrel.getElementType().getArity();
 		int[] fields = new int[arity - 1];
 		for(int i = 1; i < arity; i++){
 			fields[i - 1] = ((IInteger)stack[sp - arity + i]).intValue();
@@ -2524,7 +2543,7 @@ public enum RascalPrimitive {
 			for(int j = 0; j < fields.length; j++){
 				elems[j] = tup.get(fields[j]);
 			}
-			w.append(vf.tuple(elems));
+			w.append((indexArity > 1) ? vf.tuple(elems) : elems[0]);
 		}
 		stack[sp - arity] = w.done();
 		return sp - arity + 1;
@@ -3694,7 +3713,9 @@ public enum RascalPrimitive {
 	
 	public static int set_less_set(Object[] stack, int sp, int arity) {
 		assert arity == 2;
-		stack[sp - 2] = ((ISet) stack[sp - 2]).isSubsetOf((ISet) stack[sp - 1]);
+		ISet lhs = (ISet) stack[sp - 2];
+		ISet rhs = (ISet) stack[sp - 1];
+		stack[sp - 2] = !lhs.isEqual(rhs) && lhs.isSubsetOf(rhs);
 		return sp - 1;
 	}
 	
@@ -4889,7 +4910,7 @@ public enum RascalPrimitive {
 	public static int negative(Object[] stack, int sp, int arity) {
 		assert arity == 1;
 
-		IValue left = (IValue) stack[sp - 2];
+		IValue left = (IValue) stack[sp - 1];
 		Type leftType = left.getType();
 
 		switch (ToplevelType.getToplevelType(leftType)) {
@@ -5033,6 +5054,79 @@ public enum RascalPrimitive {
 			throw RuntimeExceptions.indexOutOfBounds((IInteger) stack[sp - 1], null, new ArrayList<Frame>());
 		}
 		return sp - 1;
+	}
+	
+	public static int rel_subscript(Object[] stack, int sp, int arity) {
+		assert arity >= 2;
+		ISet rel = ((ISet) stack[sp - arity]);
+		int indexArity = arity - 1;
+		int relArity = rel.getElementType().getArity();
+		assert relArity < indexArity;
+		int resArity = relArity - indexArity;
+		IValue[] indices = new IValue[indexArity];
+		for(int i = 0; i < indexArity; i++ ){
+			indices[i] = (IValue) stack[sp - arity + i + 1];
+			if(indices[i].getType().isString()){
+				String s = ((IString) indices[i]).getValue();
+				if(s.equals("_"))
+					indices[i] = null;
+			}
+		}
+		IValue[] elems = new  IValue[resArity];
+		ISetWriter w = vf.setWriter();
+		NextTuple:
+		for(IValue vtup : rel){
+			ITuple tup = (ITuple) vtup;
+			for(int i = 0; i < indexArity; i++){
+				if(!tup.get(i).isEqual(indices[i])){
+					if(indices[i] != null)
+						continue NextTuple;
+				}
+			}
+			for(int i = 0; i < resArity; i++){
+				elems[i] = tup.get(indexArity + i);
+			}
+			w.insert(resArity > 1 ? vf.tuple(elems) : elems[0]);
+		}
+		stack[sp - arity] = w.done();
+		return sp - arity + 1;
+		
+	}
+	
+	public static int lrel_subscript(Object[] stack, int sp, int arity) {
+		assert arity >= 2;
+		IList lrel = ((IList) stack[sp - arity]);
+		int indexArity = arity - 1;
+		int lrelArity = lrel.getElementType().getArity();
+		assert lrelArity < indexArity;
+		int resArity = lrelArity - indexArity;
+		IValue[] indices = new IValue[indexArity];
+		for(int i = 0; i < indexArity; i++ ){
+			indices[i] = (IValue) stack[sp - arity + i + 1];
+			if(indices[i].getType().isString()){
+				String s = ((IString) indices[i]).getValue();
+				if(s.equals("_"))
+					indices[i] = null;
+			}
+		}
+		IValue[] elems = new  IValue[resArity];
+		IListWriter w = vf.listWriter();
+		NextTuple:
+		for(IValue vtup : lrel){
+			ITuple tup = (ITuple) vtup;
+			for(int i = 0; i < indexArity; i++){
+				if(!tup.get(i).isEqual(indices[i])){
+					if(indices[i] != null)
+						continue NextTuple;
+				}
+			}
+			for(int i = 0; i < resArity; i++){
+				elems[i] = tup.get(indexArity + i);
+			}
+			w.append(resArity > 1 ? vf.tuple(elems) : elems[0]);
+		}
+		stack[sp - arity] = w.done();
+		return sp - arity + 1;
 	}
 
 	/*

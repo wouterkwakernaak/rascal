@@ -12,7 +12,7 @@ import experiments::Compiler::Rascal2muRascal::RascalModule;
 import experiments::Compiler::Rascal2muRascal::TypeUtils;
 import experiments::Compiler::muRascal2RVM::ToplevelType;
 import experiments::Compiler::muRascal2RVM::StackSize;
-import experiments::Compiler::muRascal2RVM::PeepHole;
+//import experiments::Compiler::muRascal2RVM::PeepHole;
 
 alias INS = list[Instruction];
 
@@ -45,7 +45,7 @@ str mkCatchTo(str label) = "CATCH_TO_<label>";
 str mkFinallyFrom(str label) = "FINALLY_FROM_<label>";
 str mkFinallyTo(str label) = "FINALLY_TO_<label>";
 
-int defaultStackSize = 25;
+//int defaultStackSize = 25;
 
 int newLocal() {
     n = nlocal;
@@ -145,7 +145,8 @@ RVMProgram mu2rvm(muModule(str module_name, list[loc] imports, map[str,Symbol] t
     	iprintln(fun);
     }
     // Append catch blocks to the end of the function body code
-    code = peephole(tr(fun.body)) + [ *catchBlock | INS catchBlock <- catchBlocks ];
+    code = tr(fun.body) + [ *catchBlock | INS catchBlock <- catchBlocks ];
+    //code = peephole(tr(fun.body)) + [ *catchBlock | INS catchBlock <- catchBlocks ];
     
     // Debugging exception handling
     // println("FUNCTION BODY:");
@@ -161,7 +162,7 @@ RVMProgram mu2rvm(muModule(str module_name, list[loc] imports, map[str,Symbol] t
     lrel[str from, str to, Symbol \type, str target] exceptions = [ <range.from, range.to, entry.\type, entry.\catch> | tuple[lrel[str,str] ranges, Symbol \type, str \catch, MuExp _] entry <- exceptionTable, 
     																			  tuple[str from, str to] range <- entry.ranges ];
     funMap += (fun is muCoroutine) ? (fun.qname : COROUTINE(fun.qname, fun.scopeIn, fun.nformals, nlocal, fun.refs, required_frame_size, code))
-    							   : (fun.qname : FUNCTION(fun.qname, fun.ftype, fun.scopeIn, fun.nformals, nlocal, required_frame_size, code, exceptions));
+    							   : (fun.qname : FUNCTION(fun.qname, fun.ftype, fun.scopeIn, fun.nformals, nlocal, fun.isVarArgs, required_frame_size, code, exceptions));
   }
   
   main_fun = getUID(module_name,[],"MAIN",1);
@@ -172,7 +173,7 @@ RVMProgram mu2rvm(muModule(str module_name, list[loc] imports, map[str,Symbol] t
   	 module_init_fun = getFUID(module_name,"#<module_name>_init",ftype,0);
   }
   
-  funMap += (module_init_fun : FUNCTION(module_init_fun, ftype, "" /*in the root*/, 1, size(variables) + 1, defaultStackSize, 
+  funMap += (module_init_fun : FUNCTION(module_init_fun, ftype, "" /*in the root*/, 1, size(variables) + 1, false, estimate_stack_size(initializations) + size(variables) + 1, 
   									[*tr(initializations), 
   									 LOADCON(true),
   									 RETURN1(1),
@@ -297,7 +298,7 @@ INS tr(muCallPrim(str name, list[MuExp] args)) = (name == "println") ? [*tr(args
 
 INS tr(muCallMuPrim(str name, list[MuExp] args)) =  (name == "println") ? [*tr(args), PRINTLN(size(args))] : [*tr(args), CALLMUPRIM(name, size(args))];
 
-INS tr(muCallJava(str name, str class, Symbol types, list[MuExp] args)) = [ *tr(args), CALLJAVA(name, class, types) ];
+INS tr(muCallJava(str name, str class, Symbol types, int reflect, list[MuExp] args)) = [ *tr(args), CALLJAVA(name, class, types, reflect) ];
 
 // Return
 
@@ -662,7 +663,7 @@ INS tr(e:muAll(list[MuExp] exps)) {
 
 // The above list of muExps is exhaustive, no other cases exist
 
-default INS tr(e) { throw "Unknown node in the muRascal AST: <e>"; }
+default INS tr(MuExp e) { throw "Unknown node in the muRascal AST: <e>"; }
 
 /*********************************************************************/
 /*      End of muRascal expressions                                  */
