@@ -111,13 +111,18 @@ bool isConstantLiteral((Literal) `<LocationLiteral src>`) = src.protocolPart is 
 bool isConstantLiteral((Literal) `<StringLiteral n>`) = n is nonInterpolated;
 default bool isConstantLiteral(Literal l) = true;
 
+// TODO Add map constants
+
 bool isConstant(Expression e:(Expression)`{ <{Expression ","}* es> }`) = size_exps(es) == 0 || all(elm <- es, isConstant(elm));
 bool isConstant(Expression e:(Expression)`[ <{Expression ","}* es> ]`)  = size_exps(es) == 0 ||  all(elm <- es, isConstant(elm));
 bool isConstant(e:(Expression) `\< <{Expression ","}+ elements> \>`) = size_exps(elements) == 0 ||  all(elm <- elements, isConstant(elm));
 bool isConstant((Expression) `<Literal s>`) = isConstantLiteral(s);
 default bool isConstant(Expression e) = false;
 
-value getConstantValue(Expression e) = readTextValueString("<e>");
+value getConstantValue(Expression e) {
+  //println("getConstant: <e>");
+  return readTextValueString("<e>");
+}
 
 
 /*********************************************************************/
@@ -644,9 +649,19 @@ default MuExp translateBool(Expression e) {
 
 MuExp translateBoolBinaryOp(str fun, Expression lhs, Expression rhs){
   if(backtrackFree(lhs) && backtrackFree(rhs)) {
-     return muCallMuPrim("<fun>_mbool_mbool", [translateBool(lhs), translateBool(rhs)]);
+     lcode = translateBool(lhs);
+     rcode = translateBool(rhs);
+     switch(fun){
+     	case "and": 		return muIfelse(nextLabel("L_AND"), lcode, [rcode], [muCon(false)]);
+     	case "or":			return muIfelse(nextLabel("L_OR"), lcode, [muCon(true)], [rcode]);
+     	case "implies":		return muIfelse(nextLabel("L_IMPLIES"), lcode, [rcode], [muCon(true)]);
+     	case "equivalent":	return muIfelse(nextLabel("L_EQUIVALENT"), lcode, [rcode], [muCallMuPrim("not_mbool", [rcode])]);
+     	default:
+    		throw "translateBoolBinary: unknown operator <fun>";
+     }
   } else {
     switch(fun){
+    // TODO: Review short-cut semantics
     	case "and": return makeMuAll([translate(lhs), translate(rhs)]);
     	case "or":  // a or b == !(!a and !b)
     				return muCallMuPrim("not_mbool", [makeMuAll([muCallMuPrim("not_mbool", [translate(lhs)]),  muCallMuPrim("not_mbool", [translate(lhs)])])]);
