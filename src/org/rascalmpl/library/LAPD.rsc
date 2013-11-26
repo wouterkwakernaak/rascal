@@ -16,6 +16,9 @@ public java value read(str id);
 public java &T executeQuery(str query, type[&T] t, bool isCollection);
 
 @javaClass{org.rascalmpl.library.LAPD}
+public java set[value] executeJavaQuery(int queryId, str graphId);
+
+@javaClass{org.rascalmpl.library.LAPD}
 public java str generateUniqueId();
 
 @javaClass{org.rascalmpl.library.LAPD}
