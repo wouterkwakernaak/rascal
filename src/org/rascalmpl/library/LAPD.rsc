@@ -13,11 +13,7 @@ public java value read(str id);
 
 @javaClass{org.rascalmpl.library.LAPD}
 @reflect{uses typestore of the root environment}
-public java &T executeQuery(str query, type[&T] t);
-
-@javaClass{org.rascalmpl.library.LAPD}
-@reflect{uses typestore of the root environment}
-public java value executeQuery(str query);
+public java &T executeQuery(str query, type[&T] t, bool isCollection);
 
 @javaClass{org.rascalmpl.library.LAPD}
 public java str generateUniqueId();

@@ -3,6 +3,7 @@ package org.rascalmpl.library;
 import java.io.IOException;
 import java.util.UUID;
 
+import org.eclipse.imp.pdb.facts.IBool;
 import org.eclipse.imp.pdb.facts.IConstructor;
 import org.eclipse.imp.pdb.facts.ISourceLocation;
 import org.eclipse.imp.pdb.facts.IString;
@@ -42,14 +43,10 @@ public class LAPD {
 		return graphDbValueIO.read(id.getValue(), getTypeStore(ctx));
 	}
 	
-	public IValue executeQuery(IString query, IValue reifiedType, IEvaluatorContext ctx) throws GraphDbMappingException {
+	public IValue executeQuery(IString query, IValue reifiedType, IBool isCollection, IEvaluatorContext ctx) throws GraphDbMappingException {
 		TypeStore typeStore = getTypeStore(ctx);
 		org.eclipse.imp.pdb.facts.type.Type type = typeReifier.valueToType((IConstructor)reifiedType, typeStore);
-		return graphDbValueIO.executeQuery(query.getValue(), type, typeStore);
-	}
-	
-	public IValue executeQuery(IString query, IEvaluatorContext ctx) throws GraphDbMappingException {		
-		return graphDbValueIO.executeQuery(query.getValue(), getTypeStore(ctx));
+		return graphDbValueIO.executeQuery(query.getValue(), type, typeStore, isCollection.getValue());
 	}
 	
 	public IString generateUniqueId() {
