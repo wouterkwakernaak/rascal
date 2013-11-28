@@ -6,7 +6,6 @@ import java.util.UUID;
 import org.eclipse.imp.pdb.facts.IBool;
 import org.eclipse.imp.pdb.facts.IConstructor;
 import org.eclipse.imp.pdb.facts.IInteger;
-import org.eclipse.imp.pdb.facts.ISet;
 import org.eclipse.imp.pdb.facts.ISourceLocation;
 import org.eclipse.imp.pdb.facts.IString;
 import org.eclipse.imp.pdb.facts.IValue;
@@ -51,8 +50,10 @@ public class LAPD {
 		return graphDbValueIO.executeQuery(query.getValue(), type, typeStore, isCollection.getValue());
 	}
 	
-	public ISet executeJavaQuery(IInteger queryId, IString graphId) throws GraphDbMappingException {
-		return graphDbValueIO.executeJavaQuery(queryId.intValue(), graphId.getValue());
+	public IValue executeJavaQuery(IInteger queryId, IString graphId, IValue reifiedType, IEvaluatorContext ctx) throws GraphDbMappingException {
+		TypeStore typeStore = getTypeStore(ctx);
+		org.eclipse.imp.pdb.facts.type.Type type = typeReifier.valueToType((IConstructor)reifiedType, typeStore);
+		return graphDbValueIO.executeJavaQuery(queryId.intValue(), graphId.getValue(), type, typeStore);
 	}
 	
 	public IString generateUniqueId() {
