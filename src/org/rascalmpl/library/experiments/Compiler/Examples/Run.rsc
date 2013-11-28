@@ -23,7 +23,8 @@ import experiments::Compiler::Examples::Overloading1;
 import experiments::Compiler::Examples::Overloading2;
 import experiments::Compiler::Examples::Overloading3;
 import experiments::Compiler::Examples::OverloadingMatch;
-import experiments::Compiler::Examples::OverloadingPlusBacktracking;
+import experiments::Compiler::Examples::OverloadingPlusBacktracking1;
+import experiments::Compiler::Examples::OverloadingPlusBacktracking2;
 import experiments::Compiler::Examples::OverloadingDynamicCall;
 import experiments::Compiler::Examples::OverloadingPlusVarArgs;
 import experiments::Compiler::Examples::OverloadingPlusVarArgsSpecialCase;
@@ -44,6 +45,7 @@ import experiments::Compiler::Examples::RascalRuntimeExceptions;
 import experiments::Compiler::Examples::IsDefined;
 import experiments::Compiler::Examples::UninitializedVariables;
 import experiments::Compiler::Examples::IfDefinedOtherwise;
+import experiments::Compiler::Examples::IfDefinedOtherwise2;
 import experiments::Compiler::Examples::UseLibrary;
 import experiments::Compiler::Examples::Visit1;
 import experiments::Compiler::Examples::Visit1a;
@@ -58,6 +60,9 @@ import experiments::Compiler::Examples::Visit9;
 import experiments::Compiler::Examples::Visit10;
 import experiments::Compiler::Examples::Visit11;
 import experiments::Compiler::Examples::VisitWithWhen;
+
+import experiments::Compiler::Examples::FailWithLabel1;
+import experiments::Compiler::Examples::FailWithLabel2;
 
 import experiments::Compiler::Examples::IMP3;
 
@@ -87,7 +92,8 @@ test bool tst() = demo("Overloading1") == experiments::Compiler::Examples::Overl
 test bool tst() = demo("Overloading2") == experiments::Compiler::Examples::Overloading2::main([]) && demo("Overloading1") == demo("Overloading2");
 test bool tst() = demo("Overloading3") == experiments::Compiler::Examples::Overloading3::main([]);
 test bool tst() = demo("OverloadingMatch") == experiments::Compiler::Examples::OverloadingMatch::main([]);
-test bool tst() = demo("OverloadingPlusBacktracking") == experiments::Compiler::Examples::OverloadingPlusBacktracking::main([]);
+test bool tst() = demo("OverloadingPlusBacktracking1") == experiments::Compiler::Examples::OverloadingPlusBacktracking1::main([]);
+test bool tst() = demo("OverloadingPlusBacktracking2") == experiments::Compiler::Examples::OverloadingPlusBacktracking2::main([]);
 test bool tst() = demo("OverloadingDynamicCall") == experiments::Compiler::Examples::OverloadingDynamicCall::main([]);
 test bool tst() = demo("OverloadingPlusVarArgs") == experiments::Compiler::Examples::OverloadingPlusVarArgs::main([]);
 test bool tst() = demo("OverloadingPlusVarArgsSpecialCase") == experiments::Compiler::Examples::OverloadingPlusVarArgsSpecialCase::main([]);
@@ -108,6 +114,7 @@ test bool tst() = demo("RascalRuntimeExceptions") == experiments::Compiler::Exam
 test bool tst() = demo("IsDefined") == experiments::Compiler::Examples::IsDefined::main([]);
 test bool tst() = demo("UninitializedVariables") == experiments::Compiler::Examples::UninitializedVariables::expectedResult;
 test bool tst() = demo("IfDefinedOtherwise") == experiments::Compiler::Examples::IfDefinedOtherwise::expectedResult;
+test bool tst() = demo("IfDefinedOtherwise2") == experiments::Compiler::Examples::IfDefinedOtherwise2::main([]);
 
 // under investigation
 /*fails*/ //test bool tst1() = demo("UseLibrary") == experiments::Compiler::Examples::UseLibrary::main([]);
@@ -128,3 +135,7 @@ test bool tst12() = demo("VisitWithWhen") == experiments::Compiler::Examples::Vi
 
 // Overloading resolution & imports
 test bool tst() = demo("IMP3") == experiments::Compiler::Examples::IMP3::main([]);
+
+// Fail with labels
+test bool tst() = demo("FailWithLabel1") == experiments::Compiler::Examples::FailWithLabel1::main([]);
+test bool tst() = demo("FailWithLabel2") == experiments::Compiler::Examples::FailWithLabel2::main([]);

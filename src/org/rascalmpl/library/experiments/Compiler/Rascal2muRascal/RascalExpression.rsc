@@ -280,11 +280,19 @@ MuExp translate(e:(Expression) `<Expression expression> ( <{Expression ","}* arg
            if(isFunctionType(ftype) || isConstructorType(ftype)) {
                if(/parameter(_,_) := t) { // In case of polymorphic function types
                    try {
-                       bindings = match(\tuple(t.parameters),\tuple(ftype.parameters),());
-                       return instantiate(t.ret,bindings) == ftype.ret;
+                       if(isConstructorType(t) && isConstructorType(ftype)) {
+                           bindings = match(\tuple([ a | Symbol arg <- getConstructorArgumentTypes(t),     label(_,Symbol a) := arg || Symbol a := arg ]),
+                                            \tuple([ a | Symbol arg <- getConstructorArgumentTypes(ftype), label(_,Symbol a) := arg || Symbol a := arg ]),());
+                           return instantiate(t.\adt,bindings) == ftype.\adt;
+                       }
+                       if(isFunctionType(t) && isFunctionType(ftype)) {
+                           bindings = match(getFunctionArgumentTypesAsTuple(t),getFunctionArgumentTypesAsTuple(ftype),());
+                           return instantiate(t.ret,bindings) == ftype.ret;
+                       }
+                       return false;
                    } catch invalidMatch(_,_,_): { 
                        return false;
-                   } catch invalidMatch(_,_): { 
+                   } catch invalidMatch(_,_): {
                        return false; 
                    } catch err: {
                        println("WARNING: Cannot match <ftype> against <t> for location: <expression@\loc>! <err>");
@@ -296,12 +304,20 @@ MuExp translate(e:(Expression) `<Expression expression> ( <{Expression ","}* arg
                if(/parameter(_,_) := t) { // In case of polymorphic function types
                    for(Symbol alt <- (getNonDefaultOverloadOptions(ftype) + getDefaultOverloadOptions(ftype))) {
                        try {
-           	               bindings = match(\tuple(t.parameters),\tuple(alt.parameters),());
-           	               return instantiate(t.ret,bindings) == alt.ret;
-           	           } catch invalidMatch(_,_,_): { 
+           	               if(isConstructorType(t) && isConstructorType(alt)) {
+           	                   bindings = match(\tuple([ a | Symbol arg <- getConstructorArgumentTypes(t),   label(_,Symbol a) := arg || Symbol a := arg ]),
+           	                                    \tuple([ a | Symbol arg <- getConstructorArgumentTypes(alt), label(_,Symbol a) := arg || Symbol a := arg ]),());
+           	                   return instantiate(t.\adt,bindings) == alt.\adt;
+           	               }
+           	               if(isFunctionType(t) && isFunctionType(alt)) {
+           	                   bindings = match(getFunctionArgumentTypesAsTuple(t),getFunctionArgumentTypesAsTuple(alt),());
+           	                   return instantiate(t.ret,bindings) == alt.ret;
+           	               }
+           	               return false;
+           	           } catch invalidMatch(_,_,_): {
+           	               ;
+                       } catch invalidMatch(_,_): {
                            ;
-                       } catch invalidMatch(_,_): { 
-                           ; 
                        } catch err: {
                            println("WARNING: Cannot match <alt> against <t> for location: <expression@\loc>! <err>");
                        }
@@ -319,7 +335,13 @@ MuExp translate(e:(Expression) `<Expression expression> ( <{Expression ","}* arg
                resolved += alt;
            }
        }
-       
+       if(isEmpty(resolved)) {
+           for(int alt <- of.alts) {
+               t = fuid2type[alt];
+               println("ALT: <t>");
+           }
+           throw "ERROR in overloading resolution: <ftype>; <expression@\loc>";
+       }
        bool exists = <of.scopeIn,resolved> in overloadedFunctions;
        if(!exists) {
            i = size(overloadedFunctions);
@@ -409,8 +431,22 @@ MuExp translate (e:(Expression) `<Expression expression> . <Name field>`) {
 }
 
 // Field update
-MuExp translate (e:(Expression) `<Expression expression> [ <Name key> = <Expression replacement> ]`) =
-    muCallPrim("<getOuterType(expression)>_field_update", [ translate(expression), muCon("<key>"), translate(replacement) ]);
+MuExp translate (e:(Expression) `<Expression expression> [ <Name key> = <Expression replacement> ]`) {
+    tp = getType(expression@\loc);   
+    list[str] fieldNames = [];
+    if(isRelType(tp)){
+       tp = getSetElementType(tp);
+    } else if(isListType(tp)){
+       tp = getListElementType(tp);
+    } else if(isMapType(tp)){
+       tp = getMapFieldsAsTuple(tp);
+    }
+    if(tupleHasFieldNames(tp)){
+    	fieldNames = getTupleFieldNames(tp);
+    }	
+    return muCallPrim("<getOuterType(expression)>_update", [ translate(expression), muCon(indexOf(fieldNames, "<key>")), translate(replacement) ]);
+        //muCallPrim("<getOuterType(expression)>_field_update", [ translate(expression), muCon("<key>"), translate(replacement) ]);
+}
 
 // Field project
 MuExp translate (e:(Expression) `<Expression expression> \< <{Field ","}+ fields> \>`) {
@@ -880,7 +916,7 @@ MuExp translatePathTail((PathTail) `<PostPathChars post>`) = muCon("<post>"[1..-
  
 // Translate a closure   
  
- MuExp translateClosure(Expression e, Parameters parameters, Statement+ statements) {
+ MuExp translateClosure(Expression e, Parameters parameters, Tree cbody) {
  	uid = loc2uid[e@\loc];
 	fuid = uid2str(uid);
 	
@@ -892,7 +928,7 @@ MuExp translatePathTail((PathTail) `<PostPathChars post>`) = muCon("<post>"[1..-
 	bool isVarArgs = (varArgs(_,_) := parameters);
   	// TODO: keyword parameters
     
-    MuExp body = translateFunction(parameters.formals.formals, isVarArgs, statements, []);
+    MuExp body = translateFunction(parameters.formals.formals, isVarArgs, cbody, []);
     tuple[str fuid,int pos] addr = uid2addr[uid];
     functions_in_module += muFunction(fuid, ftype, (addr.fuid in moduleNames) ? "" : addr.fuid, 
   									  nformals, nlocals, isVarArgs, e@\loc, [], (), body);

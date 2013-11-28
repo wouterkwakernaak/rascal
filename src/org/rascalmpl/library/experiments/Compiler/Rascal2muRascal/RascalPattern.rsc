@@ -620,3 +620,4 @@ MuExp translateFunctionBody(Expression exp) = translate(exp);
 MuExp translateFunctionBody(MuExp exp) = exp;
 // TODO: check the interpreter subtyping
 default MuExp translateFunctionBody(Statement* stats) = muBlock([ translate(stat) | stat <- stats ]);
+default MuExp translateFunctionBody(Statement+ stats) = muBlock([ translate(stat) | stat <- stats ]);

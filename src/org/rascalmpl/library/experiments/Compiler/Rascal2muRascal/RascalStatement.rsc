@@ -124,7 +124,7 @@ MuExp translateTemplate((StringTemplate) `for ( <{Expression ","}+ generators> )
 } 
 
 MuExp translate(s: (Statement) `<Label label> if ( <{Expression ","}+ conditions> ) <Statement thenStatement>`) {
-	ifname = nextLabel();
+	ifname = getLabel(label);
 	enterBacktrackingScope(ifname);
 	code = muIfelse(ifname, muAll([translate(c) | c <-conditions]), [translate(thenStatement)], []);
     leaveBacktrackingScope();
@@ -148,7 +148,7 @@ MuExp translateTemplate((StringTemplate) `if (<{Expression ","}+ conditions> ) {
 }    
 
 MuExp translate(s: (Statement) `<Label label> if ( <{Expression ","}+ conditions> ) <Statement thenStatement> else <Statement elseStatement>`) {
-	ifname = nextLabel();
+	ifname = getLabel(label);
 	enterBacktrackingScope(ifname);
     code = muIfelse(ifname, muAll([translate(c) | c <-conditions]), [translate(thenStatement)], [translate(elseStatement)]);
     leaveBacktrackingScope();
@@ -282,13 +282,13 @@ MuExp translate(s: (Statement) `return <Statement statement>`) {
 
 MuExp translate(s: (Statement) `throw <Statement statement>`) = muThrow(translate(statement));
 
-MuExp translate(s: (Statement) `insert <DataTarget dataTarget> <Statement statement>`) 
+MuExp translate(s: (Statement) `insert <DataTarget dataTarget> <Statement statement>`) // TODO: handle dataTarget
 	= { fillCaseType(getType(statement@\loc)); 
 		muBlock([ muAssignLocDeref("hasInsert",2,muBool(true)), 
 				  muReturn(translate(statement)) ]); };
 
 MuExp translate(s: (Statement) `append <DataTarget dataTarget> <Statement statement>`) =
-   muCallPrim("listwriter_add", [muTmp(asTmp(currentLoop())), translate(statement)]);
+   muCallPrim("listwriter_add", [muTmp(asTmp(currentLoop(dataTarget))), translate(statement)]);
 
 MuExp translate(s: (Statement) `<FunctionDeclaration functionDeclaration>`) { translate(functionDeclaration); return muBlock([]); }
 
@@ -404,11 +404,16 @@ MuExp assignTo(a: (Assignable) `<Assignable receiver> [ <Expression subscript> ]
 MuExp assignTo(a: (Assignable) `<Assignable receiver> [ <OptionalExpression optFirst> .. <OptionalExpression optLast> ]`, MuExp rhs) =
     assignTo(receiver, muCallPrim("<getOuterType(receiver)>_replace", [*getValues(receiver), translateOpt(optFirst), muCon(false), translateOpt(optLast), rhs]) );
 
-MuExp assignTo(a: (Assignable) `<Assignable receiver> [ <OptionalExpression optFirst> , <Expression second> .. <OptionalExpression optLast> ]`) =
+MuExp assignTo(a: (Assignable) `<Assignable receiver> [ <OptionalExpression optFirst> , <Expression second> .. <OptionalExpression optLast> ]`, MuExp rhs) =
      assignTo(receiver, muCallPrim("<getOuterType(receiver)>_replace", [*getValues(receiver), translateOpt(optFirst), translate(second), translateOpt(optLast), rhs]));
 
 MuExp assignTo(a: (Assignable) `<Assignable receiver> . <Name field>`, MuExp rhs) =
-     assignTo(receiver, muCallPrim("<getOuterType(receiver)>_field_update", [*getValues(receiver), muCon("<field>"), rhs]) );
+     getOuterType(receiver) == "tuple" 
+     ? assignTo(receiver, muCallPrim("<getOuterType(receiver)>_update", [*getValues(receiver), muCon(getTupleFieldIndex(getType(receiver@\loc), "<field>")), rhs]) )
+     : assignTo(receiver, muCallPrim("<getOuterType(receiver)>_field_update", [*getValues(receiver), muCon("<field>"), rhs]) );
+     
+     //MuExp assignTo(a: (Assignable) `<Assignable receiver> . <Name field>`, MuExp rhs) =
+     //assignTo(receiver, muCallPrim("<getOuterType(receiver)>_field_update", [*getValues(receiver), muCon("<field>"), rhs]) );
 
 MuExp assignTo(a: (Assignable) `<Assignable receiver> ? <Expression defaultExpression>`, MuExp rhs) = 
 	assignTo(receiver,  rhs);
