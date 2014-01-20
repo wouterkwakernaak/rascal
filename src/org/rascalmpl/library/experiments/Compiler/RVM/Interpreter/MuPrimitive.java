@@ -3,7 +3,10 @@ package org.rascalmpl.library.experiments.Compiler.RVM.Interpreter;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.AbstractMap;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -15,6 +18,7 @@ import org.eclipse.imp.pdb.facts.IInteger;
 import org.eclipse.imp.pdb.facts.IList;
 import org.eclipse.imp.pdb.facts.IListWriter;
 import org.eclipse.imp.pdb.facts.IMap;
+import org.eclipse.imp.pdb.facts.IMapWriter;
 import org.eclipse.imp.pdb.facts.INode;
 import org.eclipse.imp.pdb.facts.ISet;
 import org.eclipse.imp.pdb.facts.ISetWriter;
@@ -37,8 +41,10 @@ public enum MuPrimitive {
 	equal,
 	equal_set_mset,
 	equivalent_mbool_mbool,
+	get_children,
+	get_children_and_keyword_params_as_values,
 	get_name,
-	get_name_and_children,
+	get_name_and_children_and_keyword_params_as_map,
 	get_tuple_elements,
 	greater_equal_mint_mint,
 	greater_mint_mint,
@@ -46,6 +52,7 @@ public enum MuPrimitive {
 	is_defined,
 	is_element_mset,
 	is_bool,
+	is_constructor,
 	is_datetime,
 	is_int,
 	is_list,
@@ -70,6 +77,10 @@ public enum MuPrimitive {
 	make_array,
 	make_array_of_size,
 	make_mset,
+	make_map_str_entry,     // kwp
+	make_map_str_ivalue,    // kwp
+	make_entry_type_ivalue, // kwp
+	map_contains_key,
 	mint,
 	modulo_mint_mint,
 	mset,
@@ -77,6 +88,8 @@ public enum MuPrimitive {
 	mset2list,
 	mset_destructive_add_elm,
 	mset_destructive_add_mset,
+	map_str_entry_add_entry_type_ivalue, // kwp
+	map_str_ivalue_add_ivalue,           // kwp
 	mset_destructive_subtract_mset,
 	mset_destructive_subtract_set,
 	mset_destructive_subtract_elm,
@@ -321,17 +334,101 @@ public enum MuPrimitive {
 		stack[sp - 1] = vf.string(nd.getName());
 		return sp;
 	}
-		
-	public static int get_name_and_children(Object[] stack, int sp, int arity) {
+	
+	public static int get_children(Object[] stack, int sp, int arity) {
 		assert arity == 1;
 		INode nd = (INode) stack[sp - 1];
-		String name = nd.getName();
-		Object[] elems = new Object[nd.arity() + 1];
-		elems[0] = vf.string(name);
+		Object[] elems = new Object[nd.arity()];
 		for(int i = 0; i < nd.arity(); i++){
-			elems[i + 1] = nd.get(i);
+			elems[i] = nd.get(i);
 		}
 		stack[sp - 1] =  elems;
+		return sp;
+	}
+	
+	public static int get_children_and_keyword_params_as_values(Object[] stack, int sp, int arity) {
+		assert arity == 1;
+		INode nd = (INode) stack[sp - 1];
+		int nd_arity = nd.arity();
+		IValue last = nd.get(nd_arity - 1);
+		Object[] elems;
+		
+		if(last.getType().isMap()){
+			IMap kwmap = (IMap) last;
+			int kw_arity = kwmap.size();
+			elems = new Object[nd_arity - 1 + kw_arity];
+			int j = nd_arity - 1;
+			for(int i = 0; i < nd_arity - 1; i++){
+				elems[i] = nd.get(i);
+			}
+			for(IValue v : kwmap){
+				elems[j++] = v;
+			}
+		} else {
+			elems = new Object[nd_arity];
+			for(int i = 0; i < nd_arity; i++){
+				elems[i] = nd.get(i);
+			}
+		}
+		stack[sp - 1] =  elems;
+		return sp;
+	}
+	
+	/*
+	 * Given a constructor or node get:
+	 * - its name
+	 * - positional arguments
+	 * - keyword parameters collected in a map
+	 */
+		
+	public static int get_name_and_children_and_keyword_params_as_map(Object[] stack, int sp, int arity) {
+		assert arity == 1;
+		IValue v = (IValue) stack[sp - 1];
+		if(v.getType().isAbstractData()){
+			IConstructor cons = (IConstructor) v;
+			Type tp = cons.getConstructorType();
+			
+			int cons_arity = tp.getArity();
+			int pos_arity = tp.getPositionalArity();
+			IMapWriter writer = vf.mapWriter();
+			for(int i = pos_arity; i < cons_arity; i++){
+				String key = tp.getFieldName(i);
+				IValue val = cons.get(key);
+				writer.put(vf.string(key), val);
+			}
+			Object[] elems = new Object[pos_arity + 2];
+			elems[0] = vf.string(cons.getName());
+			for(int i = 0; i < pos_arity; i++){
+				elems[i + 1] = cons.get(i);
+			}
+			elems[pos_arity + 1] = writer.done();
+			stack[sp - 1] =  elems;
+			return sp;
+		}
+		INode nd = (INode) v;
+		String name = nd.getName();
+		int nd_arity = nd.arity();
+		IValue last = nd.get(nd_arity - 1);
+		IMap map;
+		Object[] elems;
+		if(last.getType().isMap()){
+			elems = new Object[nd_arity + 1];				// account for function name
+			elems[0] = vf.string(name);
+			for(int i = 0; i < nd_arity; i++){
+				elems[i + 1] = nd.get(i);
+			}
+		} else {
+			TypeFactory tf = TypeFactory.getInstance();
+			map = vf.map(tf.voidType(), tf.voidType());
+			elems = new Object[nd_arity + 2];				// account for function name and keyword map
+		 
+			elems[0] = vf.string(name);
+			for(int i = 0; i < nd_arity; i++){
+				elems[i + 1] = nd.get(i);
+			}
+			elems[1 + nd_arity] = map;
+		}
+		stack[sp - 1] = elems;
 		return sp;
 	}
 		
@@ -386,6 +483,12 @@ public enum MuPrimitive {
 	public static int is_bool(Object[] stack, int sp, int arity) {
 		assert arity == 1;
 		stack[sp - 1] = ((IValue) stack[sp - 1]).getType().isBool();
+		return sp;
+	}
+	
+	public static int is_constructor(Object[] stack, int sp, int arity) {
+		assert arity == 1;
+		stack[sp - 1] = ((IValue) stack[sp - 1]).getType().isAbstractData();
 		return sp;
 	}
 		
@@ -522,6 +625,14 @@ public enum MuPrimitive {
 		stack[sp - 1] = new Object[len];
 		return sp;
 	}
+	
+	public static int map_contains_key(Object[] stack, int sp, int arity) {
+		assert arity == 2;
+		IMap m = ((IMap)stack[sp - 2]);
+		IString key = ((IString) stack[sp -1]);
+		stack[sp - 2] = m.containsKey(key);
+		return sp - 1;
+	}
 		
 	public static int mint(Object[] stack, int sp, int arity) {
 		assert arity == 1;
@@ -607,7 +718,7 @@ public enum MuPrimitive {
 	}
 		
 	/*
-	 * rint -- convert muRascal int (mint) to Rascal intt (rint)
+	 * rint -- convert muRascal int (mint) to Rascal int (rint)
 	 * 
 	 * 	
 	 */
@@ -940,6 +1051,38 @@ public enum MuPrimitive {
 //		stack[sp - 1] = mset.clone();
 //		return sp;
 //	}
+	
+	public static int make_map_str_entry(Object[] stack, int sp, int arity) {
+		assert arity == 0;
+		stack[sp] = new HashMap<String, Map.Entry<Type,IValue>>();
+		return sp + 1;
+	}
+	
+	public static int make_map_str_ivalue(Object[] stack, int sp, int arity) {
+		assert arity == 0;
+		stack[sp] = new HashMap<String, IValue>();
+		return sp + 1;
+	}
+	
+	public static int make_entry_type_ivalue(Object[] stack, int sp, int arity) {
+		assert arity == 2;
+		stack[sp - 2] = new AbstractMap.SimpleEntry<Type,IValue>((Type) stack[sp - 2], (IValue) stack[sp - 1]);
+		return sp - 1;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static int map_str_entry_add_entry_type_ivalue(Object[] stack, int sp, int arity) {
+		assert arity == 3;
+		stack[sp - 3] = ((Map<String, Map.Entry<Type,IValue>>) stack[sp - 3]).put(((IString) stack[sp - 2]).getValue(), (Map.Entry<Type, IValue>) stack[sp - 1]);
+		return sp - 2;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static int map_str_ivalue_add_ivalue(Object[] stack, int sp, int arity) {
+		assert arity == 3;
+		stack[sp - 3] = ((Map<String, IValue>) stack[sp - 3]).put(((IString) stack[sp - 2]).getValue(), (IValue) stack[sp - 1]);
+		return sp - 2;
+	}
 			
 	/*
 	 * Run this class as a Java program to compare the list of enumeration constants with the implemented methods in this class.

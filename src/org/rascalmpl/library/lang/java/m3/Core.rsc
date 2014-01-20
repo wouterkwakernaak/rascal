@@ -27,14 +27,13 @@ import List;
 import util::FileSystem;
 import demo::common::Crawl;
 
-data Modifier = \annotation(loc \ann);
-
 anno rel[loc from, loc to] M3@extends;            // classes extending classes and interfaces extending interfaces
 anno rel[loc from, loc to] M3@implements;         // classes implementing interfaces
 anno rel[loc from, loc to] M3@methodInvocation;   // methods calling each other (including constructors)
 anno rel[loc from, loc to] M3@fieldAccess;        // code using data (like fields)
 anno rel[loc from, loc to] M3@typeDependency;     // using a type literal in some code (types of variables, annotations)
 anno rel[loc from, loc to] M3@methodOverrides;    // which method override which other methods
+anno rel[loc declaration, loc annotation] M3@annotations;
 
 public M3 composeJavaM3(loc id, set[M3] models) {
   m = composeM3(id, models);
@@ -45,6 +44,7 @@ public M3 composeJavaM3(loc id, set[M3] models) {
   m@fieldAccess = {*model@fieldAccess | model <- models};
   m@typeDependency = {*model@typeDependency | model <- models};
   m@methodOverrides = {*model@methodOverrides | model <- models};
+  m@annotations = {*model@annotations | model <- models};
   
   return m;
 }
@@ -59,6 +59,10 @@ public M3 link(M3 projectModel, set[M3] libraryModels) {
 @javaClass{org.rascalmpl.library.lang.java.m3.internal.EclipseJavaCompiler}
 @reflect
 public java M3 createM3FromFile(loc file, str javaVersion = "1.7");
+
+@javaClass{org.rascalmpl.library.lang.java.m3.internal.EclipseJavaCompiler}
+@reflect
+public java M3 createM3FromString(loc fileName, str contents, str javaVersion = "1.7");
 
 @javaClass{org.rascalmpl.library.lang.java.m3.internal.EclipseJavaCompiler}
 @reflect

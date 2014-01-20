@@ -28,6 +28,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -1086,8 +1087,8 @@ public class Prelude {
 	public IValue readFileEnc(ISourceLocation sloc, IString charset, IEvaluatorContext ctx){
 	  sloc = ctx.getHeap().resolveSourceLocation(sloc);
 	  
-		try {
-			return consumeInputStream(sloc, ctx.getResolverRegistry().getCharacterReader(sloc.getURI(), charset.getValue()), ctx);
+		try (Reader reader = ctx.getResolverRegistry().getCharacterReader(sloc.getURI(), charset.getValue())){
+			return consumeInputStream(sloc, reader, ctx);
 		} catch(FileNotFoundException e){
 			throw RuntimeExceptionFactory.pathNotFound(sloc, ctx.getCurrentAST(), null);
 		} catch (IOException e) {
@@ -1096,21 +1097,63 @@ public class Prelude {
 	}
 
 	private IValue consumeInputStream(ISourceLocation sloc, Reader in, IEvaluatorContext ctx) {
-		StringBuilder result = new StringBuilder(1024 * 1024);
 		try{
-			char[] buf = new char[4096];
-			int count;
-
-			while((count = in.read(buf)) != -1) {
-				result.append(new java.lang.String(buf, 0, count));
+			java.lang.String str = null;
+			if(!sloc.hasOffsetLength() || sloc.getOffset() == -1){
+				StringBuilder result = new StringBuilder(1024 * 1024);
+				char[] buf = new char[4096];
+				int count;
+	
+				while((count = in.read(buf)) != -1) {
+					result.append(new java.lang.String(buf, 0, count));
+				}
+				str = result.toString();
 			}
-			
-			java.lang.String str = result.toString();
-			
-			if(sloc.hasOffsetLength() && sloc.getOffset() != -1){
-				str = str.substring(sloc.getOffset(), sloc.getOffset() + sloc.getLength());
+			else {
+				BufferedReader buffer = new BufferedReader(in, 4096);
+				try {
+					// first scan for offset
+					int offset = sloc.getOffset();
+					int seen = 0 ;
+					while (seen < offset) {
+						char c = (char)buffer.read();
+						if (Character.isHighSurrogate(c)) {
+							buffer.read();
+						}
+						seen++;
+					}
+	
+					// offset reached, start reading and possibly merging
+					int targetLength = sloc.getLength();
+					StringBuilder result = new StringBuilder(targetLength);
+					int charsRead = 0;
+					while (charsRead < targetLength) {
+						int c = buffer.read();
+						if (c == -1) {
+							break; // EOF
+						}
+						charsRead++;
+						result.append((char)c);
+						if (Character.isHighSurrogate((char)c)) {
+							c = buffer.read();
+							if (c == -1) {
+								break; // EOF
+							}
+							result.append((char)buffer.read());
+							if (!Character.isLowSurrogate((char)c)) {
+								// strange but in case of incorrect unicode stream
+								// let's not eat the next character
+								charsRead++;
+							}
+						}
+					}
+					str = result.toString();
+				}
+				finally {
+					buffer.close();
+				}
+				
 			}
-			
 			return values.string(str);
 		}catch(FileNotFoundException fnfex){
 			throw RuntimeExceptionFactory.pathNotFound(sloc, ctx.getCurrentAST(), null);
@@ -1251,22 +1294,13 @@ public class Prelude {
 		sloc = ctx.getHeap().resolveSourceLocation(sloc);
 		BufferedOutputStream out=null;
 		try{
-			Iterator<IValue> iter = blist.iterator();
-			int count = 0;
-			byte[] bytes = new byte[blist.length()];
-			while (iter.hasNext()){
-				IValue ival = iter.next();
-				bytes[count++] = (byte) (((IInteger) ival).intValue());
-			}
 			OutputStream stream = ctx.getResolverRegistry().getOutputStream(sloc.getURI(), false);
 			out = new BufferedOutputStream(stream);
-			final int size = 4096;
-			byte[] buf=new byte[size];
-			BufferedInputStream is=new BufferedInputStream(new ByteArrayInputStream(bytes));
-			int available;
-			while((available = is.read(buf)) > 0) {   
-			   out.write(buf, 0, available); 
-			}      
+			Iterator<IValue> iter = blist.iterator();
+			while (iter.hasNext()){
+				IValue ival = iter.next();
+				out.write((byte) (((IInteger) ival).intValue()));
+			}
 			out.flush();
 			out.close();
 		}catch(FileNotFoundException e){
@@ -3197,6 +3231,12 @@ public class Prelude {
 	 * ValueIO
 	 */
 	
+	public IInteger getFileLength(ISourceLocation g, IEvaluatorContext ctx) throws IOException {
+		File f = new File(ctx.getResolverRegistry().getResourceURI(g.getURI()));
+		if (!f.exists() || f.isDirectory()) throw new IOException();
+		return values.integer(f.length());
+	}
+	
 	public IValue readBinaryValueFile(IValue type, ISourceLocation loc, IEvaluatorContext ctx){
 		TypeStore store = ctx.getEvaluator().__getRootScope().getStore();
 		Type start = tr.valueToType((IConstructor) type, store);
@@ -3316,6 +3356,8 @@ public class Prelude {
 	public IList getTraversalContext(IEvaluatorContext ctx) {
 		return ctx.getEvaluator().__getCurrentTraversalEvaluator().getContext();
 	}
+	
+	
 }
 
 // Utilities used by Graph
